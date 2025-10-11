@@ -1,0 +1,31 @@
+name: "✨ Feature Issue"
+description: "새로운 기능 개발을 위한 이슈 템플릿"
+labels: ["feature"]
+title: "[FEAT] "
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 📄 Description
+      description: 구현하고자 하는 기능에 대한 설명을 작성해 주세요.
+    validations:
+      required: true
+      
+  - type: textarea
+    id: todo-list
+    attributes:
+      label: ✅ To-do
+      description: 구현 항목을 체크박스로 작성해 주세요.
+      placeholder: |
+        최대한 세분화해서 적어주세요!
+        - [ ] UI 작업
+        - [ ] API 연동
+        - [ ] 테스트 코드 작성
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 🙋🏻 Reference
+      description: 참고할 만한 자료가 있다면 작성해 주세요.
