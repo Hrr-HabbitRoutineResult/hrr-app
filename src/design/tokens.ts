@@ -16,7 +16,7 @@ export const colors = {
   },
 
   icon: {
-    grey: '#A7AEBB'
+    gray: '#A7AEBB'
   },
 
   button: '#D7DBE4',
@@ -26,7 +26,11 @@ export const colors = {
   background: {
     main: '#F7F8FB',
     white: '#FFFFFF'
-  }
+  },
+
+  // 직접 참조용
+  white: '#FFFFFF',
+  black: '#202020'
 
 } as const;
 
