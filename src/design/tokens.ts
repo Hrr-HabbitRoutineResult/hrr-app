@@ -23,14 +23,10 @@ export const colors = {
 
   line: '#E9EDF4',
 
-  background: {
-    main: '#F7F8FB',
-    white: '#FFFFFF'
-  },
+  background: '#F7F8FB',
 
   // 직접 참조용
-  white: '#FFFFFF',
-  black: '#202020'
+  white: '#FFFFFF'
 
 } as const;
 

@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
         switch (variant) {
             case 'black':
                 return {
-                    backgroundColor: colors.black
+                    backgroundColor: colors.text.primary
                 };
             case 'primary':
                 return {
@@ -52,7 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
                 };
             case 'white':
                 return {
-                    backgroundColor: colors.background.white,
+                    backgroundColor: colors.white,
                     borderWidth: 1.5,
                     borderColor: colors.line,
                 };

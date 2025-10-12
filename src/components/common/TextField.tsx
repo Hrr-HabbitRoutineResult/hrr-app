@@ -45,9 +45,9 @@ export const TextField: React.FC<TextFieldProps> = ({
     // variant에 따른 배경색 결정
     const getBackgroundColor = (): string => {
         if (variant === 'default') {
-            return colors.background.main; // 회색 배경
+            return colors.background; // 회색 배경
         }
-        return colors.background.white; // 흰색 배경
+        return colors.white; // 흰색 배경
     };
 
     // variant에 따른 테두리 색상 결정
@@ -100,7 +100,7 @@ export const TextField: React.FC<TextFieldProps> = ({
                     styles.inputContainer,
                     {
                         backgroundColor: disabled
-                            ? colors.background.main
+                            ? colors.background
                             : getBackgroundColor(),
                         borderColor: getBorderColor(),
                         borderWidth: variant === 'white' ? 1 : 0, // white variant에서만 테두리 표시
