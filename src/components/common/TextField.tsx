@@ -112,7 +112,7 @@ export const TextField: React.FC<TextFieldProps> = ({
 
                 {/* TextInput */}
                 <TextInput
-                    style={[styles.input, typography.md, style]}
+                    style={[styles.input, typography.xsReg, style]}
                     placeholderTextColor={getPlaceholderColor()}
                     editable={!disabled}                        // 비활성화 상태에 따른 편집 가능 여부
                     onFocus={() => setIsFocused(true)}          // 포커스 시 테두리 색상 변경
