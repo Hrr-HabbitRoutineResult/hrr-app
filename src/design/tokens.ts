@@ -5,7 +5,7 @@ export const colors = {
     sub: '#FF473B',
     light: '#FF9F99',
     lighter: '#FFE0DE',
-    lightest: '#FFEBE9'
+    lightest: '#FFF1F0'
   },
 
   // Gray Scale (용도별)
@@ -25,7 +25,6 @@ export const colors = {
 
   background: '#F7F8FB',
 
-  // 직접 참조용
   white: '#FFFFFF'
 
 } as const;
