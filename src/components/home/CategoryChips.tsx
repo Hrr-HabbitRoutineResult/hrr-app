@@ -1,17 +1,24 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { tokens } from '../../design/tokens';
 
+import IconAll from '../../../assets/icons/homescreen/ic_전체보기.svg';
+import IconExercise from '../../../assets/icons/homescreen/ic_운동.svg';
+import IconStudy from '../../../assets/icons/homescreen/ic_학업.svg';
+import IconHobby from '../../../assets/icons/homescreen/ic_취미.svg';
+import IconJob from '../../../assets/icons/homescreen/ic_취업준비.svg';
+import IconLifestyle from '../../../assets/icons/homescreen/ic_생활습관.svg';
+
 const categories = [
-  { id: 'all', name: '전체보기' },
-  { id: 'exercise', name: '운동' },
-  { id: 'study', name: '학업' },
-  { id: 'hobby', name: '취미' },
-  { id: 'job', name: '취업준비' },
-  { id: 'lifestyle', name: '생활습관' },
+  { id: 'all', name: '전체보기', Icon: IconAll },
+  { id: 'exercise', name: '운동', Icon: IconExercise },
+  { id: 'study', name: '학업', Icon: IconStudy },
+  { id: 'hobby', name: '취미', Icon: IconHobby },
+  { id: 'job', name: '취업준비', Icon: IconJob },
+  { id: 'lifestyle', name: '생활습관', Icon: IconLifestyle },
 ];
 
 const CategoryChips = () => {
@@ -22,37 +29,47 @@ const CategoryChips = () => {
   };
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
-      {categories.map((category) => (
+    <View style={styles.container}>
+      {categories.map(({ id, name, Icon }) => (
         <TouchableOpacity
-          key={category.id}
+          key={id}
           style={styles.chip}
-          onPress={() => handlePress(category.id)}
-          accessibilityLabel={`${category.name} 카테고리 보기`}
+          onPress={() => handlePress(id)}
+          accessibilityLabel={`${name} 카테고리 보기`}
           accessibilityRole="button"
         >
-          <Text style={styles.chipText}>{category.name}</Text>
+          <Icon
+            width={48}
+            height={48}
+            style={id !== 'all' ? { transform: [{ scale: 1.2 }] } : {}}
+          />
+          <View style={styles.textWrapper}>
+            <Text style={styles.chipText}>{name}</Text>
+          </View>
         </TouchableOpacity>
       ))}
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: tokens.spacing.sm,
-    paddingHorizontal: tokens.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   chip: {
-    backgroundColor: tokens.color.background,
-    paddingHorizontal: tokens.spacing.md,
-    paddingVertical: tokens.spacing.xs,
-    borderRadius: tokens.radius.lg,
-    marginRight: tokens.spacing.sm,
+    alignItems: 'center',
+  },
+  textWrapper: {
+    marginTop: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   chipText: {
-    ...tokens.typography.smMd,
+    ...tokens.typography.xxs,
     color: tokens.color.text.secondary,
+    textAlign: 'center',
+    lineHeight: 12,
   },
 });
 

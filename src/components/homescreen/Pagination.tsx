@@ -15,7 +15,7 @@ const Pagination = ({ total, current }: PaginationProps) => {
           key={index}
           style={[
             styles.dot,
-            { backgroundColor: index === current ? tokens.color.primary.main : tokens.color.gray },
+            { backgroundColor: (index + 1) === current ? tokens.color.primary.main : tokens.color.gray },
           ]}
         />
       ))}

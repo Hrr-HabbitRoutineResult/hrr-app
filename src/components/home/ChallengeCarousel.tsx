@@ -1,14 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, Dimensions, Animated, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  Animated,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Challenge } from '../../store/challengeSlice';
 import { tokens } from '../../design/tokens';
 import Pagination from '../homescreen/Pagination';
 
 const { width: screenWidth } = Dimensions.get('window');
-const ACTIVE_ITEM_SIZE = 200;
-const INACTIVE_ITEM_SIZE = 160;
-const ITEM_WIDTH = ACTIVE_ITEM_SIZE;
-const SPACING = (screenWidth - ITEM_WIDTH) / 2;
+const ITEM_SIZE = 200;
+const SPACING = 20;
+const SNAP_INTERVAL = ITEM_SIZE + SPACING;
 
 type ChallengeCarouselProps = {
   challenges: Challenge[];
@@ -20,45 +28,63 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<any>>(null);
 
+  // ✅ scrollX 기반 인덱스 계산
   useEffect(() => {
-    if (isPaused || challenges.length === 0) return;
+    const listenerId = scrollX.addListener(({ value }) => {
+      const index = Math.round(value / SNAP_INTERVAL);
+      if (index !== currentIndex) setCurrentIndex(index);
+    });
+    return () => scrollX.removeListener(listenerId);
+  }, [currentIndex]);
 
-    const interval = setInterval(() => {
-      const nextIndex = (currentIndex + 1) % challenges.length;
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-    }, 2000);
+  // ✅ 자동 슬라이드
+  useEffect(() => {
+    if (challenges.length === 0) return;
+    let interval: NodeJS.Timeout | null = null;
 
-    return () => clearInterval(interval);
+    if (!isPaused) {
+      interval = setInterval(() => {
+        const nextIndex = (currentIndex + 1) % challenges.length;
+        const offset = nextIndex * SNAP_INTERVAL;
+
+        flatListRef.current?.scrollToOffset({
+          offset,
+          animated: true,
+        });
+      }, 2500);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [currentIndex, isPaused, challenges.length]);
 
   const handlePressIn = () => setIsPaused(true);
   const handlePressOut = () => setIsPaused(false);
 
-  const renderItem = ({ item, index }: { item: Challenge, index: number }) => {
+  const renderItem = ({ item, index }: { item: Challenge; index: number }) => {
     const inputRange = [
-      (index - 1) * ITEM_WIDTH,
-      index * ITEM_WIDTH,
-      (index + 1) * ITEM_WIDTH,
+      (index - 1) * SNAP_INTERVAL,
+      index * SNAP_INTERVAL,
+      (index + 1) * SNAP_INTERVAL,
     ];
 
     const scale = scrollX.interpolate({
       inputRange,
-      outputRange: [INACTIVE_ITEM_SIZE / ACTIVE_ITEM_SIZE, 1, INACTIVE_ITEM_SIZE / ACTIVE_ITEM_SIZE],
+      outputRange: [0.8, 1, 0.8],
       extrapolate: 'clamp',
     });
 
     return (
-        <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
-            <View style={styles.itemContainer}>
-                <Animated.View style={[styles.item, { transform: [{ scale }] }]}>
-                    <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-                    <View style={styles.overlay}>
-                        <Text style={styles.challengeName}>{item.title}</Text>
-                        {item.todayEligible && <View style={styles.checkBadge} />}
-                    </View>
-                </Animated.View>
-            </View>
-        </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
+        <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
+          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+          <View style={styles.overlay}>
+            <Text style={styles.challengeName}>{item.title}</Text>
+            {item.todayEligible && <View style={styles.checkBadge} />}
+          </View>
+        </Animated.View>
+      </TouchableWithoutFeedback>
     );
   };
 
@@ -70,59 +96,64 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         renderItem={renderItem}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        snapToInterval={ITEM_WIDTH}
+        keyExtractor={(item) => item.id.toString()}
+        snapToInterval={SNAP_INTERVAL}
+        snapToAlignment="start"
         decelerationRate="fast"
-        ListHeaderComponent={<View style={{ width: SPACING }} />}
-        ListFooterComponent={<View style={{ width: SPACING }} />}
-        contentContainerStyle={{ alignItems: 'center' }}
+        // ✅ 핵심: 양쪽 padding 모두 줘야 마지막 인덱스도 중앙에 옴
+        contentContainerStyle={{
+          paddingHorizontal: (screenWidth - ITEM_SIZE) / 2,
+        }}
+        getItemLayout={(_, index) => ({
+          length: SNAP_INTERVAL,
+          offset: SNAP_INTERVAL * index,
+          index,
+        })}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: true, listener: (event) => setCurrentIndex(Math.round(event.nativeEvent.contentOffset.x / ITEM_WIDTH)) }
+          { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
       />
-      <Pagination total={challenges.length} current={currentIndex} />
+      <Pagination total={challenges.length} current={currentIndex + 1} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        height: ACTIVE_ITEM_SIZE + 20,
-    },
-    itemContainer: {
-        width: ITEM_WIDTH,
-    },
-    item: {
-        width: ACTIVE_ITEM_SIZE,
-        height: ACTIVE_ITEM_SIZE,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    thumbnail: {
-        width: '100%',
-        height: '100%',
-        borderRadius: ACTIVE_ITEM_SIZE / 2,
-    },
-    overlay: {
-        position: 'absolute',
-        bottom: tokens.spacing.md,
-        left: tokens.spacing.md,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    challengeName: {
-        ...tokens.typography.header4,
-        color: tokens.color.white,
-    },
-    checkBadge: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        backgroundColor: tokens.color.primary.main,
-        marginLeft: tokens.spacing.xs,
-    },
+  container: {
+    height: ITEM_SIZE + 40,
+  },
+  itemContainer: {
+    width: ITEM_SIZE,
+    height: ITEM_SIZE,
+    marginRight: SPACING,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: ITEM_SIZE / 2,
+  },
+  overlay: {
+    position: 'absolute',
+    bottom: tokens.spacing.md,
+    left: tokens.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  challengeName: {
+    ...tokens.typography.header4,
+    color: tokens.color.white,
+  },
+  checkBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: tokens.color.primary.main,
+    marginLeft: tokens.spacing.xs,
+  },
 });
 
 export default ChallengeCarousel;

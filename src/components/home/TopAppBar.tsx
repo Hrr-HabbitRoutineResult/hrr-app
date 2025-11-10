@@ -1,26 +1,34 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { tokens } from '../../design/tokens';
+import { StyleSheet as RNStyleSheet } from 'react-native';
+import Logo from '../../../assets/icons/topbar/logo.svg';
+import BellIcon from '../../../assets/icons/topbar/ic_alarm.svg';
 
 const TopAppBar = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('HomeTabs')}>
-        {/* 로고 이미지는 assets/logo.png에 있다고 가정합니다. */}
-        <Image source={require('../../../assets/images/logo-with-text.svg')} style={styles.logo} />
+      {/* 왼쪽 로고 */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('HomeTabs')}
+        activeOpacity={0.8}
+        style={styles.logoWrapper}
+      >
+        <Logo width={28} height={27} />
       </TouchableOpacity>
+
+      {/* 오른쪽 알림 아이콘 */}
       <TouchableOpacity
         onPress={() => navigation.navigate('Notifications')}
-        accessibilityLabel="알림"
-        accessibilityRole="button"
+        activeOpacity={0.8}
+        style={styles.logoWrapper}
       >
-        {/* 알림 아이콘은 적절한 아이콘으로 교체해야 합니다. */}
-        <View style={styles.notificationIcon} />
+        <BellIcon width={48} height={48} style={{ transform: [{ scale: 1.2 }] }} />
       </TouchableOpacity>
     </View>
   );
@@ -28,23 +36,18 @@ const TopAppBar = () => {
 
 const styles = StyleSheet.create({
   container: {
+    height: 100,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: tokens.spacing.md,
-    paddingVertical: tokens.spacing.sm,
+    justifyContent: 'space-between',
     backgroundColor: tokens.color.white,
+    paddingHorizontal: 20,
+    borderBottomWidth: RNStyleSheet.hairlineWidth, // ✅ 아주 얇은 선도 표시
+    borderBottomColor: '#E0E0E0', // ✅ 확실히 보이는 라인색
   },
-  logo: {
-    width: 80,
-    height: 40,
-    resizeMode: 'contain',
-  },
-  notificationIcon: {
-    width: 24,
-    height: 24,
-    backgroundColor: tokens.color.gray,
-  },
+  logoWrapper: {
+    marginTop: 50,
+  }
 });
 
 export default TopAppBar;
