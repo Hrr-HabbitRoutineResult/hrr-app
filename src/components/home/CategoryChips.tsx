@@ -5,12 +5,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { tokens } from '../../design/tokens';
 
-import IconAll from '../../../assets/icons/homescreen/ic_전체보기.svg';
-import IconExercise from '../../../assets/icons/homescreen/ic_운동.svg';
-import IconStudy from '../../../assets/icons/homescreen/ic_학업.svg';
-import IconHobby from '../../../assets/icons/homescreen/ic_취미.svg';
-import IconJob from '../../../assets/icons/homescreen/ic_취업준비.svg';
-import IconLifestyle from '../../../assets/icons/homescreen/ic_생활습관.svg';
+import IconAll from '../../../assets/icons/homescreen/categorychips/ic_전체보기.svg';
+import IconExercise from '../../../assets/icons/homescreen/categorychips/ic_운동.svg';
+import IconStudy from '../../../assets/icons/homescreen/categorychips/ic_학업.svg';
+import IconHobby from '../../../assets/icons/homescreen/categorychips/ic_취미.svg';
+import IconJob from '../../../assets/icons/homescreen/categorychips/ic_취업준비.svg';
+import IconLifestyle from '../../../assets/icons/homescreen/categorychips/ic_생활습관.svg';
 
 const categories = [
   { id: 'all', name: '전체보기', Icon: IconAll },
