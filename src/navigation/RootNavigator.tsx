@@ -12,23 +12,23 @@ import RandomMissionScreen from '../screens/RandomMissionScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import BottomTabBarIcons from '../components/home/BottomTabBarIcons';
+import CustomTabBar from '../components/home/CustomTabBar';
 
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
 const HomeTabs = () => (
   <Tab.Navigator
-    screenOptions={({ route }) => ({
-      tabBarIcon: ({ focused }) => (
-        <BottomTabBarIcons routeName={route.name} focused={focused} />
-      ),
+    tabBar={props => <CustomTabBar {...props} />}
+    screenOptions={{
       headerShown: false,
-    })}
+      tabBarLabelStyle: { display: 'none' }, // Hide default labels
+    }}
   >
-    <Tab.Screen name="Home" component={HomeScreen} />
-    <Tab.Screen name="Search" component={HomeScreen} />
-    <Tab.Screen name="Chat" component={HomeScreen} />
-    <Tab.Screen name="My" component={HomeScreen} />
+    <Tab.Screen name="홈" component={HomeScreen} />
+    <Tab.Screen name="검색" component={HomeScreen} />
+    <Tab.Screen name="채팅" component={HomeScreen} />
+    <Tab.Screen name="마이" component={HomeScreen} />
   </Tab.Navigator>
 );
 

@@ -6,8 +6,8 @@ export type RootStackParamList = {
 };
 
 export type HomeTabParamList = {
-  Home: undefined;
-  Search: undefined;
-  Chat: undefined;
-  My: undefined;
+  홈: undefined;
+  검색: undefined;
+  채팅: undefined;
+  마이: undefined;
 };
