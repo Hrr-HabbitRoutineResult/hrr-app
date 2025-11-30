@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   highlightGraphic: {
     position: 'absolute',
-    bottom: 5,
+    bottom: -0.5,
     zIndex: -1,
   },
   subtitle: {
@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingBottom: 15,
     paddingHorizontal: 20,
+    paddingBottom: 32,
     gap: 10,
   },
 });
