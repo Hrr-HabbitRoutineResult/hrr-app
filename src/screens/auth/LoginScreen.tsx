@@ -60,9 +60,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   buttonContainer: {
-    paddingTop: 90,
-    paddingBottom: 10,
     paddingHorizontal: 20,
+    paddingBottom: 32,
     alignItems: 'center',
   },
 });

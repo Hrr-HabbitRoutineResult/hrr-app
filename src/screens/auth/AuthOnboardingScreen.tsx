@@ -14,6 +14,7 @@ import { colors } from '../../design/tokens';
 import { LoginScreen } from './LoginScreen';
 import { TermsAgreementScreen } from './TermsAgreementScreen';
 import { NicknameSetupScreen } from './NicknameSetupScreen';
+import { OnboardingScreen } from '../onboarding/OnboardingScreen';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
 import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
@@ -24,7 +25,7 @@ const H_PADDING = 24;
 const CARD_HEIGHT = 460; // SVG 이미지 높이
 const SWIPE_THRESHOLD = 50; // 스와이프 감지 임계값
 
-export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname';
+export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname' | 'userOnboarding';
 
 const ONBOARDING_TEXTS = [
   { lines: ['혼자서는 쉽게 포기하던 자기개발', '흐르르와 함께 도전해요'] },
@@ -105,23 +106,20 @@ export const AuthOnboardingScreen: React.FC = () => {
   };
 
   const handleAppleLogin = () => {
-    console.log('Apple 로그인');
-    // TODO: Apple 로그인 구현
-    // 소셜 로그인 후 약관 동의 화면으로 이동
+    // TODO: 애플 로그인 구현
+    // 현재는 약관 동의 화면으로 바로 이동
     setStep('terms');
   };
 
   const handleNaverLogin = () => {
-    console.log('Naver 로그인');
-    // TODO: Naver 로그인 구현
-    // 소셜 로그인 후 약관 동의 화면으로 이동
+    // TODO: 네이버 로그인 구현
+    // 현재는 약관 동의 화면으로 바로 이동
     setStep('terms');
   };
 
   const handleKakaoLogin = () => {
-    console.log('Kakao 로그인');
-    // TODO: Kakao 로그인 구현
-    // 소셜 로그인 후 약관 동의 화면으로 이동
+    // TODO: 카카오 로그인 구현
+    // 현재는 약관 동의 화면으로 바로 이동
     setStep('terms');
   };
 
@@ -141,8 +139,8 @@ export const AuthOnboardingScreen: React.FC = () => {
   };
 
   const handleNicknameComplete = (nickname: string) => {
-    console.log('닉네임 설정 완료:', nickname);
-    // TODO: 닉네임 저장 및 다음 단계로 이동
+    // 온보딩 화면으로 이동
+    setStep('userOnboarding');
   };
 
   if (step === 'login') {
@@ -171,6 +169,10 @@ export const AuthOnboardingScreen: React.FC = () => {
         onComplete={handleNicknameComplete}
       />
     );
+  }
+
+  if (step === 'userOnboarding') {
+    return <OnboardingScreen />;
   }
 
   return (

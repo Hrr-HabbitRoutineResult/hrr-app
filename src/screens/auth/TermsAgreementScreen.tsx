@@ -13,7 +13,7 @@ import CheckboxCheckedIcon from '../../../assets/icons/checkbox-checked.svg';
 import CheckboxUncheckedIcon from '../../../assets/icons/checkbox-unchecked.svg';
 import RadioCheckedIcon from '../../../assets/icons/radio-checked.svg';
 import RadioUncheckedIcon from '../../../assets/icons/radio-unchecked.svg';
-import ChevronRightIcon from '../../../assets/icons/chevron-right.svg';
+import ChevronRightIcon from '../../../assets/icons/chevron-right-grey.svg';
 
 interface TermsAgreementScreenProps {
   onBack: () => void;
