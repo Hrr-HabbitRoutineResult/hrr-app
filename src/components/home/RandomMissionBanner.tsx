@@ -1,0 +1,78 @@
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../../navigation/types';
+import { tokens } from '../../design/tokens';
+import { useUserStore } from '../../store/userSlice';
+
+import ChallSvg from '../../../assets/icons/homescreen/chall.svg';
+import ChallDoneSvg from '../../../assets/icons/homescreen/chall_done.svg';
+
+const RandomMissionBanner = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const isCompleted = useUserStore((state) => state.randomMissionCompleted);
+
+  const handlePress = () => {
+    navigation.navigate('RandomMission');
+  };
+
+  const BackgroundSvg = isCompleted ? ChallDoneSvg : ChallSvg;
+
+  return (
+    <TouchableOpacity onPress={handlePress} style={styles.container}>
+      <BackgroundSvg width="100%" height="100%" style={styles.backgroundSvg} />
+      {isCompleted ? (
+        <View style={styles.textContainer}>
+          <Text style={styles.description}>
+            랜덤미션을 완료했어요!{'\n'}내일 새로운 미션으로 돌아올게요
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.notCompletedContainer}>
+          <Text style={styles.descriptionLine1}>새로운 랜덤미션이 도착했어요!</Text>
+          <Text style={styles.descriptionLine2}>참여하고 플로우 스코어를 받아요</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    height: 120,
+    borderRadius: tokens.radius.lg,
+    overflow: 'hidden',
+  },
+  backgroundSvg: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  textContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: tokens.spacing.md,
+  },
+  notCompletedContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 21,
+    width: 215,
+  },
+  description: {
+    ...tokens.typography.smReg, // 15px regular
+    color: tokens.color.text.secondary,
+  },
+  descriptionLine1: {
+    ...tokens.typography.smMd, // 15px medium
+    color: tokens.color.text.primary,
+    marginBottom: 4, // gap: 4px
+  },
+  descriptionLine2: {
+    ...tokens.typography.xxs, // 12px regular
+    color: tokens.color.text.secondary,
+  },
+});
+
+export default RandomMissionBanner;

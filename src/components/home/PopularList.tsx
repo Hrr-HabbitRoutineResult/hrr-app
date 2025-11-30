@@ -1,0 +1,184 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { tokens } from '../../design/tokens';
+import { RootStackParamList } from '../../navigation/types';
+import { formatParticipants } from '../../libs/format';
+import SectionHeader from '../common/SectionHeader';
+
+type Challenge = {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  cadence: string;
+  dDay: number;
+  participants: number;
+  maxParticipants: number;
+};
+
+const PopularList = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // ✅ 더미데이터 (API 대체)
+    setTimeout(() => {
+      setChallenges([
+        {
+          id: '1',
+          title: '백준 실버3 코테',
+          description: '백준 실버3 매일 풀고 공유',
+          thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
+          cadence: '매일',
+          dDay: 1,
+          participants: 10,
+          maxParticipants: 30,
+        },
+        {
+          id: '2',
+          title: '백준 실버3 코테',
+          description: '백준 실버3 매일 풀고 공유',
+          thumbnail: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
+          cadence: '매일',
+          dDay: 1,
+          participants: 10,
+          maxParticipants: 30,
+        },
+        {
+          id: '3',
+          title: '백준 실버3 코테',
+          description: '백준 실버3 매일 풀고 공유',
+          thumbnail: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d',
+          cadence: '매일',
+          dDay: 1,
+          participants: 10,
+          maxParticipants: 30,
+        },
+      ]);
+      setLoading(false);
+    }, 600);
+  }, []);
+
+  const handleSeeMore = () => {
+    navigation.navigate('ChallengeList', { category: 'popular' });
+  };
+
+  if (loading) {
+    return (
+      <View style={{ paddingVertical: tokens.spacing.lg, alignItems: 'center' }}>
+        <ActivityIndicator size="small" color={tokens.color.primary.main} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <SectionHeader title="오늘의 인기 챌린지" actionText="상세보기" onActionPress={handleSeeMore} />
+
+      {challenges.slice(0, 3).map((challenge) => (
+        <TouchableOpacity key={challenge.id} style={styles.card}>
+          <Image source={{ uri: challenge.thumbnail }} style={styles.thumbnail} />
+
+          {/* D-Day 오버레이 */}
+          <View style={styles.dDayOverlay}>
+            <Text style={styles.dDayText}>D-{challenge.dDay}</Text>
+          </View>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.title}>{challenge.title}</Text>
+            <Text style={styles.subText}>{challenge.description}</Text>
+          </View>
+
+          {/* 매일 / 참가자 수 */}
+          <View style={styles.rightContainer}>
+            <View style={styles.dailyBadge}>
+              <Text style={styles.dailyText}>{challenge.cadence}</Text>
+            </View>
+            <View style={styles.participantRow}>
+              <Text style={styles.participantIcon}>👥</Text>
+              <Text style={styles.participantCount}>
+                {challenge.participants}/{challenge.maxParticipants}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {},
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: tokens.color.white,
+    borderRadius: tokens.radius.md,
+    padding: tokens.spacing.sm,
+    marginBottom: tokens.spacing.xs,
+    position: 'relative',
+  },
+  thumbnail: {
+    width: 56,
+    height: 56,
+    borderRadius: tokens.radius.md,
+    marginRight: tokens.spacing.sm,
+  },
+  dDayOverlay: {
+    position: 'absolute',
+    left: tokens.spacing.md,
+    top: tokens.spacing.sm,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: tokens.radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  dDayText: {
+    color: tokens.color.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  title: {
+    ...tokens.typography.md,
+    color: tokens.color.text.primary,
+  },
+  subText: {
+    ...tokens.typography.xsReg,
+    color: tokens.color.text.secondary,
+  },
+  rightContainer: {
+    alignItems: 'flex-end',
+  },
+  dailyBadge: {
+    borderWidth: 1,
+    borderColor: tokens.color.primary.main,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginBottom: 6,
+  },
+  dailyText: {
+    color: tokens.color.primary.main,
+    fontSize: 12,
+  },
+  participantRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  participantIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  participantCount: {
+    fontSize: 12,
+    color: tokens.color.text.secondary,
+  },
+});
+
+export default PopularList;

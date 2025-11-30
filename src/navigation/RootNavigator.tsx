@@ -1,0 +1,51 @@
+// src/navigation/RootNavigator.tsx
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
+import RNBootSplash from 'react-native-bootsplash'; // ← 추가
+
+import HomeScreen from '../screens/HomeScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import ChallengeListScreen from '../screens/ChallengeListScreen';
+import RandomMissionScreen from '../screens/RandomMissionScreen';
+
+import { HomeTabParamList, RootStackParamList } from './types';
+import BottomTabBarIcons from '../components/home/BottomTabBarIcons';
+import CustomTabBar from '../components/home/CustomTabBar';
+
+const Tab = createBottomTabNavigator<HomeTabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
+
+const HomeTabs = () => (
+  <Tab.Navigator
+    tabBar={props => <CustomTabBar {...props} />}
+    screenOptions={{
+      headerShown: false,
+      tabBarLabelStyle: { display: 'none' }, // Hide default labels
+    }}
+  >
+    <Tab.Screen name="홈" component={HomeScreen} />
+    <Tab.Screen name="검색" component={HomeScreen} />
+    <Tab.Screen name="채팅" component={HomeScreen} />
+    <Tab.Screen name="마이" component={HomeScreen} />
+  </Tab.Navigator>
+);
+
+const RootNavigator = () => (
+  <NavigationContainer
+    onReady={() => {
+      // 네비가 준비되면 스플래시를 숨김
+      RNBootSplash.hide({ fade: true });
+    }}
+  >
+    <Stack.Navigator>
+      <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="ChallengeList" component={ChallengeListScreen} />
+      <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
+    </Stack.Navigator>
+  </NavigationContainer>
+);
+
+export default RootNavigator;

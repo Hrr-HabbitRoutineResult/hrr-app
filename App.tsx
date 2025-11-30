@@ -6,6 +6,8 @@ import React, { useEffect } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import { AuthOnboardingScreen } from './src/screens/auth/AuthOnboardingScreen';
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -24,8 +26,10 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <AppContent />
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
