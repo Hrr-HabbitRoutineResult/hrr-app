@@ -2,9 +2,10 @@ import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import { AuthOnboardingScreen } from './src/screens/auth/AuthOnboardingScreen';
+import RootNavigator from './src/navigation/RootNavigator';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -35,9 +36,19 @@ function App() {
 }
 
 function AppContent() {
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+
+  const handleOnboardingComplete = () => {
+    setIsOnboardingComplete(true);
+  };
+
+  if (isOnboardingComplete) {
+    return <RootNavigator />;
+  }
+
   return (
     <View style={styles.container}>
-      <AuthOnboardingScreen />
+      <AuthOnboardingScreen onOnboardingComplete={handleOnboardingComplete} />
     </View>
   );
 }
