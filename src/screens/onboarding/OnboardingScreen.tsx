@@ -9,7 +9,11 @@ import { OnboardingResultScreen } from './OnboardingResultScreen';
 
 export type OnboardingStep = 'intro' | 'q1' | 'q2' | 'q3' | 'q4' | 'loading' | 'challengeRecommendation' | 'end';
 
-export const OnboardingScreen: React.FC = () => {
+interface OnboardingScreenProps {
+  onComplete?: () => void;
+}
+
+export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('intro');
 
   // Q1 상태
@@ -27,9 +31,8 @@ export const OnboardingScreen: React.FC = () => {
   const [q4Goal, setQ4Goal] = useState<string>('');
 
   const handleSkip = () => {
-    // TODO: 실제 홈 화면으로 이동하는 로직 구현
-    // 현재는 테스트용으로 로딩 화면으로 이동
-    setCurrentStep('loading');
+    // 홈 화면으로 이동
+    onComplete?.();
   };
 
   const handleStart = () => {
@@ -85,7 +88,8 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   const handleGoHome = () => {
-    // TODO: 실제 홈 화면으로 이동
+    // 홈 화면으로 이동
+    onComplete?.();
   };
 
   const handleRefresh = () => {

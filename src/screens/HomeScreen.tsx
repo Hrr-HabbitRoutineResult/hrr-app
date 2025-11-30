@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button } from 'react-native';
 import { useChallengeStore } from '../store/challengeSlice';
 import { useUserStore, selectNickname } from '../store/userSlice';
-import { tokens } from '../design/tokens';
+import { colors, typography, spacing } from '../design/tokens';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -86,36 +86,36 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: tokens.color.white,
+    backgroundColor: colors.white,
   },
   centerBox: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: tokens.spacing.xl,
+    paddingVertical: spacing.xl,
   },
   loadingText: {
-    ...tokens.typography.md,
-    color: tokens.color.text.secondary,
+    ...typography.md,
+    color: colors.text.secondary,
   },
   errorText: {
-    ...tokens.typography.md,
-//     color: tokens.color.error.main,
-    marginBottom: tokens.spacing.sm,
+    ...typography.md,
+//     color: colors.error.main,
+    marginBottom: spacing.sm,
   },
   welcomeContainer: {
-    padding: tokens.spacing.md,
+    padding: spacing.md,
   },
   welcomeSubtitle: {
-    ...tokens.typography.smMd,
-    color: tokens.color.text.secondary,
+    ...typography.smMd,
+    color: colors.text.secondary,
   },
   welcomeTitle: {
-    ...tokens.typography.header2,
-    color: tokens.color.text.primary,
+    ...typography.header2,
+    color: colors.text.primary,
   },
   listContainer: {
-    backgroundColor: tokens.color.background,
+    backgroundColor: colors.background,
     paddingHorizontal: 20,
     paddingVertical: 40,
     gap: 40,

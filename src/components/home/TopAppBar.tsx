@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
-import { tokens } from '../../design/tokens';
+import { colors } from '../../design/tokens';
 import { StyleSheet as RNStyleSheet } from 'react-native';
 import Logo from '../../../assets/icons/topbar/logo.svg';
 import BellIcon from '../../../assets/icons/topbar/ic_alarm.svg';
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: tokens.color.white,
+    backgroundColor: colors.white,
     paddingHorizontal: 20,
     borderBottomWidth: RNStyleSheet.hairlineWidth, // ✅ 아주 얇은 선도 표시
     borderBottomColor: '#E0E0E0', // ✅ 확실히 보이는 라인색
