@@ -50,6 +50,9 @@ react {
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
 
+    // node 실행 경로 설정
+    nodeExecutableAndArgs = [System.getenv("NODE_BINARY") ?: "node"]
+
     /* Autolinking */
     autolinkLibrariesWithApp()
 }
