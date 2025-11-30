@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { tokens } from '../../design/tokens';
+import { colors, spacing } from '../../design/tokens';
 
 type PaginationProps = {
   total: number;
@@ -15,7 +15,7 @@ const Pagination = ({ total, current }: PaginationProps) => {
           key={index}
           style={[
             styles.dot,
-            { backgroundColor: (index + 1) === current ? tokens.color.primary.main : tokens.color.gray },
+            { backgroundColor: (index + 1) === current ? colors.primary.main : colors.icon.gray },
           ]}
         />
       ))}
@@ -28,13 +28,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: tokens.spacing.sm,
+    marginTop: spacing.sm,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginHorizontal: tokens.spacing.xxs,
+    marginHorizontal: spacing.xxs,
   },
 });
 

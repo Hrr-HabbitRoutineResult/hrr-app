@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import BottomTabBarIcons from './BottomTabBarIcons';
-import { tokens } from '../../design/tokens';
+import { colors, typography } from '../../design/tokens';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -61,15 +61,15 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             {typeof label === 'string' ? (
               <View style={styles.labelContainer}>
                 <Text style={{
-                  color: isFocused ? tokens.color.primary.main : tokens.color.icon.gray,
-                  fontSize: tokens.typography.xxs.fontSize,
-                  fontFamily: tokens.typography.xxs.fontFamily,
+                  color: isFocused ? colors.primary.main : colors.icon.gray,
+                  fontSize: typography.xxs.fontSize,
+                  fontFamily: typography.xxs.fontFamily,
                 }}>
                   {label}
                 </Text>
               </View>
             ) : (
-              label({ focused: isFocused, color: isFocused ? tokens.color.primary.main : tokens.color.icon.gray, position: 'below-icon' })
+              label({ focused: isFocused, color: isFocused ? colors.primary.main : colors.icon.gray, position: 'below-icon' })
             )}
           </TouchableOpacity>
         );
@@ -81,14 +81,14 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
-    backgroundColor: tokens.color.white,
+    backgroundColor: colors.white,
     height: 60, // Adjust height as needed
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     borderTopWidth: 1,
-    borderTopColor: tokens.color.line,
+    borderTopColor: colors.line,
   },
   tabItem: {
     position: 'absolute',

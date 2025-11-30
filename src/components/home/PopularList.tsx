@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { tokens } from '../../design/tokens';
+import { colors, typography, spacing, radius } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { formatParticipants } from '../../libs/format';
 import SectionHeader from '../common/SectionHeader';
@@ -68,8 +68,8 @@ const PopularList = () => {
 
   if (loading) {
     return (
-      <View style={{ paddingVertical: tokens.spacing.lg, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color={tokens.color.primary.main} />
+      <View style={{ paddingVertical: spacing.lg, alignItems: 'center' }}>
+        <ActivityIndicator size="small" color={colors.primary.main} />
       </View>
     );
   }
@@ -115,29 +115,29 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: tokens.color.white,
-    borderRadius: tokens.radius.md,
-    padding: tokens.spacing.sm,
-    marginBottom: tokens.spacing.xs,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    marginBottom: spacing.xs,
     position: 'relative',
   },
   thumbnail: {
     width: 56,
     height: 56,
-    borderRadius: tokens.radius.md,
-    marginRight: tokens.spacing.sm,
+    borderRadius: radius.md,
+    marginRight: spacing.sm,
   },
   dDayOverlay: {
     position: 'absolute',
-    left: tokens.spacing.md,
-    top: tokens.spacing.sm,
+    left: spacing.md,
+    top: spacing.sm,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: tokens.radius.sm,
+    borderRadius: radius.sm,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   dDayText: {
-    color: tokens.color.white,
+    color: colors.white,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -145,26 +145,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    ...tokens.typography.md,
-    color: tokens.color.text.primary,
+    ...typography.md,
+    color: colors.text.primary,
   },
   subText: {
-    ...tokens.typography.xsReg,
-    color: tokens.color.text.secondary,
+    ...typography.xsReg,
+    color: colors.text.secondary,
   },
   rightContainer: {
     alignItems: 'flex-end',
   },
   dailyBadge: {
     borderWidth: 1,
-    borderColor: tokens.color.primary.main,
+    borderColor: colors.primary.main,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginBottom: 6,
   },
   dailyText: {
-    color: tokens.color.primary.main,
+    color: colors.primary.main,
     fontSize: 12,
   },
   participantRow: {
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   participantCount: {
     fontSize: 12,
-    color: tokens.color.text.secondary,
+    color: colors.text.secondary,
   },
 });
 

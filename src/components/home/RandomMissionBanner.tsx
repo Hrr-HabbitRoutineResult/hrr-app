@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
-import { tokens } from '../../design/tokens';
+import { colors, typography, spacing, radius } from '../../design/tokens';
 import { useUserStore } from '../../store/userSlice';
 
 import ChallSvg from '../../../assets/icons/homescreen/chall.svg';
@@ -41,7 +41,7 @@ const RandomMissionBanner = () => {
 const styles = StyleSheet.create({
   container: {
     height: 120,
-    borderRadius: tokens.radius.lg,
+    borderRadius: radius.lg,
     overflow: 'hidden',
   },
   backgroundSvg: {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     justifyContent: 'center',
-    padding: tokens.spacing.md,
+    padding: spacing.md,
   },
   notCompletedContainer: {
     position: 'absolute',
@@ -61,17 +61,17 @@ const styles = StyleSheet.create({
     width: 215,
   },
   description: {
-    ...tokens.typography.smReg, // 15px regular
-    color: tokens.color.text.secondary,
+    ...typography.smReg, // 15px regular
+    color: colors.text.secondary,
   },
   descriptionLine1: {
-    ...tokens.typography.smMd, // 15px medium
-    color: tokens.color.text.primary,
+    ...typography.smMd, // 15px medium
+    color: colors.text.primary,
     marginBottom: 4, // gap: 4px
   },
   descriptionLine2: {
-    ...tokens.typography.xxs, // 12px regular
-    color: tokens.color.text.secondary,
+    ...typography.xxs, // 12px regular
+    color: colors.text.secondary,
   },
 });
 

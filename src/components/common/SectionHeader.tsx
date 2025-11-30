@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { tokens } from '../../design/tokens';
+import { colors, typography, spacing } from '../../design/tokens';
 
 type SectionHeaderProps = {
   title: string;
@@ -26,16 +26,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: tokens.spacing.md,
-    paddingVertical: tokens.spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   title: {
-    ...tokens.typography.header3,
-    color: tokens.color.text.primary,
+    ...typography.header3,
+    color: colors.text.primary,
   },
   actionText: {
-    ...tokens.typography.smMd,
-    color: tokens.color.text.secondary,
+    ...typography.smMd,
+    color: colors.text.secondary,
   },
 });
 
