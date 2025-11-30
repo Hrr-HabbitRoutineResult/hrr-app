@@ -9,7 +9,7 @@ import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
 // 버튼 variant 타입
-type ButtonVariant = 'black' | 'primary' | 'white';
+type ButtonVariant = 'black' | 'primary' | 'white' | 'gray';
 
 // 버튼 사이즈 타입
 type ButtonSize = 'small' | 'medium';
@@ -56,6 +56,10 @@ export const Button: React.FC<ButtonProps> = ({
                     borderWidth: 1.5,
                     borderColor: colors.line,
                 };
+            case 'gray':
+                return {
+                    backgroundColor: colors.line,
+                };
             default:
                 return {
                     backgroundColor: colors.primary.main
@@ -77,6 +81,8 @@ export const Button: React.FC<ButtonProps> = ({
                 return colors.white;
             case 'white':
                 return colors.text.tertiary;
+            case 'gray':
+                return colors.icon.gray;
             default:
                 return colors.white;
         }

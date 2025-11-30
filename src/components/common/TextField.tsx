@@ -23,6 +23,7 @@ interface TextFieldProps extends TextInputProps {
     onLeftIconPress?: () => void;  // 왼쪽 아이콘 클릭 이벤트
     onRightIconPress?: () => void; // 오른쪽 아이콘 클릭 이벤트
     containerStyle?: ViewStyle;    // 컨테이너 스타일
+    inputContainerStyle?: ViewStyle; // 입력 필드 박스 스타일 오버라이드 (높이, 패딩 등 커스터마이징 가능)
 }
 
 // 공통 TextField 컴포넌트
@@ -36,6 +37,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     onLeftIconPress,
     onRightIconPress,
     containerStyle,
+    inputContainerStyle,
     style,
     ...rest
 }) => {
@@ -105,6 +107,7 @@ export const TextField: React.FC<TextFieldProps> = ({
                         borderColor: getBorderColor(),
                         borderWidth: variant === 'white' ? 1 : 0, // white variant에서만 테두리 표시
                     },
+                    inputContainerStyle,
                 ]}
             >
                 {/* 왼쪽 아이콘 */}
@@ -112,7 +115,7 @@ export const TextField: React.FC<TextFieldProps> = ({
 
                 {/* TextInput */}
                 <TextInput
-                    style={[styles.input, typography.xsReg, style]}
+                    style={[styles.input, typography.smMd, style]}
                     placeholderTextColor={getPlaceholderColor()}
                     editable={!disabled}                        // 비활성화 상태에 따른 편집 가능 여부
                     onFocus={() => setIsFocused(true)}          // 포커스 시 테두리 색상 변경
@@ -127,7 +130,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             {/* 에러 메시지 */}
             {error && (
                 <Text
-                    variant="caption"
+                    variant="xsReg"
                     color={colors.primary.sub}
                     style={styles.messageText}
                 >
@@ -138,7 +141,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             {/* 일반 메시지 */}
             {message && !error && (
                 <Text
-                    variant="caption"
+                    variant="xsReg"
                     color={colors.text.tertiary}
                     style={styles.messageText}
                 >
