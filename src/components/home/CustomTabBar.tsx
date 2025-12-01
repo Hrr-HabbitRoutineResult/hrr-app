@@ -61,7 +61,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             {typeof label === 'string' ? (
               <View style={styles.labelContainer}>
                 <Text style={{
-                  color: isFocused ? colors.primary.main : colors.icon.gray,
+                  color: colors.text.primary,
                   fontSize: typography.xxs.fontSize,
                   fontFamily: typography.xxs.fontFamily,
                 }}>

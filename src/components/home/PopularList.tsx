@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing, radius } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { formatParticipants } from '../../libs/format';
-import SectionHeader from '../common/SectionHeader';
+import ChevronRightPrimary from '../../../assets/icons/chevron-right-grey.svg';
 
 type Challenge = {
   id: string;
@@ -76,7 +76,12 @@ const PopularList = () => {
 
   return (
     <View style={styles.container}>
-      <SectionHeader title="오늘의 인기 챌린지" actionText="상세보기" onActionPress={handleSeeMore} />
+      <TouchableOpacity onPress={handleSeeMore} style={styles.header}>
+        <Text style={styles.headerTitle}>오늘의 인기 챌린지</Text>
+        <View style={styles.iconContainer}>
+          <ChevronRightPrimary width={5} height={10} />
+        </View>
+      </TouchableOpacity>
 
       {challenges.slice(0, 3).map((challenge) => (
         <TouchableOpacity key={challenge.id} style={styles.card}>
@@ -112,6 +117,23 @@ const PopularList = () => {
 
 const styles = StyleSheet.create({
   container: {},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  headerTitle: {
+    ...typography.header3,
+    color: colors.text.primary,
+    marginRight: spacing.xxs,
+  },
+  iconContainer: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,7 +151,7 @@ const styles = StyleSheet.create({
   },
   dDayOverlay: {
     position: 'absolute',
-    left: spacing.md,
+    left: spacing.sm,
     top: spacing.sm,
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: radius.sm,
