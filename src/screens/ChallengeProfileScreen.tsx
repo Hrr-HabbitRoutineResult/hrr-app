@@ -1,0 +1,427 @@
+import React, { useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Text } from '../components/common/Text';
+import { Button } from '../components/common/Button';
+import { Header } from '../components/common/Header';
+import { colors } from '../design/tokens';
+import { RootStackParamList } from '../navigation/types';
+import ShareIcon from '../../assets/icons/share.svg';
+import LikeSelectedIcon from '../../assets/icons/like-selected.svg';
+import LikeUnselectedIcon from '../../assets/icons/like-unselected.svg';
+import PeopleIcon from '../../assets/icons/people.svg';
+import ObserverDisabledIcon from '../../assets/icons/observer-disabled.svg';
+import DefaultProfileIcon from '../../assets/icons/default-profile.svg';
+import CalendarIcon from '../../assets/icons/calendar.svg';
+import TimeRangeIcon from '../../assets/icons/time-range.svg';
+import ChevronRightTertiaryIcon from '../../assets/icons/chevron-right-tertiary.svg';
+
+type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
+type ChallengeProfileScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'ChallengeProfile'
+>;
+
+interface RankingItem {
+  rank: number;
+  nickname: string;
+  score: number;
+}
+
+export const ChallengeProfileScreen: React.FC = () => {
+  const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
+  const route = useRoute<ChallengeProfileScreenRouteProp>();
+  const { challengeId } = route.params;
+  const [isLiked, setIsLiked] = useState(false);
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  // 임시 데이터
+  const challengeData = {
+    name: '백준 실버3 코테',
+    description: '백준 실버3 매일 풀고 공유',
+    participants: 10,
+    maxParticipants: 30,
+    isObserverMode: true,
+    hostNickname: '김흐르',
+    schedule: {
+      days: '월/목',
+      timeRange: '10:00 ~ 18:00',
+    },
+    rules: '해당 챌린지는 월요일과 목요일, 일주일에 2번을 인증해야 합니다. 오전 10시부터 오후 6시까지만 인증이 가능하므로 그 시간 안에 코딩테스트를 풀고 작성해주세요.',
+    rankings: [
+      { rank: 1, nickname: '헤더', score: 156 },
+      { rank: 2, nickname: '헤더', score: 102 },
+      { rank: 3, nickname: '헤더', score: 89 },
+    ] as RankingItem[],
+  };
+
+  const handleShare = () => {
+    // TODO: 공유 기능 구현
+    console.log('공유하기');
+  };
+
+  const handleLike = () => {
+    // TODO: 찜하기 기능 구현
+    // 현재는 아이콘 이미지 상태만 변경
+    setIsLiked(!isLiked);
+  };
+
+  const handleHostProfile = () => {
+    // TODO: 방장 프로필 화면으로 이동
+    console.log('방장 프로필');
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* 헤더 */}
+      <Header
+        onBack={handleBack}
+        rightContent={
+          <View style={styles.headerRightContent}>
+            <TouchableOpacity
+              onPress={handleShare}
+              style={styles.headerIconButton}
+              activeOpacity={0.7}
+            >
+              <ShareIcon width={18} height={18} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleLike}
+              style={styles.headerIconButton}
+              activeOpacity={0.7}
+            >
+              {isLiked ? (
+                <LikeSelectedIcon width={20} height={18} />
+              ) : (
+                <LikeUnselectedIcon width={20} height={18} />
+              )}
+            </TouchableOpacity>
+          </View>
+        }
+      />
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 히어로 섹션 */}
+        <View style={styles.heroSection}>
+          {/* 배경 이미지 */}
+          <View style={styles.heroImageContainer}>
+            <Image
+              source={require('../../assets/images/mock-challenge-profile.png')}
+              style={styles.heroImage}
+              resizeMode="cover"
+            />
+            {/* 오버레이 */}
+            <View style={styles.heroOverlay} />
+          </View>
+
+          {/* 텍스트 컨텐츠 */}
+          <View style={styles.heroContent}>
+            <Text variant="header1" color={colors.white} style={styles.challengeName}>
+              {challengeData.name}
+            </Text>
+            <Text variant="xsReg" color={colors.white} style={styles.challengeDescription}>
+              {challengeData.description}
+            </Text>
+
+            {/* 참가자 정보 */}
+            <View style={styles.participantInfo}>
+              <View style={styles.participantItem}>
+                <View style={styles.iconContainer24}>
+                  <PeopleIcon width={11.56} height={13} />
+                </View>
+                <Text variant="xxs" color={colors.white}>
+                  {challengeData.participants}/{challengeData.maxParticipants}
+                </Text>
+              </View>
+
+              {challengeData.isObserverMode && (
+                <View style={styles.participantItem}>
+                  <View style={styles.iconContainer24}>
+                    <ObserverDisabledIcon width={24} height={24} />
+                  </View>
+                  <Text variant="xxs" color={colors.icon.gray}>
+                    관찰자 모드
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        {/* 방장 프로필 */}
+        <TouchableOpacity
+          style={styles.hostProfile}
+          onPress={handleHostProfile}
+          activeOpacity={0.7}
+        >
+          <DefaultProfileIcon width={40} height={40} />
+          <Text variant="smMd" color={colors.text.primary} style={styles.hostNickname}>
+            {challengeData.hostNickname}
+          </Text>
+          <View style={styles.chevronContainer}>
+            <ChevronRightTertiaryIcon width={6} height={12} />
+          </View>
+        </TouchableOpacity>
+
+        {/* 구분선 */}
+        <View style={styles.sectionDivider} />
+
+        {/* 챌린지 일정 정보 */}
+        <View style={styles.scheduleSection}>
+          <View style={styles.scheduleItem}>
+            <View style={styles.iconContainer24}>
+              <CalendarIcon width={14} height={14} />
+            </View>
+            <Text variant="smReg" color={colors.text.primary}>
+              {challengeData.schedule.days}
+            </Text>
+          </View>
+          <View style={styles.verticalDivider} />
+          <View style={styles.scheduleItem}>
+            <View style={styles.iconContainer24}>
+              <TimeRangeIcon width={16} height={16} />
+            </View>
+            <Text variant="smReg" color={colors.text.primary}>
+              {challengeData.schedule.timeRange}
+            </Text>
+          </View>
+        </View>
+
+        {/* 챌린지 규칙 */}
+        <View style={styles.section}>
+          <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+            챌린지 규칙
+          </Text>
+          <View style={styles.contentBox}>
+            <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
+              {challengeData.rules}
+            </Text>
+          </View>
+        </View>
+
+        {/* 챌린지 랭킹 */}
+        <View style={[styles.section, styles.rankingSection]}>
+          <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+            챌린지 랭킹
+          </Text>
+          <View style={styles.contentBox}>
+            {challengeData.rankings.map((item, index) => (
+              <View
+                key={item.rank}
+                style={[
+                  styles.rankingItem,
+                  index === challengeData.rankings.length - 1 && styles.rankingItemLast,
+                ]}
+              >
+                <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
+                  {item.rank}
+                </Text>
+                <DefaultProfileIcon width={40} height={40} />
+                <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
+                  {item.nickname}
+                </Text>
+                <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
+                  {item.score}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* 참가하기 버튼 */}
+      <View style={styles.buttonDivider} />
+      <View style={styles.buttonContainer}>
+        <Button variant="primary" size="medium" onPress={() => console.log('참가하기')}>
+          참가하기
+        </Button>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  headerRightContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerIconButton: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  heroSection: {
+    position: 'relative',
+    width: '100%',
+    height: 240,
+  },
+  heroImageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#000000',
+    opacity: 0.6,
+  },
+  heroContent: {
+    position: 'relative',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 24,
+    zIndex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  challengeName: {
+    marginBottom: 4,
+    lineHeight: 26,
+  },
+  challengeDescription: {
+    marginBottom: 23,
+    lineHeight: 16,
+  },
+  participantInfo: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 1,
+  },
+  participantItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  iconContainer24: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  hostProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    gap: 12,
+  },
+  hostNickname: {
+    flex: 1,
+    lineHeight: 20,
+  },
+  chevronContainer: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionDivider: {
+    height: 8,
+    backgroundColor: colors.background,
+  },
+  scheduleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    gap: 12,
+  },
+  scheduleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  verticalDivider: {
+    width: 1.5,
+    height: 18,
+    backgroundColor: colors.line,
+  },
+  section: {
+    paddingHorizontal: 24,
+    marginTop: 24,
+  },
+  rankingSection: {
+    marginBottom: 60,
+  },
+  sectionTitle: {
+    marginBottom: 12,
+    lineHeight: 20,
+  },
+  contentBox: {
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  rulesText: {
+    lineHeight: 18,
+  },
+  rankingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  rankingItemLast: {
+    marginBottom: 0,
+  },
+  rankNumber: {
+    width: 24,
+    lineHeight: 20,
+  },
+  rankingNickname: {
+    flex: 1,
+    lineHeight: 20,
+  },
+  rankingScore: {
+    lineHeight: 20,
+  },
+  buttonDivider: {
+    height: 1,
+    backgroundColor: colors.line,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    paddingTop: 12,
+    alignItems: 'center',
+  },
+});
+
