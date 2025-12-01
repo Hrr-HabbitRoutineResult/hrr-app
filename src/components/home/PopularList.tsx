@@ -5,7 +5,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing, radius } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { formatParticipants } from '../../libs/format';
-import ChevronRightPrimary from '../../../assets/icons/chevron-right-grey.svg';
+import ChevronRightPrimary from '../../../assets/icons/chevron-right-primary.svg';
+import PersonIcon from '../../../assets/icons/person.svg';
 
 type Challenge = {
   id: string;
@@ -24,7 +25,7 @@ const PopularList = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ 더미데이터 (API 대체)
+    // 더미데이터
     setTimeout(() => {
       setChallenges([
         {
@@ -97,13 +98,15 @@ const PopularList = () => {
             <Text style={styles.subText}>{challenge.description}</Text>
           </View>
 
-          {/* 매일 / 참가자 수 */}
+          {/* Right Container */}
           <View style={styles.rightContainer}>
             <View style={styles.dailyBadge}>
               <Text style={styles.dailyText}>{challenge.cadence}</Text>
             </View>
+
+            {/* 참가자 영역 */}
             <View style={styles.participantRow}>
-              <Text style={styles.participantIcon}>👥</Text>
+              <PersonIcon width={14} height={14} />
               <Text style={styles.participantCount}>
                 {challenge.participants}/{challenge.maxParticipants}
               </Text>
@@ -174,33 +177,51 @@ const styles = StyleSheet.create({
     ...typography.xsReg,
     color: colors.text.secondary,
   },
+
+
   rightContainer: {
+    width: 43,
+    height: 38,
     alignItems: 'flex-end',
   },
+
   dailyBadge: {
+    width: 37,
+    height: 18,
     borderWidth: 1,
     borderColor: colors.primary.main,
     borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginBottom: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
   },
+
   dailyText: {
-    color: colors.primary.main,
-    fontSize: 12,
-  },
+      color: colors.primary.main,
+      fontSize: 12,
+      lineHeight: 14, // 중앙 정렬 위해 badge height와 동일
+      textAlign: 'center',
+    },
+
   participantRow: {
+    width: 43,
+    height: 14,
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 6,
   },
-  participantIcon: {
-    fontSize: 12,
-    marginRight: 4,
-  },
+
   participantCount: {
-    fontSize: 12,
-    color: colors.text.secondary,
-  },
+      color: colors.text.primary,
+      fontFamily: 'Pretendard',
+      fontWeight: '400',
+      fontSize: 10,
+      letterSpacing: -0.3,
+      textAlign: 'right',
+      marginLeft: 2,
+      height: 14,
+    },
+
 });
 
 export default PopularList;
