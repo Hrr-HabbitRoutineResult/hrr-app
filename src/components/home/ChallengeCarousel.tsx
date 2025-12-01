@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Challenge } from '../../store/challengeSlice';
-import { tokens } from '../../design/tokens';
+import { colors, typography, spacing } from '../../design/tokens';
 import Pagination from '../homescreen/Pagination';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -138,21 +138,21 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: 'absolute',
-    bottom: tokens.spacing.md,
-    left: tokens.spacing.md,
+    bottom: spacing.md,
+    left: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
   challengeName: {
-    ...tokens.typography.header4,
-    color: tokens.color.white,
+    ...typography.header4,
+    color: colors.white,
   },
   checkBadge: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: tokens.color.primary.main,
-    marginLeft: tokens.spacing.xs,
+    backgroundColor: colors.primary.main,
+    marginLeft: spacing.xs,
   },
 });
 

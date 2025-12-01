@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { tokens } from '../../design/tokens';
+import { colors, typography, spacing } from '../../design/tokens';
 import ChallengeSuggestBtn from '../../../assets/icons/homescreen/challenge_suggest_btn.svg';
 
 const BUTTON_WIDTH = 350;
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     width: BUTTON_WIDTH,
     height: BUTTON_HEIGHT,
     alignSelf: 'center',
-    marginVertical: tokens.spacing.sm,
+    marginVertical: spacing.sm,
     position: 'relative',
   },
   svgContainer: {
@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    ...tokens.typography.md,
-    color: tokens.color.white,
+    ...typography.md,
+    color: colors.white,
     fontWeight: '500',
   },
 });

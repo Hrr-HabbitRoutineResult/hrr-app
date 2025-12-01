@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { HomeTabParamList } from '../../navigation/types';
-import { tokens } from '../../design/tokens';
+import { colors } from '../../design/tokens';
 
 // Import SVG icons
 import HomeIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_home_color.svg';
@@ -15,7 +15,7 @@ type Props = {
 };
 
 const BottomTabBarIcons = ({ routeName, focused }: Props) => {
-  const iconColor = focused ? tokens.color.primary.main : tokens.color.icon.gray;
+  const iconColor = focused ? colors.primary.main : colors.icon.gray;
   const iconSize = 24; // You can adjust the size as needed
 
   const renderIcon = () => {

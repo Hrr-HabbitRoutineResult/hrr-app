@@ -27,6 +27,10 @@ const SWIPE_THRESHOLD = 50; // 스와이프 감지 임계값
 
 export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname' | 'userOnboarding';
 
+interface AuthOnboardingScreenProps {
+  onOnboardingComplete?: () => void;
+}
+
 const ONBOARDING_TEXTS = [
   { lines: ['혼자서는 쉽게 포기하던 자기개발', '흐르르와 함께 도전해요'] },
   { lines: ['함께 인증하고 소통하며', '꾸준함을 루틴으로 만들어가요'] },
@@ -43,7 +47,7 @@ const ONBOARDING_IMAGES = [
   OnboardingStep4,
 ];
 
-export const AuthOnboardingScreen: React.FC = () => {
+export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOnboardingComplete }) => {
   const [step, setStep] = useState<AuthOnboardingStep>('onboarding');
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(1);
 
@@ -172,7 +176,7 @@ export const AuthOnboardingScreen: React.FC = () => {
   }
 
   if (step === 'userOnboarding') {
-    return <OnboardingScreen />;
+    return <OnboardingScreen onComplete={onOnboardingComplete} />;
   }
 
   return (

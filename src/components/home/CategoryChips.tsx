@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
-import { tokens } from '../../design/tokens';
+import { colors, typography } from '../../design/tokens';
 
 import IconAll from '../../../assets/icons/homescreen/categorychips/ic_all.svg';
 import IconExercise from '../../../assets/icons/homescreen/categorychips/ic_exercise.svg';
@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chipText: {
-    ...tokens.typography.xxs,
-    color: tokens.color.text.secondary,
+    ...typography.xxs,
+    color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 12,
   },
