@@ -9,6 +9,9 @@ import HomeScreen from '../screens/HomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ChallengeListScreen from '../screens/ChallengeListScreen';
 import RandomMissionScreen from '../screens/RandomMissionScreen';
+import SearchScreen from '../screens/SearchScreen';
+import ChatScreen from '../screens/ChatScreen';
+import MyScreen from '../screens/MyScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import BottomTabBarIcons from '../components/home/BottomTabBarIcons';
@@ -26,9 +29,9 @@ const HomeTabs = () => (
     }}
   >
     <Tab.Screen name="홈" component={HomeScreen} />
-    <Tab.Screen name="검색" component={HomeScreen} />
-    <Tab.Screen name="채팅" component={HomeScreen} />
-    <Tab.Screen name="마이" component={HomeScreen} />
+    <Tab.Screen name="검색" component={SearchScreen} />
+    <Tab.Screen name="채팅" component={ChatScreen} />
+    <Tab.Screen name="마이" component={MyScreen} />
   </Tab.Navigator>
 );
 
