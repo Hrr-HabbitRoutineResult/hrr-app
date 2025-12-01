@@ -41,7 +41,6 @@ const CategoryChips = () => {
           <Icon
             width={48}
             height={48}
-            style={id !== 'all' ? { transform: [{ scale: 1.2 }] } : {}}
           />
           <View style={styles.textWrapper}>
             <Text style={styles.chipText}>{name}</Text>
