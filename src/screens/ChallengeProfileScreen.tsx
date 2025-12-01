@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Text } from '../components/common/Text';
+import { TextField } from '../components/common/TextField';
 import { Button } from '../components/common/Button';
 import { Header } from '../components/common/Header';
 import { colors } from '../design/tokens';
@@ -46,6 +47,9 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [isObserverModeEnabled, setIsObserverModeEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'certification'>('profile');
   const [showParticipateModal, setShowParticipateModal] = useState(false);
+  const [isPasswordMode, setIsPasswordMode] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
 
   const handleBack = () => {
     navigation.goBack();
@@ -89,16 +93,48 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleParticipate = () => {
     setShowParticipateModal(true);
+    setIsPasswordMode(false);
+    setPassword('');
+    setPasswordError(undefined);
   };
 
   const handleParticipateConfirm = () => {
-    // TODO: API 연동 후 실제 참가 기능 구현하기
-    setShowParticipateModal(false);
-    console.log('챌린지 참가');
+    // 비공개 챌린지인 경우 비밀번호 입력 모달로 전환
+    const isPrivate = true; // TODO: API 연동 후 challengeData.isPrivate로 변경
+    if (isPrivate && !isPasswordMode) {
+      setIsPasswordMode(true);
+      return;
+    }
+
+    if (isPasswordMode) {
+      // 비밀번호 입력 확인
+      if (password === '1234') {
+        // TODO: API 연동 후 실제 참가 기능 구현하기
+        setShowParticipateModal(false);
+        setIsPasswordMode(false);
+        setPassword('');
+        setPasswordError(undefined);
+      } else {
+        setPasswordError('비밀번호를 다시 확인해 주세요');
+      }
+    } else {
+      // TODO: API 연동 후 실제 참가 기능 구현하기
+      setShowParticipateModal(false);
+    }
   };
 
   const handleParticipateCancel = () => {
     setShowParticipateModal(false);
+    setIsPasswordMode(false);
+    setPassword('');
+    setPasswordError(undefined);
+  };
+
+  const handlePasswordChange = (text: string) => {
+    // 숫자만 입력 가능
+    const numericText = text.replace(/[^0-9]/g, '');
+    setPassword(numericText);
+    setPasswordError(undefined); // 입력 시 에러 메시지 초기화
   };
 
   return (
@@ -338,21 +374,49 @@ export const ChallengeProfileScreen: React.FC = () => {
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-            <Text variant="header3" color={colors.text.primary} style={styles.modalTitle}>
-              챌린지에 참가하시겠어요?
+            <Text
+              variant="header3"
+              color={colors.text.primary}
+              style={isPasswordMode ? styles.modalTitleWithPassword : styles.modalTitle}
+            >
+              {isPasswordMode ? '비공개 챌린지예요' : '챌린지에 참가하시겠어요?'}
             </Text>
-            <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
-              챌린지에 참가하면 한 라운드가 끝나기 전까지{'\n'}
-              취소 및 중도 포기가 불가능해요
-            </Text>
-            <View style={styles.modalButtons}>
+            {isPasswordMode ? (
+              <View style={styles.modalTextFieldContainer}>
+                <TextField
+                  variant="default"
+                  placeholder="비밀번호를 입력하세요"
+                  value={password}
+                  onChangeText={handlePasswordChange}
+                  error={passwordError}
+                  keyboardType="numeric"
+                  secureTextEntry
+                  containerStyle={styles.modalTextField}
+                  inputContainerStyle={styles.modalTextFieldInput}
+                />
+              </View>
+            ) : (
+              <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
+                챌린지에 참가하면 한 라운드가 끝나기 전까지{'\n'}
+                취소 및 중도 포기가 불가능해요
+              </Text>
+            )}
+            <View style={[styles.modalButtons, isPasswordMode && styles.modalButtonsWithPassword]}>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleParticipateConfirm}
+                disabled={isPasswordMode && password.length === 0}
                 activeOpacity={0.7}
               >
-                <Text variant="smMd" color={colors.text.primary}>
-                  네
+                <Text
+                  variant="smMd"
+                  color={
+                    isPasswordMode && password.length === 0
+                      ? colors.icon.gray
+                      : colors.text.primary
+                  }
+                >
+                  {isPasswordMode ? '확인' : '네'}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -361,7 +425,7 @@ export const ChallengeProfileScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <Text variant="smMd" color={colors.text.primary}>
-                  아니오
+                  {isPasswordMode ? '취소' : '아니오'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -585,8 +649,22 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: -16,
   },
+  modalTitleWithPassword: {
+    lineHeight: 22,
+    marginBottom: 10,
+  },
   modalDescription: {
     lineHeight: 18,
+  },
+  modalTextFieldContainer: {
+    marginLeft: -4,
+    marginRight: 20,
+  },
+  modalTextField: {
+    width: '100%',
+  },
+  modalTextFieldInput: {
+    height: 48,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -594,6 +672,9 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingBottom: 12,
     paddingRight: 16,
+  },
+  modalButtonsWithPassword: {
+    marginTop: -16, // 비밀번호 모드일 때 타이틀과 텍스트 필드 사이 간격
   },
   modalButton: {
     width: 60,
