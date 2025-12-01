@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/common/Text';
-import { SocialLoginButton } from './components/SocialLoginButton';
+import { SocialLoginButton } from '../../components/auth/SocialLoginButton';
 import { colors } from '../../design/tokens';
 import LogoPrimarySvg from '../../../assets/images/logo-primary.svg';
 
