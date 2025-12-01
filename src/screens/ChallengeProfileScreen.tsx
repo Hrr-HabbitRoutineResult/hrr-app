@@ -16,16 +16,16 @@ import { Button } from '../components/common/Button';
 import { Header } from '../components/common/Header';
 import { colors } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
-import ShareIcon from '../../assets/icons/share.svg';
-import LikeSelectedIcon from '../../assets/icons/like-selected.svg';
-import LikeUnselectedIcon from '../../assets/icons/like-unselected.svg';
-import PeopleIcon from '../../assets/icons/people.svg';
-import ObserverDisabledIcon from '../../assets/icons/observer-disabled.svg';
-import ObserverEnabledIcon from '../../assets/icons/observer-enabled.svg';
-import DefaultProfileIcon from '../../assets/icons/default-profile.svg';
-import CalendarIcon from '../../assets/icons/calendar.svg';
-import TimeRangeIcon from '../../assets/icons/time-range.svg';
-import ChevronRightTertiaryIcon from '../../assets/icons/chevron-right-tertiary.svg';
+import ShareIcon from '../../assets/icons/challenge-profile/share.svg';
+import LikeSelectedIcon from '../../assets/icons/challenge-profile/like-selected.svg';
+import LikeUnselectedIcon from '../../assets/icons/challenge-profile/like-unselected.svg';
+import PeopleIcon from '../../assets/icons/challenge-profile/people.svg';
+import ObserverDisabledIcon from '../../assets/icons/challenge-profile/observer-disabled.svg';
+import ObserverEnabledIcon from '../../assets/icons/challenge-profile/observer-enabled.svg';
+import DefaultProfileIcon from '../../assets/icons/challenge-profile/default-profile.svg';
+import CalendarIcon from '../../assets/icons/challenge-profile/calendar.svg';
+import TimeRangeIcon from '../../assets/icons/challenge-profile/time-range.svg';
+import ChevronRightTertiaryIcon from '../../assets/icons/challenge-profile/chevron-right-tertiary.svg';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
