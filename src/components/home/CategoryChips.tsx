@@ -7,7 +7,7 @@ import { colors, typography } from '../../design/tokens';
 
 import IconAll from '../../../assets/icons/homescreen/categorychips/ic_all.svg';
 import IconExercise from '../../../assets/icons/homescreen/categorychips/ic_exercise.svg';
-import IconStudy from '../../../assets/icons/homescreen/categorychips/ic_학업.svg';
+import IconStudy from '../../../assets/icons/homescreen/categorychips/ic_study.svg';
 import IconHobby from '../../../assets/icons/homescreen/categorychips/ic_hobby.svg';
 import IconJob from '../../../assets/icons/homescreen/categorychips/ic_job.svg';
 import IconLifestyle from '../../../assets/icons/homescreen/categorychips/ic_lifestyle.svg';
