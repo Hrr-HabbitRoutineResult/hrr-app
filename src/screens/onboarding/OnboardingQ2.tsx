@@ -8,9 +8,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/common/Text';
 import { Button } from '../../components/common/Button';
+import { Header } from '../../components/common/Header';
 import { ProgressBar } from '../../components/onboarding/ProgressBar';
 import { colors } from '../../design/tokens';
-import BackIcon from '../../../assets/icons/back.svg';
 
 interface OnboardingQ2Props {
   onBack: () => void;
@@ -86,17 +86,16 @@ export const OnboardingQ2: React.FC<OnboardingQ2Props> = ({
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <BackIcon width={9} height={18} />
-        </TouchableOpacity>
-        <View style={styles.backButtonPlaceholder} />
-        <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
-          <Text variant="xsReg" color={colors.text.primary}>
-            건너뛰기
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <Header
+        onBack={onBack}
+        rightContent={
+          <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
+            <Text variant="xsReg" color={colors.text.primary}>
+              건너뛰기
+            </Text>
+          </TouchableOpacity>
+        }
+      />
 
       {/* 진행률 표시줄 */}
       <ProgressBar currentStep={2} totalSteps={4} />
@@ -175,22 +174,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  backButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backButtonPlaceholder: {
-    width: 24,
   },
   skipButton: {
     paddingVertical: 4,
