@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -44,6 +45,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [isObserverModeEnabled, setIsObserverModeEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'certification'>('profile');
+  const [showParticipateModal, setShowParticipateModal] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
@@ -83,6 +85,20 @@ export const ChallengeProfileScreen: React.FC = () => {
   const handleHostProfile = () => {
     // TODO: 방장 프로필 화면으로 이동
     console.log('방장 프로필');
+  };
+
+  const handleParticipate = () => {
+    setShowParticipateModal(true);
+  };
+
+  const handleParticipateConfirm = () => {
+    // TODO: API 연동 후 실제 참가 기능 구현하기
+    setShowParticipateModal(false);
+    console.log('챌린지 참가');
+  };
+
+  const handleParticipateCancel = () => {
+    setShowParticipateModal(false);
   };
 
   return (
@@ -300,10 +316,58 @@ export const ChallengeProfileScreen: React.FC = () => {
       {/* 참가하기 버튼 */}
       <View style={styles.buttonDivider} />
       <View style={styles.buttonContainer}>
-        <Button variant="primary" size="medium" onPress={() => console.log('참가하기')}>
+        <Button variant="primary" size="medium" onPress={handleParticipate}>
           참가하기
         </Button>
       </View>
+
+      {/* 참가 확인 모달창 */}
+      <Modal
+        visible={showParticipateModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleParticipateCancel}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={handleParticipateCancel}
+          activeOpacity={1}
+        >
+          <TouchableOpacity
+            style={styles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+            activeOpacity={1}
+          >
+            <Text variant="header3" color={colors.text.primary} style={styles.modalTitle}>
+              챌린지에 참가하시겠어요?
+            </Text>
+            <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
+              챌린지에 참가하면 한 라운드가 끝나기 전까지{'\n'}
+              취소 및 중도 포기가 불가능해요
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleParticipateConfirm}
+                activeOpacity={0.7}
+              >
+                <Text variant="smMd" color={colors.text.primary}>
+                  네
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleParticipateCancel}
+                activeOpacity={0.7}
+              >
+                <Text variant="smMd" color={colors.text.primary}>
+                  아니오
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -499,6 +563,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 32,
     paddingTop: 12,
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    width: '100%',
+    height: 180,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    paddingTop: 28,
+    paddingLeft: 24,
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    lineHeight: 22,
+    marginBottom: -16,
+  },
+  modalDescription: {
+    lineHeight: 18,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 4,
+    paddingBottom: 12,
+    paddingRight: 16,
+  },
+  modalButton: {
+    width: 60,
+    height: 48,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 });
