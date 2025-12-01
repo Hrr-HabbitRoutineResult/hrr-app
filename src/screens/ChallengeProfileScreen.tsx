@@ -19,6 +19,7 @@ import LikeSelectedIcon from '../../assets/icons/like-selected.svg';
 import LikeUnselectedIcon from '../../assets/icons/like-unselected.svg';
 import PeopleIcon from '../../assets/icons/people.svg';
 import ObserverDisabledIcon from '../../assets/icons/observer-disabled.svg';
+import ObserverEnabledIcon from '../../assets/icons/observer-enabled.svg';
 import DefaultProfileIcon from '../../assets/icons/default-profile.svg';
 import CalendarIcon from '../../assets/icons/calendar.svg';
 import TimeRangeIcon from '../../assets/icons/time-range.svg';
@@ -41,6 +42,8 @@ export const ChallengeProfileScreen: React.FC = () => {
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
   const [isLiked, setIsLiked] = useState(false);
+  const [isObserverModeEnabled, setIsObserverModeEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'certification'>('profile');
 
   const handleBack = () => {
     navigation.goBack();
@@ -149,15 +152,30 @@ export const ChallengeProfileScreen: React.FC = () => {
                 </Text>
               </View>
 
+              {/* 관찰자 모드가 활성화 된 경우에만 표시 */}
               {challengeData.isObserverMode && (
-                <View style={styles.participantItem}>
+                <TouchableOpacity
+                  style={styles.participantItem}
+                  onPress={() => {
+                    // TODO: UI 테스트를 위한 임시 토글 기능, API 연동 시 수정 예정
+                    setIsObserverModeEnabled(!isObserverModeEnabled);
+                  }}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.iconContainer24}>
-                    <ObserverDisabledIcon width={24} height={24} />
+                    {isObserverModeEnabled ? (
+                      <ObserverEnabledIcon width={13} height={12} />
+                    ) : (
+                      <ObserverDisabledIcon width={17} height={12} />
+                    )}
                   </View>
-                  <Text variant="xxs" color={colors.icon.gray}>
+                  <Text
+                    variant="xxs"
+                    color={isObserverModeEnabled ? colors.white : colors.icon.gray}
+                  >
                     관찰자 모드
                   </Text>
-                </View>
+                </TouchableOpacity>
               )}
             </View>
           </View>
@@ -180,6 +198,41 @@ export const ChallengeProfileScreen: React.FC = () => {
 
         {/* 구분선 */}
         <View style={styles.sectionDivider} />
+
+        {/* 프로필/인증현황 탭 (관찰자 모드 활성화 시에만 표시) */}
+        {isObserverModeEnabled && (
+          <>
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={styles.tab}
+                onPress={() => setActiveTab('profile')}
+                activeOpacity={0.7}
+              >
+                <Text
+                  variant={activeTab === 'profile' ? 'xsMd' : 'xsReg'}
+                  color={activeTab === 'profile' ? colors.primary.main : colors.text.secondary}
+                >
+                  프로필
+                </Text>
+                {activeTab === 'profile' && <View style={styles.tabUnderline} />}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.tab}
+                onPress={() => setActiveTab('certification')}
+                activeOpacity={0.7}
+              >
+                <Text
+                  variant={activeTab === 'certification' ? 'xsMd' : 'xsReg'}
+                  color={activeTab === 'certification' ? colors.primary.main : colors.text.secondary}
+                >
+                  인증현황
+                </Text>
+                {activeTab === 'certification' && <View style={styles.tabUnderline} />}
+              </TouchableOpacity>
+            </View>
+            <View style={styles.tabDivider} />
+          </>
+        )}
 
         {/* 챌린지 일정 정보 */}
         <View style={styles.scheduleSection}>
@@ -269,13 +322,15 @@ const styles = StyleSheet.create({
   headerRightContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 0,
+    marginRight: -12,
   },
   headerIconButton: {
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    marginVertical: -12, // 레이아웃에서 위아래로 12px씩 당겨서 실제 차지 공간은 24px로 줄임
   },
   heroSection: {
     position: 'relative',
@@ -356,11 +411,34 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: colors.background,
   },
+  tabContainer: {
+    flexDirection: 'row',
+    paddingTop: 16,
+    paddingBottom: 0,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingBottom: 12,
+    position: 'relative',
+  },
+  tabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    width: 48,
+    height: 3,
+    backgroundColor: colors.primary.main,
+  },
+  tabDivider: {
+    height: 1,
+    backgroundColor: colors.line,
+    marginHorizontal: 20,
+  },
   scheduleSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 25,
+    paddingTop: 28,
     gap: 12,
   },
   scheduleItem: {
@@ -375,7 +453,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: 24,
-    marginTop: 24,
+    marginTop: 36,
   },
   rankingSection: {
     marginBottom: 60,
