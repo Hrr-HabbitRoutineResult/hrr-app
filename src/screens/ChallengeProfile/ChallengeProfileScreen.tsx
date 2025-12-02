@@ -11,27 +11,27 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Text } from '../components/common/Text';
-import { TextField } from '../components/common/TextField';
-import { Button } from '../components/common/Button';
-import { Header } from '../components/common/Header';
-import { colors } from '../design/tokens';
-import { RootStackParamList } from '../navigation/types';
-import ShareIcon from '../../assets/icons/challenge-profile/share.svg';
-import LikeSelectedIcon from '../../assets/icons/challenge-profile/like-selected.svg';
-import LikeUnselectedIcon from '../../assets/icons/challenge-profile/like-unselected.svg';
-import PeopleIcon from '../../assets/icons/challenge-profile/people.svg';
-import ObserverDisabledIcon from '../../assets/icons/challenge-profile/observer-disabled.svg';
-import ObserverEnabledIcon from '../../assets/icons/challenge-profile/observer-enabled.svg';
-import DefaultProfileIcon from '../../assets/icons/challenge-profile/default-profile.svg';
-import CalendarIcon from '../../assets/icons/challenge-profile/calendar.svg';
-import TimeRangeIcon from '../../assets/icons/challenge-profile/time-range.svg';
-import ChevronRightTertiaryIcon from '../../assets/icons/chevron-right-tertiary.svg';
-import ChevronRightIcGreyIcon from '../../assets/icons/chevron-right-ic-grey.svg';
-import InfoCircleIcon from '../../assets/icons/challenge-profile/info-circle.svg';
-import QuestionMarkTextIcon from '../../assets/icons/challenge-profile/question-mark-text.svg';
-import QuestionMarkCircleIcon from '../../assets/icons/challenge-profile/question-mark-circle.svg';
-import LinkIcon from '../../assets/icons/challenge-profile/link.svg';
+import { Text } from '../../components/common/Text';
+import { TextField } from '../../components/common/TextField';
+import { Button } from '../../components/common/Button';
+import { Header } from '../../components/common/Header';
+import { colors } from '../../design/tokens';
+import { RootStackParamList } from '../../navigation/types';
+import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
+import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
+import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
+import PeopleIcon from '../../../assets/icons/challenge-profile/people.svg';
+import ObserverDisabledIcon from '../../../assets/icons/challenge-profile/observer-disabled.svg';
+import ObserverEnabledIcon from '../../../assets/icons/challenge-profile/observer-enabled.svg';
+import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import CalendarIcon from '../../../assets/icons/challenge-profile/calendar.svg';
+import TimeRangeIcon from '../../../assets/icons/challenge-profile/time-range.svg';
+import ChevronRightTertiaryIcon from '../../../assets/icons/chevron-right-tertiary.svg';
+import ChevronRightIcGreyIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
+import InfoCircleIcon from '../../../assets/icons/challenge-profile/info-circle.svg';
+import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
+import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
+import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
@@ -111,42 +111,42 @@ export const ChallengeProfileScreen: React.FC = () => {
         title: '해피뉴이어! 올해 마지막 인증 올립니다',
         description: '여기엔 상세내용이 들어가유~',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
       {
         id: 2,
         title: '인증 제목 2',
         description: '상세 내용 2',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
       {
         id: 3,
         title: '인증 제목 3',
         description: '상세 내용 3',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
       {
         id: 4,
         title: '인증 제목 4',
         description: '상세 내용 4',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
       {
         id: 5,
         title: '인증 제목 5',
         description: '상세 내용 5',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
       {
         id: 6,
         title: '인증 제목 6',
         description: '상세 내용 6',
         date: '2025.12.02',
-        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
       },
     ],
   };
@@ -254,7 +254,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           {/* 배경 이미지 */}
           <View style={styles.heroImageContainer}>
             <Image
-              source={require('../../assets/images/mock-challenge-profile.png')}
+              source={require('../../../assets/images/mock-challenge-profile.png')}
               style={styles.heroImage}
               resizeMode="cover"
             />
@@ -628,44 +628,76 @@ export const ChallengeProfileScreen: React.FC = () => {
             )}
 
         {/* 챌린지 랭킹 */}
-        <View style={[styles.section, styles.rankingSection]}>
-          <View style={styles.sectionTitleRow}>
-            <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
-              챌린지 랭킹
-            </Text>
-            {isParticipated && (
-              <TouchableOpacity
-                style={styles.sectionChevronButton}
-                activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
+        {isParticipated ? (
+          <View style={[styles.section, styles.rankingSection]}>
+            <TouchableOpacity
+              style={styles.sectionTitleRow}
+              activeOpacity={0.7}
+              onPress={() => {
+                navigation.navigate('ChallengeRanking', { challengeId: route.params.challengeId });
+              }}
+            >
+              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
+                챌린지 랭킹
+              </Text>
+              <View style={styles.sectionChevronButton}>
                 <ChevronRightIcGreyIcon width={5} height={10} />
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.contentBox}>
-            {challengeData.rankings.map((item, index) => (
-              <View
-                key={item.rank}
-                style={[
-                  styles.rankingItem,
-                  index === challengeData.rankings.length - 1 && styles.rankingItemLast,
-                ]}
-              >
-                <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
-                  {item.rank}
-                </Text>
-                <DefaultProfileIcon width={40} height={40} />
-                <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
-                  {item.nickname}
-                </Text>
-                <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
-                  {item.score}
-                </Text>
               </View>
-            ))}
+            </TouchableOpacity>
+            <View style={styles.contentBox}>
+              {challengeData.rankings.map((item, index) => (
+                <View
+                  key={item.rank}
+                  style={[
+                    styles.rankingItem,
+                    index === challengeData.rankings.length - 1 && styles.rankingItemLast,
+                  ]}
+                >
+                  <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
+                    {item.rank}
+                  </Text>
+                  <DefaultProfileIcon width={40} height={40} />
+                  <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
+                    {item.nickname}
+                  </Text>
+                  <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
+                    {item.score}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        ) : (
+          <View style={[styles.section, styles.rankingSection]}>
+            <View style={styles.sectionTitleRow}>
+              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
+                챌린지 랭킹
+              </Text>
+            </View>
+            <View style={styles.contentBox}>
+              {challengeData.rankings.map((item, index) => (
+                <View
+                  key={item.rank}
+                  style={[
+                    styles.rankingItem,
+                    index === challengeData.rankings.length - 1 && styles.rankingItemLast,
+                  ]}
+                >
+                  <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
+                    {item.rank}
+                  </Text>
+                  <DefaultProfileIcon width={40} height={40} />
+                  <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
+                    {item.nickname}
+                  </Text>
+                  <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
+                    {item.score}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
           </>
         )}
       </ScrollView>
