@@ -26,6 +26,9 @@ import DefaultProfileIcon from '../../assets/icons/challenge-profile/default-pro
 import CalendarIcon from '../../assets/icons/challenge-profile/calendar.svg';
 import TimeRangeIcon from '../../assets/icons/challenge-profile/time-range.svg';
 import ChevronRightTertiaryIcon from '../../assets/icons/challenge-profile/chevron-right-tertiary.svg';
+import InfoCircleIcon from '../../assets/icons/challenge-profile/info-circle.svg';
+import QuestionMarkTextIcon from '../../assets/icons/challenge-profile/question-mark-text.svg';
+import LinkIcon from '../../assets/icons/challenge-profile/link.svg';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
@@ -39,6 +42,14 @@ interface RankingItem {
   score: number;
 }
 
+interface CertificationItem {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  thumbnail: any;
+}
+
 export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
@@ -50,6 +61,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [isPasswordMode, setIsPasswordMode] = useState(false);
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
+  const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
 
   const handleBack = () => {
     navigation.goBack();
@@ -73,6 +85,36 @@ export const ChallengeProfileScreen: React.FC = () => {
       { rank: 2, nickname: '헤더', score: 102 },
       { rank: 3, nickname: '헤더', score: 89 },
     ] as RankingItem[],
+    certifications: [
+      {
+        id: 1,
+        title: '해피뉴이어! 올해 마지막 인증 올립니다',
+        description: '여기엔 상세내용이 들어가유~',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+      {
+        id: 2,
+        title: '인증 제목 2',
+        description: '상세 내용 2',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+      {
+        id: 3,
+        title: '인증 제목 3',
+        description: '상세 내용 3',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+      {
+        id: 4,
+        title: '인증 제목 4',
+        description: '상세 내용 4',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+    ],
   };
 
   const handleShare = () => {
@@ -286,8 +328,86 @@ export const ChallengeProfileScreen: React.FC = () => {
           </>
         )}
 
-        {/* 챌린지 일정 정보 */}
-        <View style={styles.scheduleSection}>
+        {/* 프로필/인증현황 탭 내용 */}
+        {isObserverModeEnabled && activeTab === 'certification' ? (
+          // 인증현황 탭
+          <View style={styles.certificationSection}>
+            {/* 참가자 요약 */}
+            <View style={styles.participantSummary}>
+              <View style={styles.summaryItem}>
+                <Text variant="xsReg" color={colors.text.secondary}>
+                  총 참가자 수
+                </Text>
+                <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
+                  {challengeData.maxParticipants}명
+                </Text>
+              </View>
+              <View style={styles.summaryItem}>
+                <View style={styles.summaryItemHeaderContainer}>
+                  <View style={styles.summaryItemHeader}>
+                    <Text variant="xsReg" color={colors.text.secondary}>
+                      인증 완료 인원
+                    </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      style={styles.infoIconButton}
+                      onPress={() => setShowCertificationTooltip(!showCertificationTooltip)}
+                    >
+                      <InfoCircleIcon width={14} height={14} />
+                    </TouchableOpacity>
+                  </View>
+                  {showCertificationTooltip && (
+                    <View style={styles.tooltip}>
+                      <Text variant="xsReg" color={colors.text.secondary}>
+                        직전 인증 요일의 인증 완료 인원 기준입니다
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
+                  {challengeData.maxParticipants}명
+                </Text>
+              </View>
+            </View>
+
+            {/* 챌린지 인증현황 */}
+            <View style={styles.section}>
+              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+                챌린지 인증현황
+              </Text>
+              <View style={styles.certificationList}>
+                {challengeData.certifications.map((cert) => (
+                  <View key={cert.id} style={styles.certificationItem}>
+                    <View style={styles.certificationContent}>
+                      <Text variant="smMd" color={colors.text.primary} style={styles.certificationTitle}>
+                        {cert.title}
+                      </Text>
+                      <Text variant="xxs" color={colors.text.tertiary} style={styles.certificationDescription}>
+                        {cert.description}
+                      </Text>
+                      <View style={styles.certificationDate}>
+                        <Text variant="xxs" color={colors.text.tertiary}>
+                          {cert.date}
+                        </Text>
+                        <LinkIcon width={10} height={10} />
+                      </View>
+                    </View>
+                    <View style={styles.certificationThumbnail}>
+                      <Image source={cert.thumbnail} style={styles.thumbnailImage} />
+                      <View style={styles.thumbnailOverlay}>
+                        <QuestionMarkTextIcon width={30} height={36} />
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+        ) : (
+          // 프로필 탭 (기존 내용)
+          <>
+            {/* 챌린지 일정 정보 */}
+            <View style={styles.scheduleSection}>
           <View style={styles.scheduleItem}>
             <View style={styles.iconContainer24}>
               <CalendarIcon width={14} height={14} />
@@ -347,6 +467,8 @@ export const ChallengeProfileScreen: React.FC = () => {
             ))}
           </View>
         </View>
+          </>
+        )}
       </ScrollView>
 
       {/* 참가하기 버튼 */}
@@ -585,6 +707,99 @@ const styles = StyleSheet.create({
   },
   rankingSection: {
     marginBottom: 60,
+  },
+  certificationSection: {
+    paddingTop: 28,
+  },
+  participantSummary: {
+    flexDirection: 'column',
+    gap: 16,
+    paddingHorizontal: 24,
+    marginBottom: 12,
+  },
+  summaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryItemHeaderContainer: {
+    flex: 1,
+    position: 'relative',
+  },
+  summaryItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  summaryValue: {
+    alignSelf: 'flex-end',
+  },
+  infoIconButton: {
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  tooltip: {
+    position: 'absolute',
+    top: 24,
+    left: 84,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: colors.background,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  certificationList: {
+    gap: 0,
+    marginTop: 12,
+  },
+  certificationItem: {
+    flexDirection: 'row',
+    height: 104,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  certificationContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  certificationTitle: {
+    lineHeight: 20,
+  },
+  certificationDescription: {
+    lineHeight: 18,
+    marginTop: 5,
+  },
+  certificationDate: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 'auto',
+  },
+  certificationThumbnail: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  thumbnailOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sectionTitle: {
     marginBottom: 12,
