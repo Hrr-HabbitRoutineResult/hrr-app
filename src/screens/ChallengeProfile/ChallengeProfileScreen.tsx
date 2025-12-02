@@ -15,6 +15,7 @@ import { Text } from '../../components/common/Text';
 import { TextField } from '../../components/common/TextField';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
+import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
@@ -332,41 +333,20 @@ export const ChallengeProfileScreen: React.FC = () => {
 
         {/* 프로필/인증현황 탭 (관찰자 모드 활성화 또는 참가 후 표시) */}
         {(isObserverModeEnabled || isParticipated) && (
-          <>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                style={styles.tab}
-                onPress={() => setActiveTab('profile')}
-                activeOpacity={0.7}
-              >
-                <Text
-                  variant={activeTab === 'profile' ? 'xsMd' : 'xsReg'}
-                  color={activeTab === 'profile' ? colors.primary.main : colors.text.secondary}
-                >
-                  프로필
-                </Text>
-                {activeTab === 'profile' && <View style={styles.tabUnderline} />}
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.tab}
-                onPress={() => {
-                  setActiveTab('certification');
-                  // TODO: 개발 단계 - 인증 타입 전환 (API 연동 후 제거)
-                  setCertificationType((prev) => (prev === 'text' ? 'image' : 'text'));
-                }}
-                activeOpacity={0.7}
-              >
-                <Text
-                  variant={activeTab === 'certification' ? 'xsMd' : 'xsReg'}
-                  color={activeTab === 'certification' ? colors.primary.main : colors.text.secondary}
-                >
-                  인증현황
-                </Text>
-                {activeTab === 'certification' && <View style={styles.tabUnderline} />}
-              </TouchableOpacity>
-            </View>
-            <View style={styles.tabDivider} />
-          </>
+          <TabBar
+            tabs={[
+              { key: 'profile', label: '프로필' },
+              { key: 'certification', label: '인증현황' },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(tabKey) => {
+              setActiveTab(tabKey as 'profile' | 'certification');
+              if (tabKey === 'certification') {
+                // TODO: 개발 단계 - 인증 타입 전환 (API 연동 후 제거)
+                setCertificationType((prev) => (prev === 'text' ? 'image' : 'text'));
+              }
+            }}
+          />
         )}
 
         {/* 프로필/인증현황 탭 내용 */}
@@ -902,29 +882,6 @@ const styles = StyleSheet.create({
   },
   sectionDividerAfterTimeRange: {
     marginTop: 28,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    paddingTop: 16,
-    paddingBottom: 0,
-  },
-  tab: {
-    flex: 1,
-    alignItems: 'center',
-    paddingBottom: 12,
-    position: 'relative',
-  },
-  tabUnderline: {
-    position: 'absolute',
-    bottom: 0,
-    width: 48,
-    height: 3,
-    backgroundColor: colors.primary.main,
-  },
-  tabDivider: {
-    height: 1,
-    backgroundColor: colors.line,
-    marginHorizontal: 20,
   },
   scheduleSection: {
     flexDirection: 'row',
