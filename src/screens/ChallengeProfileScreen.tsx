@@ -62,6 +62,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
+  const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
 
   const handleBack = () => {
     navigation.goBack();
@@ -332,6 +333,37 @@ export const ChallengeProfileScreen: React.FC = () => {
         {isObserverModeEnabled && activeTab === 'certification' ? (
           // 인증현황 탭
           <View style={styles.certificationSection}>
+            {/* 라운드 캐러셀 */}
+            <View style={styles.roundCarouselContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[
+                  styles.roundCarouselContent,
+                  roundCarouselScrollX > 0 && styles.roundCarouselContentScrolled,
+                ]}
+                onScroll={(e) => setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)}
+                scrollEventThrottle={16}
+              >
+                {[6, 1, 2, 3, 4, 5].map((round, index) => (
+                  <View
+                    key={round}
+                    style={[
+                      styles.roundButton,
+                      index === 0 && styles.roundButtonSelected,
+                    ]}
+                  >
+                    <Text
+                      variant={index === 0 ? 'smMd' : 'smReg'}
+                      color={index === 0 ? colors.white : colors.text.tertiary}
+                    >
+                      {round}R
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
             {/* 참가자 요약 */}
             <View style={styles.participantSummary}>
               <View style={styles.summaryItem}>
@@ -710,6 +742,30 @@ const styles = StyleSheet.create({
   },
   certificationSection: {
     paddingTop: 28,
+  },
+  roundCarouselContainer: {
+    marginBottom: 24,
+  },
+  roundCarouselContent: {
+    gap: 10,
+    paddingHorizontal: 20,
+  },
+  roundCarouselContentScrolled: {
+    paddingLeft: 0,
+  },
+  roundButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  roundButtonSelected: {
+    backgroundColor: colors.primary.main,
+    borderWidth: 0,
   },
   participantSummary: {
     flexDirection: 'column',
