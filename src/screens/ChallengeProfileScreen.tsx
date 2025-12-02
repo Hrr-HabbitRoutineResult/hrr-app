@@ -6,6 +6,7 @@ import {
   ScrollView,
   Image,
   Modal,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -28,6 +29,7 @@ import TimeRangeIcon from '../../assets/icons/challenge-profile/time-range.svg';
 import ChevronRightTertiaryIcon from '../../assets/icons/challenge-profile/chevron-right-tertiary.svg';
 import InfoCircleIcon from '../../assets/icons/challenge-profile/info-circle.svg';
 import QuestionMarkTextIcon from '../../assets/icons/challenge-profile/question-mark-text.svg';
+import QuestionMarkCircleIcon from '../../assets/icons/challenge-profile/question-mark-circle.svg';
 import LinkIcon from '../../assets/icons/challenge-profile/link.svg';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
@@ -63,6 +65,8 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
+  // TODO: API 연동 후 인증 타입 정보 가져오기
+  const [certificationType, setCertificationType] = useState<'text' | 'image'>('text');
 
   const handleBack = () => {
     navigation.goBack();
@@ -112,6 +116,20 @@ export const ChallengeProfileScreen: React.FC = () => {
         id: 4,
         title: '인증 제목 4',
         description: '상세 내용 4',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+      {
+        id: 5,
+        title: '인증 제목 5',
+        description: '상세 내용 5',
+        date: '2025.12.02',
+        thumbnail: require('../../assets/images/mock-challenge-profile.png'),
+      },
+      {
+        id: 6,
+        title: '인증 제목 6',
+        description: '상세 내용 6',
         date: '2025.12.02',
         thumbnail: require('../../assets/images/mock-challenge-profile.png'),
       },
@@ -313,7 +331,11 @@ export const ChallengeProfileScreen: React.FC = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.tab}
-                onPress={() => setActiveTab('certification')}
+                onPress={() => {
+                  setActiveTab('certification');
+                  // TODO: 개발 단계 - 인증 타입 전환 (API 연동 후 제거)
+                  setCertificationType((prev) => (prev === 'text' ? 'image' : 'text'));
+                }}
                 activeOpacity={0.7}
               >
                 <Text
@@ -403,36 +425,60 @@ export const ChallengeProfileScreen: React.FC = () => {
             </View>
 
             {/* 챌린지 인증현황 */}
-            <View style={styles.section}>
-              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+            <View style={certificationType === 'image' ? styles.sectionNoPadding : styles.section}>
+              <Text
+                variant="header4"
+                color={colors.text.primary}
+                style={[
+                  styles.sectionTitle,
+                  certificationType === 'image' && styles.sectionTitleNoPadding,
+                ]}
+              >
                 챌린지 인증현황
               </Text>
-              <View style={styles.certificationList}>
-                {challengeData.certifications.map((cert) => (
-                  <View key={cert.id} style={styles.certificationItem}>
-                    <View style={styles.certificationContent}>
-                      <Text variant="smMd" color={colors.text.primary} style={styles.certificationTitle}>
-                        {cert.title}
-                      </Text>
-                      <Text variant="xxs" color={colors.text.tertiary} style={styles.certificationDescription}>
-                        {cert.description}
-                      </Text>
-                      <View style={styles.certificationDate}>
-                        <Text variant="xxs" color={colors.text.tertiary}>
-                          {cert.date}
+              {certificationType === 'text' ? (
+                // 글 인증(리스트 형태)
+                <View style={styles.certificationList}>
+                  {challengeData.certifications.map((cert) => (
+                    <View key={cert.id} style={styles.certificationItem}>
+                      <View style={styles.certificationContent}>
+                        <Text variant="smMd" color={colors.text.primary} style={styles.certificationTitle}>
+                          {cert.title}
                         </Text>
-                        <LinkIcon width={10} height={10} />
+                        <Text variant="xxs" color={colors.text.tertiary} style={styles.certificationDescription}>
+                          {cert.description}
+                        </Text>
+                        <View style={styles.certificationDate}>
+                          <Text variant="xxs" color={colors.text.tertiary}>
+                            {cert.date}
+                          </Text>
+                          <LinkIcon width={10} height={10} />
+                        </View>
+                      </View>
+                      <View style={styles.certificationThumbnail}>
+                        <Image source={cert.thumbnail} style={styles.thumbnailImage} />
+                        <View style={styles.thumbnailOverlay}>
+                          <QuestionMarkTextIcon width={30} height={36} />
+                        </View>
                       </View>
                     </View>
-                    <View style={styles.certificationThumbnail}>
-                      <Image source={cert.thumbnail} style={styles.thumbnailImage} />
-                      <View style={styles.thumbnailOverlay}>
-                        <QuestionMarkTextIcon width={30} height={36} />
+                  ))}
+                </View>
+              ) : (
+                // 사진 인증(그리드 형태)
+                <View style={styles.certificationGrid}>
+                  {challengeData.certifications.map((cert) => (
+                    <View key={cert.id} style={styles.certificationGridItem}>
+                      <Image source={cert.thumbnail} style={styles.gridThumbnailImage} />
+                      <View style={styles.gridThumbnailOverlay}>
+                        <View style={styles.gridQuestionMarkContainer}>
+                          <QuestionMarkCircleIcon width={24} height={24} />
+                        </View>
                       </View>
                     </View>
-                  </View>
-                ))}
-              </View>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
         ) : (
@@ -737,6 +783,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginTop: 36,
   },
+  sectionNoPadding: {
+    paddingHorizontal: 0,
+    marginTop: 36,
+  },
+  sectionTitleNoPadding: {
+    paddingHorizontal: 24,
+  },
   rankingSection: {
     marginBottom: 60,
   },
@@ -856,6 +909,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  certificationGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 3,
+    marginTop: 12,
+  },
+  certificationGridItem: {
+    width: (Dimensions.get('window').width - 6) / 3, // 화면 너비 - gap(3*2) / 3개
+    height: (Dimensions.get('window').width - 6) / 3,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  gridThumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gridThumbnailOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  gridQuestionMarkContainer: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
   },
   sectionTitle: {
     marginBottom: 12,
