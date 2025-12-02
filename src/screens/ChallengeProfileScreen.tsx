@@ -26,7 +26,8 @@ import ObserverEnabledIcon from '../../assets/icons/challenge-profile/observer-e
 import DefaultProfileIcon from '../../assets/icons/challenge-profile/default-profile.svg';
 import CalendarIcon from '../../assets/icons/challenge-profile/calendar.svg';
 import TimeRangeIcon from '../../assets/icons/challenge-profile/time-range.svg';
-import ChevronRightTertiaryIcon from '../../assets/icons/challenge-profile/chevron-right-tertiary.svg';
+import ChevronRightTertiaryIcon from '../../assets/icons/chevron-right-tertiary.svg';
+import ChevronRightIcGreyIcon from '../../assets/icons/chevron-right-ic-grey.svg';
 import InfoCircleIcon from '../../assets/icons/challenge-profile/info-circle.svg';
 import QuestionMarkTextIcon from '../../assets/icons/challenge-profile/question-mark-text.svg';
 import QuestionMarkCircleIcon from '../../assets/icons/challenge-profile/question-mark-circle.svg';
@@ -443,16 +444,29 @@ export const ChallengeProfileScreen: React.FC = () => {
 
             {/* 챌린지 인증현황 */}
             <View style={certificationType === 'image' ? styles.sectionNoPadding : styles.section}>
-              <Text
-                variant="header4"
-                color={colors.text.primary}
+              <View
                 style={[
-                  styles.sectionTitle,
-                  certificationType === 'image' && styles.sectionTitleNoPadding,
+                  styles.sectionTitleRow,
+                  certificationType === 'image' && styles.sectionTitleRowNoPadding,
                 ]}
               >
-                챌린지 인증현황
-              </Text>
+                <Text
+                  variant="header4"
+                  color={colors.text.primary}
+                  style={styles.sectionTitleNoMargin}
+                >
+                  챌린지 인증현황
+                </Text>
+                {isParticipated && (
+                  <TouchableOpacity
+                    style={styles.sectionChevronButton}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <ChevronRightIcGreyIcon width={5} height={10} />
+                  </TouchableOpacity>
+                )}
+              </View>
               {certificationType === 'text' ? (
                 // 글 인증(리스트 형태)
                 <View style={styles.certificationList}>
@@ -487,7 +501,12 @@ export const ChallengeProfileScreen: React.FC = () => {
                   {challengeData.certifications.map((cert) => (
                     <View key={cert.id} style={styles.certificationGridItem}>
                       <Image source={cert.thumbnail} style={styles.gridThumbnailImage} />
-                      <View style={styles.gridThumbnailOverlay}>
+                      <View
+                        style={[
+                          styles.gridThumbnailOverlay,
+                          isParticipated && styles.gridThumbnailOverlayTransparent,
+                        ]}
+                      >
                         <View style={styles.gridQuestionMarkContainer}>
                           <QuestionMarkCircleIcon width={24} height={24} />
                         </View>
@@ -610,9 +629,20 @@ export const ChallengeProfileScreen: React.FC = () => {
 
         {/* 챌린지 랭킹 */}
         <View style={[styles.section, styles.rankingSection]}>
-          <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
-            챌린지 랭킹
-          </Text>
+          <View style={styles.sectionTitleRow}>
+            <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
+              챌린지 랭킹
+            </Text>
+            {isParticipated && (
+              <TouchableOpacity
+                style={styles.sectionChevronButton}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <ChevronRightIcGreyIcon width={5} height={10} />
+              </TouchableOpacity>
+            )}
+          </View>
           <View style={styles.contentBox}>
             {challengeData.rankings.map((item, index) => (
               <View
@@ -1014,7 +1044,6 @@ const styles = StyleSheet.create({
   },
   certificationList: {
     gap: 0,
-    marginTop: 12,
   },
   certificationItem: {
     flexDirection: 'row',
@@ -1084,13 +1113,33 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
+  gridThumbnailOverlayTransparent: {
+    backgroundColor: 'transparent',
+  },
   gridQuestionMarkContainer: {
     position: 'absolute',
     top: 12,
     left: 12,
   },
+  sectionTitleRow: {
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+    marginBottom: 4,
+  },
+  sectionTitleRowNoPadding: {
+    paddingHorizontal: 24,
+  },
+  sectionChevronButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   sectionTitle: {
+    lineHeight: 20,
     marginBottom: 12,
+  },
+  sectionTitleNoMargin: {
     lineHeight: 20,
   },
   contentBox: {
