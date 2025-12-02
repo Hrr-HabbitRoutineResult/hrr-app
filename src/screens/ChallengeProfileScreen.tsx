@@ -67,6 +67,20 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   // TODO: API 연동 후 인증 타입 정보 가져오기
   const [certificationType, setCertificationType] = useState<'text' | 'image'>('text');
+  // TODO: API 연동 후 참가 상태 정보 가져오기
+  const [isParticipated, setIsParticipated] = useState(false);
+  // TODO: API 연동 후 요일별 인증 상태 정보 가져오기
+  const [dayStatuses, setDayStatuses] = useState<{
+    [key: string]: 'none' | 'required' | 'completed';
+  }>({
+    일: 'none',
+    월: 'completed', // 인증 요일, 인증 완료
+    화: 'none',
+    수: 'none',
+    목: 'required', // 인증 요일, 인증 전
+    금: 'none',
+    토: 'none',
+  });
 
   const handleBack = () => {
     navigation.goBack();
@@ -175,12 +189,14 @@ export const ChallengeProfileScreen: React.FC = () => {
         setIsPasswordMode(false);
         setPassword('');
         setPasswordError(undefined);
+        setIsParticipated(true);
       } else {
         setPasswordError('비밀번호를 다시 확인해 주세요');
       }
     } else {
       // TODO: API 연동 후 실제 참가 기능 구현하기
       setShowParticipateModal(false);
+      setIsParticipated(true);
     }
   };
 
@@ -247,12 +263,14 @@ export const ChallengeProfileScreen: React.FC = () => {
 
           {/* 텍스트 컨텐츠 */}
           <View style={styles.heroContent}>
-            <Text variant="header1" color={colors.white} style={styles.challengeName}>
-              {challengeData.name}
-            </Text>
-            <Text variant="xsReg" color={colors.white} style={styles.challengeDescription}>
-              {challengeData.description}
-            </Text>
+            <View style={styles.heroTextContent}>
+              <Text variant="header1" color={colors.white} style={styles.challengeName}>
+                {challengeData.name}
+              </Text>
+              <Text variant="xsReg" color={colors.white} style={styles.challengeDescription}>
+                {challengeData.description}
+              </Text>
+            </View>
 
             {/* 참가자 정보 */}
             <View style={styles.participantInfo}>
@@ -264,9 +282,8 @@ export const ChallengeProfileScreen: React.FC = () => {
                   {challengeData.participants}/{challengeData.maxParticipants}
                 </Text>
               </View>
-
-              {/* 관찰자 모드가 활성화 된 경우에만 표시 */}
-              {challengeData.isObserverMode && (
+              {/* 관찰자 모드 (참가 전에만 표시) */}
+              {!isParticipated && challengeData.isObserverMode && (
                 <TouchableOpacity
                   style={styles.participantItem}
                   onPress={() => {
@@ -312,8 +329,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         {/* 구분선 */}
         <View style={styles.sectionDivider} />
 
-        {/* 프로필/인증현황 탭 (관찰자 모드 활성화 시에만 표시) */}
-        {isObserverModeEnabled && (
+        {/* 프로필/인증현황 탭 (관찰자 모드 활성화 또는 참가 후 표시) */}
+        {(isObserverModeEnabled || isParticipated) && (
           <>
             <View style={styles.tabContainer}>
               <TouchableOpacity
@@ -352,7 +369,7 @@ export const ChallengeProfileScreen: React.FC = () => {
         )}
 
         {/* 프로필/인증현황 탭 내용 */}
-        {isObserverModeEnabled && activeTab === 'certification' ? (
+        {(isObserverModeEnabled || isParticipated) && activeTab === 'certification' ? (
           // 인증현황 탭
           <View style={styles.certificationSection}>
             {/* 라운드 캐러셀 */}
@@ -482,40 +499,114 @@ export const ChallengeProfileScreen: React.FC = () => {
             </View>
           </View>
         ) : (
-          // 프로필 탭 (기존 내용)
+          // 프로필 탭
           <>
-            {/* 챌린지 일정 정보 */}
-            <View style={styles.scheduleSection}>
-          <View style={styles.scheduleItem}>
-            <View style={styles.iconContainer24}>
-              <CalendarIcon width={14} height={14} />
-            </View>
-            <Text variant="smReg" color={colors.text.primary}>
-              {challengeData.schedule.days}
-            </Text>
-          </View>
-          <View style={styles.verticalDivider} />
-          <View style={styles.scheduleItem}>
-            <View style={styles.iconContainer24}>
-              <TimeRangeIcon width={16} height={16} />
-            </View>
-            <Text variant="smReg" color={colors.text.primary}>
-              {challengeData.schedule.timeRange}
-            </Text>
-          </View>
-        </View>
+            {isParticipated ? (
+              // 참가 후 UI
+              <>
+                {/* 요일별 인증 상태 */}
+                <View style={styles.daySelectionSection}>
+                  {['일', '월', '화', '수', '목', '금', '토'].map((day) => {
+                    const status = dayStatuses[day];
+                    return (
+                      <View
+                        key={day}
+                        style={[
+                          styles.dayButton,
+                          status === 'completed' && styles.dayButtonCompleted,
+                          status === 'required' && styles.dayButtonRequired,
+                        ]}
+                      >
+                        <Text
+                          variant={status === 'none' ? 'smReg' : 'smMd'}
+                          color={
+                            status === 'completed'
+                              ? colors.white
+                              : status === 'required'
+                                ? colors.primary.main
+                                : colors.text.tertiary
+                          }
+                        >
+                          {day}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
 
-        {/* 챌린지 규칙 */}
-        <View style={styles.section}>
-          <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
-            챌린지 규칙
-          </Text>
-          <View style={styles.contentBox}>
-            <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
-              {challengeData.rules}
-            </Text>
-          </View>
-        </View>
+                {/* 인증 시간대 */}
+                <View style={styles.timeRangeBox}>
+                  <View style={styles.timeRangeItem}>
+                    <Text variant="header2" color={colors.text.tertiary}>
+                      10:00
+                    </Text>
+                    <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
+                      AM
+                    </Text>
+                  </View>
+                  <View style={styles.timeRangeDivider} />
+                  <View style={styles.timeRangeItem}>
+                    <Text variant="header2" color={colors.text.tertiary}>
+                      06:00
+                    </Text>
+                    <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
+                      PM
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 구분선 */}
+                <View style={[styles.sectionDivider, styles.sectionDividerAfterTimeRange]} />
+
+                {/* 챌린지 규칙 */}
+                <View style={styles.section}>
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+                    챌린지 규칙
+                  </Text>
+                  <View style={styles.contentBox}>
+                    <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
+                      {challengeData.rules}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            ) : (
+              // 참가 전 UI
+              <>
+                {/* 챌린지 일정 정보 */}
+                <View style={styles.scheduleSection}>
+                  <View style={styles.scheduleItem}>
+                    <View style={styles.iconContainer24}>
+                      <CalendarIcon width={14} height={14} />
+                    </View>
+                    <Text variant="smReg" color={colors.text.primary}>
+                      {challengeData.schedule.days}
+                    </Text>
+                  </View>
+                  <View style={styles.verticalDivider} />
+                  <View style={styles.scheduleItem}>
+                    <View style={styles.iconContainer24}>
+                      <TimeRangeIcon width={16} height={16} />
+                    </View>
+                    <Text variant="smReg" color={colors.text.primary}>
+                      {challengeData.schedule.timeRange}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 챌린지 규칙 */}
+                <View style={styles.section}>
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+                    챌린지 규칙
+                  </Text>
+                  <View style={styles.contentBox}>
+                    <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
+                      {challengeData.rules}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
 
         {/* 챌린지 랭킹 */}
         <View style={[styles.section, styles.rankingSection]}>
@@ -549,11 +640,15 @@ export const ChallengeProfileScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* 참가하기 버튼 */}
+      {/* 참가하기/인증하기 버튼 */}
       <View style={styles.buttonDivider} />
       <View style={styles.buttonContainer}>
-        <Button variant="primary" size="medium" onPress={handleParticipate}>
-          참가하기
+        <Button
+          variant={isParticipated ? 'black' : 'primary'}
+          size="medium"
+          onPress={isParticipated ? () => console.log('인증하기') : handleParticipate}
+        >
+          {isParticipated ? '인증하기' : '참가하기'}
         </Button>
       </View>
 
@@ -692,7 +787,11 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     zIndex: 1,
     height: '100%',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  heroTextContent: {
+    flex: 1,
+    marginTop: 40,
   },
   challengeName: {
     marginBottom: 4,
@@ -739,6 +838,9 @@ const styles = StyleSheet.create({
     height: 8,
     backgroundColor: colors.background,
   },
+  sectionDividerAfterTimeRange: {
+    marginTop: 28,
+  },
   tabContainer: {
     flexDirection: 'row',
     paddingTop: 16,
@@ -765,9 +867,57 @@ const styles = StyleSheet.create({
   scheduleSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 25,
+    paddingHorizontal: 20,
     paddingTop: 28,
     gap: 12,
+  },
+  daySelectionSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 28,
+  },
+  dayButton: {
+    width: 44,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1.5,
+    borderColor: colors.line,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dayButtonCompleted: {
+    backgroundColor: colors.primary.main,
+    borderWidth: 0,
+  },
+  dayButtonRequired: {
+    borderColor: colors.primary.main,
+    backgroundColor: 'transparent',
+  },
+  timeRangeBox: {
+    height: 60,
+    borderRadius: 10,
+    backgroundColor: colors.background,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 16,
+  },
+  timeRangeItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'flex-start',
+    paddingLeft: 20,
+    gap: 6,
+  },
+  timeRangePeriod: {
+    marginTop: 4, // 작은 글자라서 시각적 정렬을 위해 약간 아래로
+  },
+  timeRangeDivider: {
+    width: 1.5,
+    height: 20,
+    backgroundColor: colors.button,
   },
   scheduleItem: {
     flexDirection: 'row',
