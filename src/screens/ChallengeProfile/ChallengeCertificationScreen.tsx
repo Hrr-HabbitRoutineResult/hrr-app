@@ -87,6 +87,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [selectedRound, setSelectedRound] = useState(6);
   // TODO: API 연동 후 실제 인증 타입으로 변경
+  const [myCertificationType, setMyCertificationType] = useState<'image' | 'text'>('image');
   const [challengerCertificationType, setChallengerCertificationType] = useState<'image' | 'text'>('image');
 
   const tabs: TabItem[] = [
@@ -117,19 +118,40 @@ export const ChallengeCertificationScreen: React.FC = () => {
       date: '2025.12.02',
       thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
     },
+    {
+      id: 4,
+      title: '인증 제목 4',
+      description: '상세 내용 4',
+      date: '2025.12.02',
+      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
+    },
+    {
+      id: 5,
+      title: '인증 제목 5',
+      description: '상세 내용 5',
+      date: '2025.12.02',
+      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
+    },
+    {
+      id: 6,
+      title: '인증 제목 6',
+      description: '상세 내용 6',
+      date: '2025.12.02',
+      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
+    },
   ];
 
   // TODO: API 연동 후 실제 데이터로 교체
   // 참여한 라운드 목록 (챌린저 탭에서 사용)
   const participatedRounds = [6, 3, 4, 5];
-  
+
   // 라운드 목록 (맨 앞 라운드=현재 진행 중인 라운드)
   const rounds = [6, 1, 2, 3, 4, 5];
   const firstRound = rounds[0]; // 기본값(맨 앞 라운드)
-  
+
   const isParticipated = (round: number) => participatedRounds.includes(round);
   const isFirstRound = (round: number, index: number) => index === 0;
-  
+
   const handleRoundPress = (round: number) => {
     // 이미 선택된 라운드를 다시 클릭하면 기본값(맨 앞 라운드)로 이동
     if (selectedRound === round) {
@@ -162,14 +184,18 @@ export const ChallengeCertificationScreen: React.FC = () => {
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={(key) => {
-            setActiveTab(key as 'my' | 'challenger');
-            // TODO: API 연동 후 제거 (챌린저 탭 클릭 시 인증 타입 전환)
-            if (key === 'challenger' && activeTab === 'challenger') {
+            const newTab = key as 'my' | 'challenger';
+            // TODO: API 연동 후 제거 (탭 클릭 시 인증 타입 전환)
+            if (key === 'my' && activeTab === 'my') {
+              setMyCertificationType((prev) => (prev === 'image' ? 'text' : 'image'));
+            } else if (key === 'challenger' && activeTab === 'challenger') {
               setChallengerCertificationType((prev) => (prev === 'image' ? 'text' : 'image'));
+            } else {
+              setActiveTab(newTab);
             }
           }}
         />
-        
+
         {activeTab === 'my' ? (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             {/* 프로필 영역 */}
@@ -202,24 +228,36 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
             {/* 진행 중 버튼 */}
             <View style={styles.buttonContainer}>
-              <Button variant="black" size="medium" onPress={() => {}}>
+              <Button variant="black" size="medium" onPress={() => { }}>
                 1R째 진행 중
               </Button>
             </View>
 
             {/* 구분선 */}
             <View style={styles.sectionDivider} />
-            
-            {/* 이미지 그리드 */}
-            <View style={styles.gridContainer}>
-              <PhotoCertificationGrid
-                items={mockCertifications}
+
+            {/* 인증 목록 */}
+            {myCertificationType === 'image' ? (
+              // 사진 인증(그리드 형태)
+              <View style={styles.gridContainer}>
+                <PhotoCertificationGrid
+                  items={mockCertifications}
+                  onItemPress={(item) => {
+                    // TODO: 인증 상세 화면으로 이동
+                    console.log('인증 아이템 클릭:', item.id);
+                  }}
+                />
+              </View>
+            ) : (
+              // 글 인증(리스트 형태)
+              <TextCertificationList
+                items={mockTextCertifications}
                 onItemPress={(item) => {
                   // TODO: 인증 상세 화면으로 이동
                   console.log('인증 아이템 클릭:', item.id);
                 }}
               />
-            </View>
+            )}
           </ScrollView>
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -305,7 +343,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   const participated = isParticipated(round);
                   const isFirst = isFirstRound(round, index);
                   const isSelected = selectedRound === round;
-                  
+
                   // 참여하지 않은 라운드는 클릭 불가
                   if (!participated) {
                     return (
@@ -319,7 +357,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       </View>
                     );
                   }
-                  
+
                   // 맨 앞 라운드 (현재 진행 중인 라운드)
                   if (isFirst) {
                     return (
@@ -338,7 +376,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       </TouchableOpacity>
                     );
                   }
-                  
+
                   // 참여한 라운드 (선택 가능)
                   return (
                     <TouchableOpacity
