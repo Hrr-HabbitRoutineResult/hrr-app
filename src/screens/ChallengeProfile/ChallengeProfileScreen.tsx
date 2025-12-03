@@ -30,9 +30,8 @@ import TimeRangeIcon from '../../../assets/icons/challenge-profile/time-range.sv
 import ChevronRightTertiaryIcon from '../../../assets/icons/chevron-right-tertiary.svg';
 import ChevronRightIcGreyIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import InfoCircleIcon from '../../../assets/icons/challenge-profile/info-circle.svg';
-import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
-import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
+import { TextCertificationList } from '../../components/common/TextCertificationList';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
@@ -424,57 +423,54 @@ export const ChallengeProfileScreen: React.FC = () => {
 
             {/* 챌린지 인증현황 */}
             <View style={certificationType === 'image' ? styles.sectionNoPadding : styles.section}>
-              <View
-                style={[
-                  styles.sectionTitleRow,
-                  certificationType === 'image' && styles.sectionTitleRowNoPadding,
-                ]}
-              >
-                <Text
-                  variant="header4"
-                  color={colors.text.primary}
-                  style={styles.sectionTitleNoMargin}
+              {isParticipated ? (
+                <TouchableOpacity
+                  style={[
+                    styles.sectionTitleRow,
+                    certificationType === 'image' && styles.sectionTitleRowNoPadding,
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    navigation.navigate('ChallengeCertification', { challengeId: route.params.challengeId });
+                  }}
                 >
-                  챌린지 인증현황
-                </Text>
-                {isParticipated && (
-                  <TouchableOpacity
-                    style={styles.sectionChevronButton}
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  <Text
+                    variant="header4"
+                    color={colors.text.primary}
+                    style={styles.sectionTitleNoMargin}
                   >
+                    챌린지 인증현황
+                  </Text>
+                  <View style={styles.sectionChevronButton}>
                     <ChevronRightIcGreyIcon width={5} height={10} />
-                  </TouchableOpacity>
-                )}
-              </View>
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={[
+                    styles.sectionTitleRow,
+                    certificationType === 'image' && styles.sectionTitleRowNoPadding,
+                  ]}
+                >
+                  <Text
+                    variant="header4"
+                    color={colors.text.primary}
+                    style={styles.sectionTitleNoMargin}
+                  >
+                    챌린지 인증현황
+                  </Text>
+                </View>
+              )}
               {certificationType === 'text' ? (
                 // 글 인증(리스트 형태)
-                <View style={styles.certificationList}>
-                  {challengeData.certifications.map((cert) => (
-                    <View key={cert.id} style={styles.certificationItem}>
-                      <View style={styles.certificationContent}>
-                        <Text variant="smMd" color={colors.text.primary} style={styles.certificationTitle}>
-                          {cert.title}
-                        </Text>
-                        <Text variant="xxs" color={colors.text.tertiary} style={styles.certificationDescription}>
-                          {cert.description}
-                        </Text>
-                        <View style={styles.certificationDate}>
-                          <Text variant="xxs" color={colors.text.tertiary}>
-                            {cert.date}
-                          </Text>
-                          <LinkIcon width={10} height={10} />
-                        </View>
-                      </View>
-                      <View style={styles.certificationThumbnail}>
-                        <Image source={cert.thumbnail} style={styles.thumbnailImage} />
-                        <View style={styles.thumbnailOverlay}>
-                          <QuestionMarkTextIcon width={30} height={36} />
-                        </View>
-                      </View>
-                    </View>
-                  ))}
-                </View>
+                <TextCertificationList
+                  items={challengeData.certifications}
+                  containerPadding={0} // section에 이미 paddingHorizontal: 24가 있으므로 0으로 설정
+                  onItemPress={(item) => {
+                    // TODO: 인증 상세 화면으로 이동
+                    console.log('인증 아이템 클릭:', item.id);
+                  }}
+                />
               ) : (
                 // 사진 인증(그리드 형태)
                 <View style={styles.certificationGrid}>
@@ -1030,53 +1026,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     justifyContent: 'center',
     zIndex: 10,
-  },
-  certificationList: {
-    gap: 0,
-  },
-  certificationItem: {
-    flexDirection: 'row',
-    height: 104,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  certificationContent: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  certificationTitle: {
-    lineHeight: 20,
-  },
-  certificationDescription: {
-    lineHeight: 18,
-    marginTop: 5,
-  },
-  certificationDate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 'auto',
-  },
-  certificationThumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  thumbnailImage: {
-    width: '100%',
-    height: '100%',
-  },
-  thumbnailOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   certificationGrid: {
     flexDirection: 'row',
