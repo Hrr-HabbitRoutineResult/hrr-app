@@ -14,7 +14,7 @@ import { colors } from '../../design/tokens';
 import { LoginScreen } from './LoginScreen';
 import { TermsAgreementScreen } from './TermsAgreementScreen';
 import { NicknameSetupScreen } from './NicknameSetupScreen';
-import { OnboardingScreen } from '../onboarding/OnboardingScreen';
+import { OnboardingScreen } from '../Onboarding/OnboardingScreen';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
 import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
