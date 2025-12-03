@@ -7,8 +7,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/common/Text';
+import { Header } from '../../components/common/Header';
 import { colors } from '../../design/tokens';
-import BackIcon from '../../../assets/icons/back.svg';
 import LoadingImage from '../../../assets/images/onboarding-loading.svg';
 
 interface OnboardingLoadingProps {
@@ -79,11 +79,7 @@ export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
   return (
     <SafeAreaView style={styles.container}>
       {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <BackIcon width={9} height={18} />
-        </TouchableOpacity>
-      </View>
+      <Header onBack={onBack} />
 
       <View style={styles.content}>
         {/* 타이틀 */}
@@ -121,18 +117,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  backButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   content: {
     paddingHorizontal: 24,

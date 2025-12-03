@@ -17,8 +17,8 @@ import LogoPrimarySvg from '../../../assets/images/logo-primary.svg';
 import BackgroundBlur1Svg from '../../../assets/images/background-blur-1.svg';
 import BackgroundBlur2Svg from '../../../assets/images/background-blur-2.svg';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-primary.svg';
-import LikeSelectedIcon from '../../../assets/icons/like-selected.svg';
-import LikeUnselectedIcon from '../../../assets/icons/like-unselected.svg';
+import LikeSelectedIcon from '../../../assets/icons/like-selected-circle.svg';
+import LikeUnselectedIcon from '../../../assets/icons/like-unselected-circle.svg';
 import RefreshFabIcon from '../../../assets/icons/refresh-fab.svg';
 
 interface OnboardingResultScreenProps {

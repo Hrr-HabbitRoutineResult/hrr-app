@@ -127,27 +127,28 @@ export const TextField: React.FC<TextFieldProps> = ({
                 {rightIcon && renderIcon(rightIcon, onRightIconPress)}
             </View>
 
-            {/* 에러 메시지 */}
-            {error && (
-                <Text
-                    variant="xsReg"
-                    color={colors.primary.sub}
-                    style={styles.messageText}
-                >
-                    {error}
-                </Text>
-            )}
+            {/* 에러/일반 메시지 영역 (항상 일정 높이만큼 공간 차지) */}
+            <View style={styles.messageContainer}>
+                {error && (
+                    <Text
+                        variant="xsReg"
+                        color={colors.primary.sub}
+                        style={styles.messageText}
+                    >
+                        {error}
+                    </Text>
+                )}
 
-            {/* 일반 메시지 */}
-            {message && !error && (
-                <Text
-                    variant="xsReg"
-                    color={colors.text.tertiary}
-                    style={styles.messageText}
-                >
-                    {message}
-                </Text>
-            )}
+                {message && !error && (
+                    <Text
+                        variant="xsReg"
+                        color={colors.text.tertiary}
+                        style={styles.messageText}
+                    >
+                        {message}
+                    </Text>
+                )}
+            </View>
         </View>
     );
 };
@@ -167,6 +168,10 @@ const styles = StyleSheet.create({
         flex: 1,                 // 남은 공간 차지하기
         color: colors.text.primary, // 입력된 텍스트 색상
         padding: 0,               // 기본 padding 제거 (Android 대응)
+    },
+    messageContainer: {
+        minHeight: 26,            // 공간 확보
+        justifyContent: 'flex-start',
     },
     messageText: {
         marginTop: 8,             // 메시지 위 여백

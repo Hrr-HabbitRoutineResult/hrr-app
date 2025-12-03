@@ -4,11 +4,11 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Text } from '../../../components/common/Text';
-import { colors } from '../../../design/tokens';
-import AppleIcon from '../../../../assets/icons/social/apple.svg';
-import NaverIcon from '../../../../assets/icons/social/naver.svg';
-import KakaoIcon from '../../../../assets/icons/social/kakao.svg';
+import { Text } from '../common/Text';
+import { colors } from '../../design/tokens';
+import AppleIcon from '../../../assets/icons/social/apple.svg';
+import NaverIcon from '../../../assets/icons/social/naver.svg';
+import KakaoIcon from '../../../assets/icons/social/kakao.svg';
 
 type SocialProvider = 'apple' | 'naver' | 'kakao';
 

@@ -4,7 +4,7 @@ import {
 } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
 import BootSplash from 'react-native-bootsplash';
-import { AuthOnboardingScreen } from './src/screens/auth/AuthOnboardingScreen';
+import { AuthOnboardingScreen } from './src/screens/Auth/AuthOnboardingScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
