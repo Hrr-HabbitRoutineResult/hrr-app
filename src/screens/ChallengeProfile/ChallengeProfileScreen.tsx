@@ -290,10 +290,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={[]}>
       {/* 헤더 */}
       <Header
         onBack={handleBack}
+        useSafeArea={true}
         rightContent={
           <View style={styles.headerRightContent}>
             <TouchableOpacity
@@ -859,10 +860,9 @@ const styles = StyleSheet.create({
   },
   headerIconButton: {
     width: 48,
-    height: 48,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: -12, // 레이아웃에서 위아래로 12px씩 당겨서 실제 차지 공간은 24px로 줄임
   },
   heroSection: {
     position: 'relative',

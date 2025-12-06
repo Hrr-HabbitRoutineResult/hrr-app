@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../design/tokens';
 import Logo from '../../../assets/images/logo-primary.svg';
@@ -9,10 +10,26 @@ import BellIcon from '../../../assets/icons/alarm.svg';
 
 const TopAppBar = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
+
+  // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
+  // iOS: 기존 디자인 스펙 유지 (16)
+  const verticalPadding = Platform.OS === 'android' ? 24 : 16;
+
+  // safeAreaTop 높이 계산
+  const safeAreaTop = Platform.OS === 'android'
+    ? Math.max(insets.top, 24) 
+    : insets.top;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <View style={[
+      styles.container, 
+      { 
+        paddingTop: safeAreaTop + verticalPadding,
+        paddingBottom: verticalPadding - 4 // borderBottomWidth 1px + 콘텐츠 높이 차이 3px 차감
+      }
+    ]}>
+      <View style={styles.contentContainer}>
         {/* 왼쪽 로고 */}
         <TouchableOpacity
           onPress={() => navigation.navigate('HomeTabs')}
@@ -31,23 +48,21 @@ const TopAppBar = () => {
           <BellIcon width={18.82} height={20} />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: colors.white,
-  },
   container: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
+  contentContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.line,
   },
   logoWrapper: {
     width: 28,

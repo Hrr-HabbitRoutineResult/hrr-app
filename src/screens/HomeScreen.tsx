@@ -23,7 +23,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchDailyTop();
-    
+
     // 사용자 정보 조회
     const fetchUserInfo = async () => {
       try {
@@ -33,12 +33,12 @@ const HomeScreen = () => {
         // 에러가 나도 화면은 정상 동작하도록 함
       }
     };
-    
+
     // 참여 중인 챌린지 조회
     const fetchOngoingChallenges = async () => {
       try {
         const challenges = await getOngoingChallenges();
-        
+
         // API 응답을 Challenge 타입으로 변환
         const transformedChallenges: Challenge[] = challenges.map((item) => ({
           id: item.challengeId,
@@ -46,30 +46,31 @@ const HomeScreen = () => {
           title: item.title,
           todayEligible: item.currentRound > 0, // currentRound가 0보다 크면 오늘 인증 가능
         }));
-        
+
         setOngoingChallenges(transformedChallenges);
       } catch (error) {
         // 에러가 나도 화면은 정상 동작하도록 함
       }
     };
-    
+
     fetchUserInfo();
     fetchOngoingChallenges();
   }, [fetchDailyTop]);
 
   return (
-    <ScrollView style={styles.container}>
-      <TopAppBar />
+    <View style={styles.safeArea}>
+      <ScrollView style={styles.container}>
+        <TopAppBar />
 
-      {/* 로딩 상태 */}
-      {isLoading && (
-        <View style={styles.centerBox}>
-          <Text style={styles.loadingText}>로딩 중...</Text>
-        </View>
-      )}
+        {/* 로딩 상태 */}
+        {isLoading && (
+          <View style={styles.centerBox}>
+            <Text style={styles.loadingText}>로딩 중...</Text>
+          </View>
+        )}
 
-      {/* 에러 상태 - 전체 화면을 가리지 않고 로그만 출력하거나 조용히 넘어감 */}
-      {/* {error && (
+        {/* 에러 상태 - 전체 화면을 가리지 않고 로그만 출력하거나 조용히 넘어감 */}
+        {/* {error && (
         <View style={styles.centerBox}>
           <Text style={styles.errorText}>{error}</Text>
           <Button
@@ -81,51 +82,55 @@ const HomeScreen = () => {
         </View>
       )} */}
 
-      {/* 정상 데이터 렌더링 (로딩 중이 아닐 때만 표시하거나, 로딩 중에도 스켈레톤 등을 표시) */}
-      {!isLoading && (
-        <>
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
-            <Text style={styles.welcomeTitle}>오늘도 챌린지를 해볼까요?</Text>
-          </View>
-
-          <ChallengeCarousel challenges={ongoingChallenges} />
-
-          <View style={styles.suggestButtonContainer}>
-            <ChallengeSuggestButton
-              onPress={() =>
-                navigation.navigate('ChallengeList', { recommend: true })
-              }
-            />
-          </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.listContainer}>
-            <View style={styles.sectionContainer}>
-              <CategoryChips />
+        {/* 정상 데이터 렌더링 (로딩 중이 아닐 때만 표시하거나, 로딩 중에도 스켈레톤 등을 표시) */}
+        {!isLoading && (
+          <>
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
+              <Text style={styles.welcomeTitle}>오늘도 챌린지를 해볼까요?</Text>
             </View>
 
-            <View style={styles.sectionContainer}>
-              <PopularList challenges={dailyTop} />
+            <ChallengeCarousel challenges={ongoingChallenges} />
+
+            <View style={styles.suggestButtonContainer}>
+              <ChallengeSuggestButton
+                onPress={() =>
+                  navigation.navigate('ChallengeList', { recommend: true })
+                }
+              />
             </View>
 
-            <View style={[styles.sectionContainer, styles.lastSection]}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>오늘의 랜덤미션</Text>
+            <View style={styles.divider} />
+
+            <View style={styles.listContainer}>
+              <View style={styles.sectionContainer}>
+                <CategoryChips />
               </View>
-              <RandomMissionBanner />
+
+              <View style={styles.sectionContainer}>
+                <PopularList challenges={dailyTop} />
+              </View>
+
+              <View style={[styles.sectionContainer, styles.lastSection]}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>오늘의 랜덤미션</Text>
+                </View>
+                <RandomMissionBanner />
+              </View>
             </View>
-          </View>
-        </>
-      )}
-    </ScrollView>
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
   container: {
-    height: 502,
     backgroundColor: colors.white,
   },
   centerBox: {
@@ -140,7 +145,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.md,
-//     color: colors.error.main,
     marginBottom: spacing.sm,
   },
   welcomeContainer: {
