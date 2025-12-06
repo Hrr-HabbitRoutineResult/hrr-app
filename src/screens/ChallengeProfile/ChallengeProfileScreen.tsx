@@ -242,8 +242,7 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleParticipateConfirm = async () => {
     // 비공개 챌린지인 경우 비밀번호 입력 모달로 전환
-    const isPrivate = true; // TODO: API 응답에서 isPrivate 필드 추가 필요
-    if (isPrivate && !isPasswordMode) {
+    if (!data.isPublic && !isPasswordMode) {
       setIsPasswordMode(true);
       return;
     }

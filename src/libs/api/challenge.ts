@@ -64,6 +64,7 @@ export interface ChallengeDetail {
   startDate: string;
   endDate: string;
   remainDays: number;
+  isPublic: boolean;
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
@@ -243,7 +244,7 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
   try {
     const response = await apiClient.post<ChallengeJoinResponse>(
       `/api/v1/challenges/${challengeId}/join`,
-      password ? { password } : {}
+      { password: password || null }
     );
     
     if (response.data.isSuccess) {
