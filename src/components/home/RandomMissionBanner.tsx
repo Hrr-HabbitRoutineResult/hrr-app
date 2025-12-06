@@ -21,7 +21,12 @@ const RandomMissionBanner = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container}>
-      <BackgroundSvg width="100%" height="100%" style={styles.backgroundSvg} />
+      <BackgroundSvg 
+        width="100%" 
+        height="100%" 
+        preserveAspectRatio="none"
+        style={styles.backgroundSvg} 
+      />
       {isCompleted ? (
         <View style={styles.textContainer}>
           <Text style={styles.description}>
@@ -40,38 +45,40 @@ const RandomMissionBanner = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 120,
-    borderRadius: radius.lg,
+    width: '100%',
+    height: 80,
     overflow: 'hidden',
+    position: 'relative',
   },
   backgroundSvg: {
     position: 'absolute',
-    top: 0,
-    left: 0,
+    width: '100%',
+    height: '100%',
   },
   textContainer: {
     flex: 1,
     justifyContent: 'center',
-    padding: spacing.md,
+    paddingLeft: 21,
+    paddingVertical: 22,
   },
   notCompletedContainer: {
-    position: 'absolute',
-    top: 40,
-    left: 21,
-    width: 215,
+    flex: 1,
+    justifyContent: 'center',
+    paddingLeft: 21,
+    paddingVertical: 22,
   },
   description: {
     ...typography.smReg, // 15px regular
     color: colors.text.secondary,
   },
   descriptionLine1: {
-    ...typography.smMd, // 15px medium
+    ...typography.smMd,
     color: colors.text.primary,
-    marginBottom: 4, // gap: 4px
+    marginBottom: 2,
   },
   descriptionLine2: {
-    ...typography.xxs, // 12px regular
-    color: colors.text.secondary,
+    ...typography.xxs,
+    color: colors.text.primary,
   },
 });
 

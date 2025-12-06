@@ -3,6 +3,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
+  ChallengeProfile: { challengeId: number };
 };
 
 export type HomeTabParamList = {
