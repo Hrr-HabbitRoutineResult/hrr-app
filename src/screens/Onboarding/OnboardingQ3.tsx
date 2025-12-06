@@ -27,7 +27,6 @@ export const OnboardingQ3: React.FC<OnboardingQ3Props> = ({
   selectedCategories,
   onCategoriesChange,
 }) => {
-  // id 기반 옵션 정의
   const categoryOptions = [
     { id: 'HEALTH', label: '운동' },
     { id: 'STUDY', label: '학업' },
@@ -123,8 +122,8 @@ const styles = StyleSheet.create({
   },
   q3TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 39,
+    marginBottom: 39,
   },
   q3Title: {
     textAlign: 'left',
@@ -137,7 +136,6 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flex: 1,
-    paddingTop: 20,
   },
   buttonContainer: {
     paddingHorizontal: 20,

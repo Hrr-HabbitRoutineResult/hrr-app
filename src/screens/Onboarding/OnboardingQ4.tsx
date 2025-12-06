@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
   },
   q4TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 39,
+    marginBottom: 39,
   },
   q4Title: {
     textAlign: 'left',

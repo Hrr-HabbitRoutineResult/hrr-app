@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    marginBottom: 10,
+    marginBottom: 12,
     lineHeight: 24,
   },
   optionsContainer: {

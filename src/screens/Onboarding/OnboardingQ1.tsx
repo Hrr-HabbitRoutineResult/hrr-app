@@ -143,8 +143,8 @@ const styles = StyleSheet.create({
   },
   q1TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 39,
+    marginBottom: 48,
   },
   q1Title: {
     textAlign: 'left',
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flex: 1,
-    paddingTop: 20,
   },
   buttonContainer: {
     paddingHorizontal: 20,

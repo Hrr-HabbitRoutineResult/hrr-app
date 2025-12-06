@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   paginationContainer: {
-    paddingTop: 60,
+    marginTop: 24,
   },
   emptyContainer: {
     height: 360,

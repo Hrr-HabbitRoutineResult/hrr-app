@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
   },
   q2TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 39,
+    paddingBottom: 39,
   },
   q2Title: {
     textAlign: 'left',
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 0,
-    paddingBottom: 20,
+    paddingBottom: 39,
     gap: 10,
     alignItems: 'center',
   },
