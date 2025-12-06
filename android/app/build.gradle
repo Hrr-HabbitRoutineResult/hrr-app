@@ -2,6 +2,9 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// react-native-config 환경 변수 로드
+apply from: "../../node_modules/react-native-config/android/dotenv.gradle"
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -87,6 +90,9 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        
+        // react-native-config 환경 변수 추가
+        resValue "string", "API_BASE_URL", project.env.get("API_BASE_URL")
     }
     signingConfigs {
         debug {
