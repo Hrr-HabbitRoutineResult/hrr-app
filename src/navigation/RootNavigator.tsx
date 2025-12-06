@@ -1,4 +1,3 @@
-// src/navigation/RootNavigator.tsx
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -14,7 +13,6 @@ import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
-import BottomTabBarIcons from '../components/home/BottomTabBarIcons';
 import CustomTabBar from '../components/home/CustomTabBar';
 
 const Tab = createBottomTabNavigator<HomeTabParamList>();

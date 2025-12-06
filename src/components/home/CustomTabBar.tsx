@@ -1,10 +1,55 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import BottomTabBarIcons from './BottomTabBarIcons';
 import { colors, typography } from '../../design/tokens';
+import { HomeTabParamList } from '../../navigation/types';
+
+// Import SVG icons
+import HomeIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_home_color.svg';
+import HomeIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_home.svg';
+import SearchIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_search_color.svg';
+import SearchIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_search.svg';
+import ChatIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_chat_color.svg';
+import ChatIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_chat.svg';
+import MyIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_my_color.svg';
+import MyIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_my.svg';
 
 const screenWidth = Dimensions.get('window').width;
+const iconSize = 24;
+
+/**
+ * 탭 이름과 포커스 상태에 따라 아이콘 반환
+ */
+const renderTabIcon = (routeName: keyof HomeTabParamList, focused: boolean) => {
+  switch (routeName) {
+    case '홈':
+      return focused ? (
+        <HomeIconColor width={iconSize} height={iconSize} />
+      ) : (
+        <HomeIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
+      );
+    case '검색':
+      return focused ? (
+        <SearchIconColor width={iconSize} height={iconSize} />
+      ) : (
+        <SearchIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
+      );
+    case '채팅':
+      return focused ? (
+        <ChatIconColor width={iconSize} height={iconSize} />
+      ) : (
+        <ChatIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
+      );
+    case '마이':
+      return focused ? (
+        <MyIconColor width={iconSize} height={iconSize} />
+      ) : (
+        <MyIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
+      );
+    default:
+      return null;
+  }
+};
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
   const containerSize = 48;
@@ -42,7 +87,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             target: route.key,
           });
         };
-        
+
         // 기존 라벨 로직 주석 처리
         // 항상 route.name을 사용하므로 불필요한 분기 처리 제거
         // const label =
@@ -65,7 +110,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
           >
             {/* 아이콘+글자 컨테이너 */}
             <View style={styles.iconLabelContainer}>
-              <BottomTabBarIcons routeName={route.name as any} focused={isFocused} />
+              {/* 탭 아이콘 */}
+              <View>{renderTabIcon(route.name as keyof HomeTabParamList, isFocused)}</View>
               {/* 탭 이름 라벨 */}
               <View style={styles.labelContainer}>
                 <Text style={{
