@@ -45,7 +45,7 @@ const RootNavigator = () => (
     <Stack.Navigator>
       <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen name="ChallengeList" component={ChallengeListScreen} />
+      <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
       <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
       <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />

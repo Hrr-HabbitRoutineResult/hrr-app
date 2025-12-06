@@ -122,11 +122,11 @@ export const getDailyTopChallenges = async (number: number = 3): Promise<DailyTo
         params: { number },
       }
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '오늘의 인기 챌린지를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -141,11 +141,11 @@ export const getChallengeDetail = async (challengeId: number): Promise<Challenge
     const response = await apiClient.get<ChallengeDetailResponse>(
       `/api/v1/challenges/${challengeId}/info`
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '챌린지 정보를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -175,11 +175,11 @@ export const getChallengeProfile = async (challengeId: number): Promise<Challeng
     const response = await apiClient.get<ChallengeProfileResponse>(
       `/api/v1/challenges/${challengeId}/profile`
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '챌린지 프로필 정보를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -194,11 +194,11 @@ export const likeChallenge = async (challengeId: number): Promise<ChallengeLikeR
     const response = await apiClient.post<ChallengeLikeResponse>(
       `/api/v1/challenges/${challengeId}/likes`
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '찜하기 처리에 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -213,11 +213,11 @@ export const unlikeChallenge = async (challengeId: number): Promise<ChallengeLik
     const response = await apiClient.delete<ChallengeLikeResponse>(
       `/api/v1/challenges/${challengeId}/likes`
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '찜하기 취소에 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -246,12 +246,65 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
       `/api/v1/challenges/${challengeId}/join`,
       { password: password || null }
     );
-    
+
     if (response.data.isSuccess) {
       return;
     }
-    
+
     throw new Error(response.data.message || '챌린지 참가에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 챌린지 목록 조회 파라미터
+ */
+export interface GetChallengesParams {
+  category?: 'ALL' | 'HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT';
+  isUpcoming?: boolean;
+  sortType?: 'LATEST' | 'OLDEST' | 'POPULAR';
+  day?: string[];
+  title?: string;
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 챌린지 목록 조회 응답
+ */
+export interface GetChallengesResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: ChallengeInfo[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 챌린지 목록 조회
+ */
+export const getChallenges = async (params?: GetChallengesParams): Promise<GetChallengesResponse['result']> => {
+  try {
+    const response = await apiClient.get<GetChallengesResponse>(
+      '/api/v1/challenges',
+      {
+        params: params || {},
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '챌린지 목록을 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
   }
