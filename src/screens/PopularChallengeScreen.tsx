@@ -7,6 +7,7 @@ import { colors, typography } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { Header } from '../components/common/Header';
 import ChallengeItem from '../components/common/ChallengeItem';
+import LogoGray from '../../assets/images/logo-gray.svg';
 
 const PopularChallengeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -53,14 +54,26 @@ const PopularChallengeScreen = () => {
         useSafeArea={true}
       />
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* 빈 상태 */}
+        {dailyTop10.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <LogoGray width={124.16} height={119.79} />
+            <Text style={styles.emptyText}>
+              새로운 하루의 챌린지 순위를{'\n'}집계 중이에요
+            </Text>
+          </View>
+        )}
+
         {/* TOP 10 타이틀 섹션 */}
-        <View style={styles.top10Container}>
-          <Text style={styles.top10Title}>TOP 10</Text>
-          <Text style={styles.top10Subtitle}>오늘의 인기 챌린지 순위예요!</Text>
-        </View>
+        {dailyTop10.length > 0 && (
+          <View style={styles.top10Container}>
+            <Text style={styles.top10Title}>TOP 10</Text>
+            <Text style={styles.top10Subtitle}>오늘의 인기 챌린지 순위예요!</Text>
+          </View>
+        )}
 
         {/* 1위부터 10위까지 리스트 */}
-        {!isLoading10 && dailyTop10.map((item, index) => {
+        {dailyTop10.length > 0 && dailyTop10.map((item, index) => {
           const { info } = item;
           const daysText = parseDaysOfWeek(info.daysOfWeek);
           const rank = index + 1;
@@ -118,6 +131,17 @@ const styles = StyleSheet.create({
   top10Subtitle: {
     ...typography.md,
     color: colors.text.primary,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingTop: 212,
+  },
+  emptyText: {
+    ...typography.smReg,
+    color: colors.icon.gray,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginTop: 32,
   },
 });
 
