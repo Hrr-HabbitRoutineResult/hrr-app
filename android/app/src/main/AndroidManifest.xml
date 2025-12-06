@@ -23,5 +23,20 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    
+    <!-- 카카오 로그인 Redirect URI 처리 -->
+    <activity
+      android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <!-- Redirect URI: "kakaob06209dc6556d7eb3e91a03887487d56://oauth" -->
+        <data
+          android:host="oauth"
+          android:scheme="kakaob06209dc6556d7eb3e91a03887487d56" />
+      </intent-filter>
+    </activity>
   </application>
 </manifest>

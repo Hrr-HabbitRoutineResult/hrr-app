@@ -4,11 +4,5 @@ module.exports = {
     android: {},
   },
   assets: ['./assets/fonts/'],
-  dependencies: {
-    'react-native-config': {
-      platforms: {
-        android: null, // Android native autolink 비활성화
-      },
-    },
-  },
+  // react-native-config autolink 활성화 (Android에서도 사용)
 };
