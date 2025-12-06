@@ -259,3 +259,35 @@ export const reissueAccessToken = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 로그아웃
+ * ============================================
+ */
+
+/**
+ * 로그아웃 응답
+ */
+export interface LogoutResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result?: any;
+}
+
+/**
+ * 로그아웃 API 호출
+ */
+export const logout = async (): Promise<LogoutResponse> => {
+  try {
+    const response = await apiClient.post<LogoutResponse>(
+      `/api/v1/auth/logout`,
+      {}
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
