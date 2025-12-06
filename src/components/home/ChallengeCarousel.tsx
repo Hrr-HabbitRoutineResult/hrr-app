@@ -7,11 +7,10 @@ import {
   FlatList,
   Dimensions,
   Animated,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { Challenge } from '../../store/challengeSlice';
 import { colors, typography, spacing } from '../../design/tokens';
-import Pagination from '../homescreen/Pagination';
+import Pagination from '../common/Pagination';
 
 const { width: screenWidth } = Dimensions.get('window');
 const ITEM_SIZE = 200;
@@ -24,7 +23,6 @@ type ChallengeCarouselProps = {
 
 const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<any>>(null);
 
@@ -36,31 +34,6 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
     });
     return () => scrollX.removeListener(listenerId);
   }, [currentIndex]);
-
-  // ✅ 자동 슬라이드
-  useEffect(() => {
-    if (challenges.length === 0) return;
-    let interval: NodeJS.Timeout | null = null;
-
-    if (!isPaused) {
-      interval = setInterval(() => {
-        const nextIndex = (currentIndex + 1) % challenges.length;
-        const offset = nextIndex * SNAP_INTERVAL;
-
-        flatListRef.current?.scrollToOffset({
-          offset,
-          animated: true,
-        });
-      }, 2500);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [currentIndex, isPaused, challenges.length]);
-
-  const handlePressIn = () => setIsPaused(true);
-  const handlePressOut = () => setIsPaused(false);
 
   const renderItem = ({ item, index }: { item: Challenge; index: number }) => {
     const inputRange = [
@@ -76,15 +49,13 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
     });
 
     return (
-      <TouchableWithoutFeedback onPressIn={handlePressIn} onPressOut={handlePressOut}>
-        <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
-          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-          <View style={styles.overlay}>
-            <Text style={styles.challengeName}>{item.title}</Text>
-            {item.todayEligible && <View style={styles.checkBadge} />}
-          </View>
-        </Animated.View>
-      </TouchableWithoutFeedback>
+      <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
+        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+        <View style={styles.overlay}>
+          <Text style={styles.challengeName}>{item.title}</Text>
+          {item.todayEligible && <View style={styles.checkBadge} />}
+        </View>
+      </Animated.View>
     );
   };
 

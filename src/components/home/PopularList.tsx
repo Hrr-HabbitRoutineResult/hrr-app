@@ -4,8 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing, radius } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { formatParticipants } from '../../libs/format';
-import SectionHeader from '../common/SectionHeader';
+import ChevronRightPrimary from '../../../assets/icons/chevron-right-primary.svg';
+import PersonIcon from '../../../assets/icons/person.svg';
 
 type Challenge = {
   id: string;
@@ -24,7 +24,6 @@ const PopularList = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ 더미데이터 (API 대체)
     setTimeout(() => {
       setChallenges([
         {
@@ -76,15 +75,20 @@ const PopularList = () => {
 
   return (
     <View style={styles.container}>
-      <SectionHeader title="오늘의 인기 챌린지" actionText="상세보기" onActionPress={handleSeeMore} />
+      <TouchableOpacity onPress={handleSeeMore} style={styles.header}>
+        <Text style={styles.headerTitle}>오늘의 인기 챌린지</Text>
+        <View style={styles.iconContainer}>
+          <ChevronRightPrimary width={5} height={10} />
+        </View>
+      </TouchableOpacity>
 
       {challenges.slice(0, 3).map((challenge) => (
         <TouchableOpacity key={challenge.id} style={styles.card}>
-          <Image source={{ uri: challenge.thumbnail }} style={styles.thumbnail} />
-
-          {/* D-Day 오버레이 */}
-          <View style={styles.dDayOverlay}>
-            <Text style={styles.dDayText}>D-{challenge.dDay}</Text>
+          <View style={styles.thumbnailWrapper}>
+            <Image source={{ uri: challenge.thumbnail }} style={styles.thumbnail} />
+            <View style={styles.dDayOverlay}>
+              <Text style={styles.dDayText}>D-{challenge.dDay}</Text>
+            </View>
           </View>
 
           <View style={styles.infoContainer}>
@@ -92,13 +96,13 @@ const PopularList = () => {
             <Text style={styles.subText}>{challenge.description}</Text>
           </View>
 
-          {/* 매일 / 참가자 수 */}
           <View style={styles.rightContainer}>
             <View style={styles.dailyBadge}>
               <Text style={styles.dailyText}>{challenge.cadence}</Text>
             </View>
+
             <View style={styles.participantRow}>
-              <Text style={styles.participantIcon}>👥</Text>
+              <PersonIcon width={14} height={14} />
               <Text style={styles.participantCount}>
                 {challenge.participants}/{challenge.maxParticipants}
               </Text>
@@ -112,6 +116,27 @@ const PopularList = () => {
 
 const styles = StyleSheet.create({
   container: {},
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+
+  headerTitle: {
+    ...typography.header3,
+    color: colors.text.primary,
+    marginRight: spacing.xxs,
+  },
+
+  iconContainer: {
+    width: 36,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -121,63 +146,97 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
     position: 'relative',
   },
-  thumbnail: {
+
+  /* 썸네일 + 오버레이 래퍼 */
+  thumbnailWrapper: {
     width: 56,
     height: 56,
-    borderRadius: radius.md,
+    borderRadius: 5.54,
+    overflow: 'hidden',
     marginRight: spacing.sm,
   },
+
+  thumbnail: {
+    width: '100%',
+    height: '100%',
+  },
+
+  /* 썸네일 전체 오버레이 */
   dDayOverlay: {
     position: 'absolute',
-    left: spacing.md,
-    top: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+
   dDayText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontFamily: 'Pretendard',
+    fontWeight: '800',      //피그마상 600 + semibold인데 semibold가 없어서 임의로 수정
+    fontSize: 18,
+    fontStyle: 'SemiBold',
+    lineHeight: 18,
+    letterSpacing: -0.3,
+    color: '#FFFFFF',
   },
+
   infoContainer: {
     flex: 1,
   },
+
   title: {
     ...typography.md,
     color: colors.text.primary,
   },
+
   subText: {
     ...typography.xsReg,
     color: colors.text.secondary,
   },
+
   rightContainer: {
+    width: 43,
+    height: 38,
     alignItems: 'flex-end',
   },
+
   dailyBadge: {
+    width: 37,
+    height: 18,
     borderWidth: 1,
     borderColor: colors.primary.main,
     borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginBottom: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 6,
   },
+
   dailyText: {
     color: colors.primary.main,
     fontSize: 12,
+    lineHeight: 14,
+    textAlign: 'center',
   },
+
   participantRow: {
+    width: 43,
+    height: 14,
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 6,
   },
-  participantIcon: {
-    fontSize: 12,
-    marginRight: 4,
-  },
+
   participantCount: {
-    fontSize: 12,
-    color: colors.text.secondary,
+    color: colors.text.primary,
+    fontFamily: 'Pretendard',
+    fontWeight: '400',
+    fontSize: 10,
+    letterSpacing: -0.3,
+    textAlign: 'right',
+    marginLeft: 2,
+    height: 14,
+    lineHeight: 14,
   },
 });
 

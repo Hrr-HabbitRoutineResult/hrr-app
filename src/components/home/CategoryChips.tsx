@@ -5,12 +5,12 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { colors, typography } from '../../design/tokens';
 
-import IconAll from '../../../assets/icons/homescreen/categorychips/ic_전체보기.svg';
-import IconExercise from '../../../assets/icons/homescreen/categorychips/ic_운동.svg';
-import IconStudy from '../../../assets/icons/homescreen/categorychips/ic_학업.svg';
-import IconHobby from '../../../assets/icons/homescreen/categorychips/ic_취미.svg';
-import IconJob from '../../../assets/icons/homescreen/categorychips/ic_취업준비.svg';
-import IconLifestyle from '../../../assets/icons/homescreen/categorychips/ic_생활습관.svg';
+import IconAll from '../../../assets/icons/homescreen/categorychips/ic_all.svg';
+import IconExercise from '../../../assets/icons/homescreen/categorychips/ic_exercise.svg';
+import IconStudy from '../../../assets/icons/homescreen/categorychips/ic_study.svg';
+import IconHobby from '../../../assets/icons/homescreen/categorychips/ic_hobby.svg';
+import IconJob from '../../../assets/icons/homescreen/categorychips/ic_job.svg';
+import IconLifestyle from '../../../assets/icons/homescreen/categorychips/ic_lifestyle.svg';
 
 const categories = [
   { id: 'all', name: '전체보기', Icon: IconAll },
@@ -41,7 +41,6 @@ const CategoryChips = () => {
           <Icon
             width={48}
             height={48}
-            style={id !== 'all' ? { transform: [{ scale: 1.2 }] } : {}}
           />
           <View style={styles.textWrapper}>
             <Text style={styles.chipText}>{name}</Text>
