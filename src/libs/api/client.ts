@@ -3,7 +3,9 @@ import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reissueAccessToken } from './auth';
 
-// 환경 변수에서 API_BASE_URL 가져오기
+/**
+ * 환경 변수에서 API_BASE_URL 가져오기
+ */
 let BASE_URL: string;
 
 try {
@@ -19,8 +21,9 @@ try {
   throw new Error('환경 변수를 불러올 수 없습니다. react-native-config 설정을 확인해주세요.');
 }
 
-
-// Axios 인스턴스 생성 (공통 설정)   
+/**
+ * Axios 인스턴스 생성 (공통 설정)
+ */
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -28,10 +31,14 @@ export const apiClient = axios.create({
   },
 });
 
-// 토큰 재발급 중인지 확인하는 플래그 (무한 루프 방지)
-let isRefreshing = false; // true: 토큰 재발급 중
+/**
+ * 토큰 재발급 중인지 확인하는 플래그 (무한 루프 방지)
+ */
+let isRefreshing = false;
 
-
+/**
+ * 토큰 재발급 대기 중인 요청 큐
+ */
 let failedQueue: Array<{
   resolve: (value?: any) => void;
   reject: (error?: any) => void;
@@ -51,10 +58,13 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// 요청 인터셉터
+/**
+ * 요청 인터셉터
+ */
 apiClient.interceptors.request.use(
   async (config) => {
     // 토큰 재발급 API가 아닌 경우에만 accessToken을 헤더에 추가
+    // 이미 Authorization 헤더가 설정되어 있으면 (재시도 요청) 덮어쓰지 않음
     if (config.url !== '/api/v1/auth/reissue' && !config.headers?.Authorization) {
       const accessToken = await AsyncStorage.getItem('accessToken');
       if (accessToken) {
@@ -68,7 +78,9 @@ apiClient.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터
+/**
+ * 응답 인터셉터
+ */
 apiClient.interceptors.response.use(
   (response) => {
     return response;
@@ -85,11 +97,9 @@ apiClient.interceptors.response.use(
       // 이미 토큰 재발급이 진행 중인 경우
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          // 대기 큐에 추가
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
-            // 토큰 재발급이 완료되면 새로운 토큰으로 원래 요청 재시도
             if (originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${token}`;
             }
@@ -105,42 +115,35 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // AsyncStorage에서 리프레시 토큰 가져오기
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         
         if (!refreshToken) {
-          // 리프레시 토큰이 없으면 재발급 실패
           processQueue(new Error('Refresh token not found'), null);
           isRefreshing = false;
           return Promise.reject(error);
         }
 
-        // 토큰 재발급 API 호출
         const response = await reissueAccessToken(refreshToken);
         
         if (response.isSuccess && response.result?.accessToken) {
-          // 새로운 액세스 토큰 저장
           const newAccessToken = response.result.accessToken;
           await AsyncStorage.setItem('accessToken', newAccessToken);
           
-          // 대기 중인 모든 요청들을 새로운 토큰으로 처리
           processQueue(null, newAccessToken);
           isRefreshing = false;
           
-          // 원래 실패한 요청을 새로운 토큰으로 재시도
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          if (!originalRequest.headers) {
+            originalRequest.headers = {};
           }
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } else {
           throw new Error('Token reissue failed');
         }
-      } catch (refreshError) {
-        // 토큰 재발급 실패 처리
+      } catch (refreshError: any) {
         processQueue(refreshError, null);
         isRefreshing = false;
         
-        // 모든 인증 정보 삭제 (로그아웃)
         await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'nickname', 'termsAgreed']);
         
         return Promise.reject(refreshError);

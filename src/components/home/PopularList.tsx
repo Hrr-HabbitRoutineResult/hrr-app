@@ -1,133 +1,149 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing, radius } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import ChevronRightPrimary from '../../../assets/icons/chevron-right-primary.svg';
+import { DailyTopChallengeItem } from '../../libs/api/challenge';
+import ChevronRightIcGrey from '../../../assets/icons/chevron-right-ic-grey.svg';
 import PersonIcon from '../../../assets/icons/person.svg';
+import EmptyPopularChallenge from '../../../assets/images/empty-popular-challenge.svg';
 
-type Challenge = {
-  id: string;
-  title: string;
-  description: string;
-  thumbnail: string;
-  cadence: string;
-  dDay: number;
-  participants: number;
-  maxParticipants: number;
-};
+interface PopularListProps {
+  challenges: DailyTopChallengeItem[];
+}
 
-const PopularList = () => {
+const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setChallenges([
-        {
-          id: '1',
-          title: '백준 실버3 코테',
-          description: '백준 실버3 매일 풀고 공유',
-          thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085',
-          cadence: '매일',
-          dDay: 1,
-          participants: 10,
-          maxParticipants: 30,
-        },
-        {
-          id: '2',
-          title: '백준 실버3 코테',
-          description: '백준 실버3 매일 풀고 공유',
-          thumbnail: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d',
-          cadence: '매일',
-          dDay: 1,
-          participants: 10,
-          maxParticipants: 30,
-        },
-        {
-          id: '3',
-          title: '백준 실버3 코테',
-          description: '백준 실버3 매일 풀고 공유',
-          thumbnail: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d',
-          cadence: '매일',
-          dDay: 1,
-          participants: 10,
-          maxParticipants: 30,
-        },
-      ]);
-      setLoading(false);
-    }, 600);
-  }, []);
 
   const handleSeeMore = () => {
     navigation.navigate('ChallengeList', { category: 'popular' });
   };
 
-  if (loading) {
-    return (
-      <View style={{ paddingVertical: spacing.lg, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color={colors.primary.main} />
-      </View>
-    );
-  }
+  // 요일 파싱 함수
+  const parseDaysOfWeek = (daysData: string | string[]) => {
+    try {
+      let days: string[] = [];
+      
+      if (Array.isArray(daysData)) {
+        days = daysData;
+      } else if (typeof daysData === 'string') {
+        // 문자열인 경우 파싱 (작은 따옴표를 큰 따옴표로 변경)
+        const validJson = daysData.replace(/'/g, '"');
+        days = JSON.parse(validJson);
+      }
+
+      if (Array.isArray(days)) {
+        if (days.length === 7) return '매일';
+        
+        const dayMap: Record<string, string> = {
+          MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
+          FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
+        };
+        
+        // API에서 오는 요일 데이터를 한글로 변환
+        return days.map(d => dayMap[d] || d).join(' / ');
+      }
+      return '매일';
+    } catch (e) {
+      return '매일';
+    }
+  };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleSeeMore} style={styles.header}>
         <Text style={styles.headerTitle}>오늘의 인기 챌린지</Text>
         <View style={styles.iconContainer}>
-          <ChevronRightPrimary width={5} height={10} />
+          <ChevronRightIcGrey width={5} height={10} />
         </View>
       </TouchableOpacity>
 
-      {challenges.slice(0, 3).map((challenge) => (
-        <TouchableOpacity key={challenge.id} style={styles.card}>
-          <View style={styles.thumbnailWrapper}>
-            <Image source={{ uri: challenge.thumbnail }} style={styles.thumbnail} />
-            <View style={styles.dDayOverlay}>
-              <Text style={styles.dDayText}>D-{challenge.dDay}</Text>
-            </View>
+      {challenges.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <EmptyPopularChallenge 
+            width="100%" 
+            height="100%" 
+            preserveAspectRatio="none"
+            style={styles.emptyBackground}
+          />
+          <View style={styles.emptyTextContainer}>
+            <Text style={styles.emptyTitle}>아직 랭킹이 없어요</Text>
+            <Text style={styles.emptySubtitle}>새로운 하루의 챌린지 순위를 집계 중이에요</Text>
           </View>
+        </View>
+      ) : (
+        challenges.map((item, index) => {
+          const { info } = item;
+          const daysText = parseDaysOfWeek(info.daysOfWeek);
+          const isDdayZero = info.ddayUntilStart === 0;
+          const isLast = index === challenges.length - 1;
 
-          <View style={styles.infoContainer}>
-            <Text style={styles.title}>{challenge.title}</Text>
-            <Text style={styles.subText}>{challenge.description}</Text>
-          </View>
+          return (
+            <TouchableOpacity 
+              key={info.challengeId} 
+              style={[styles.card, isLast && { marginBottom: 0 }]}
+              onPress={() => navigation.navigate('ChallengeProfile', { challengeId: info.challengeId })}
+            >
+              <View style={styles.thumbnailWrapper}>
+                <Image
+                  source={{ uri: info.thumbnailUrl }}
+                  style={[styles.thumbnail, { backgroundColor: '#eee' }]}
+                  resizeMode="cover"
+                />
+                {!isDdayZero && (
+                  <View style={styles.dDayOverlay}>
+                    <Text style={styles.dDayText}>D-{info.ddayUntilStart}</Text>
+                  </View>
+                )}
+              </View>
 
-          <View style={styles.rightContainer}>
-            <View style={styles.dailyBadge}>
-              <Text style={styles.dailyText}>{challenge.cadence}</Text>
-            </View>
+              <View style={styles.infoContainer}>
+                <Text style={styles.title}>{info.title}</Text>
+                <Text style={styles.subText} numberOfLines={1} ellipsizeMode="tail">
+                  {info.description}
+                </Text>
+              </View>
 
-            <View style={styles.participantRow}>
-              <PersonIcon width={14} height={14} />
-              <Text style={styles.participantCount}>
-                {challenge.participants}/{challenge.maxParticipants}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      ))}
+              <View style={styles.rightContainer}>
+                <View style={styles.dailyBadge}>
+                  <Text style={styles.dailyText}>{daysText}</Text>
+                </View>
+
+                <View style={styles.participantRow}>
+                  <View style={styles.iconWrapper}>
+                    <PersonIcon width={14} height={14} />
+                  </View>
+                  <Text style={styles.participantCount}>
+                    {info.currentParticipantCount} / {info.maxParticipantCount}
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    
+  },
 
   header: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    marginBottom: spacing.sm,
+    paddingBottom: 2,
   },
 
   headerTitle: {
-    ...typography.header3,
+    ...typography.header4,
     color: colors.text.primary,
     marginRight: spacing.xxs,
+    lineHeight: 20,
   },
 
   iconContainer: {
@@ -141,16 +157,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: radius.md,
-    padding: spacing.sm,
+    borderRadius: 20,
+    height: 80,
+    padding: spacing.md,
     marginBottom: spacing.xs,
     position: 'relative',
   },
 
   /* 썸네일 + 오버레이 래퍼 */
   thumbnailWrapper: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: 5.54,
     overflow: 'hidden',
     marginRight: spacing.sm,
@@ -166,77 +183,97 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   dDayText: {
-    fontFamily: 'Pretendard',
-    fontWeight: '800',      //피그마상 600 + semibold인데 semibold가 없어서 임의로 수정
-    fontSize: 18,
-    fontStyle: 'SemiBold',
-    lineHeight: 18,
-    letterSpacing: -0.3,
-    color: '#FFFFFF',
+    ...typography.header3,
+    color: colors.white,
   },
 
   infoContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
 
   title: {
-    ...typography.md,
+    ...typography.smMd,
     color: colors.text.primary,
+    marginBottom: 5,
   },
 
   subText: {
-    ...typography.xsReg,
-    color: colors.text.secondary,
+    ...typography.xxs,
+    color: colors.text.tertiary,
   },
 
   rightContainer: {
-    width: 43,
     height: 38,
     alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
 
   dailyBadge: {
-    width: 37,
+    paddingHorizontal: 8,
     height: 18,
     borderWidth: 1,
     borderColor: colors.primary.main,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 6,
+    marginBottom: 6,
   },
 
   dailyText: {
+    ...typography.xxs,
     color: colors.primary.main,
-    fontSize: 12,
-    lineHeight: 14,
     textAlign: 'center',
   },
 
   participantRow: {
-    width: 43,
     height: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
+  },
+
+  iconWrapper: {
+    paddingTop: 2,
   },
 
   participantCount: {
+    ...typography.caption,
     color: colors.text.primary,
-    fontFamily: 'Pretendard',
-    fontWeight: '400',
-    fontSize: 10,
-    letterSpacing: -0.3,
-    textAlign: 'right',
-    marginLeft: 2,
-    height: 14,
-    lineHeight: 14,
+    marginLeft: 4,
+  },
+
+  emptyContainer: {
+    width: '100%',
+    height: 80,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  emptyBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  emptyTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingLeft: 21,
+    paddingVertical: 22,
+  },
+  emptyTitle: {
+    ...typography.smMd,
+    color: colors.text.primary,
+    marginBottom: 2,
+  },
+  emptySubtitle: {
+    ...typography.xxs,
+    color: colors.text.primary,
   },
 });
 

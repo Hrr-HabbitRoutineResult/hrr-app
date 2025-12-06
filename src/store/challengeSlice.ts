@@ -1,47 +1,25 @@
 import { create } from 'zustand';
-import { mockApi } from '../libs/api/mock';
-
-export type Challenge = {
-  id: string;
-  title: string;
-  category: 'all' | '운동' | '학업' | '취미' | '취업준비' | '생활습관';
-  thumbnail: string;
-  progress: number;
-  todayEligible: boolean;
-  participants: number;
-  cadence: string;
-};
+import { getDailyTopChallenges, DailyTopChallengeItem } from '../libs/api/challenge';
 
 type ChallengeState = {
-  participating: Challenge[];
-  popular: Challenge[];
+  dailyTop: DailyTopChallengeItem[];
   isLoading: boolean;
   error: string | null;
-  fetchParticipating: () => Promise<void>;
-  fetchPopular: () => Promise<void>;
+  fetchDailyTop: () => Promise<void>;
 };
 
 export const useChallengeStore = create<ChallengeState>((set) => ({
-  participating: [],
-  popular: [],
+  dailyTop: [],
   isLoading: false,
   error: null,
-  fetchParticipating: async () => {
+  fetchDailyTop: async () => {
     set({ isLoading: true, error: null });
     try {
-      const participating = await mockApi.getParticipatingChallenges();
-      set({ participating, isLoading: false });
-    } catch (error) {
-      set({ error: '참여중인 챌린지를 불러오는데 실패했습니다.', isLoading: false });
-    }
-  },
-  fetchPopular: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const popular = await mockApi.getPopularChallenges();
-      set({ popular, isLoading: false });
-    } catch (error) {
-      set({ error: '인기 챌린지를 불러오는데 실패했습니다.', isLoading: false });
+      const dailyTop = await getDailyTopChallenges(3);
+      set({ dailyTop, isLoading: false });
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || '오늘의 인기 챌린지를 불러오는데 실패했습니다.';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 }));

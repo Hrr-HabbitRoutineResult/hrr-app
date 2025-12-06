@@ -3,16 +3,19 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 import BackIcon from '../../../assets/icons/back.svg';
 
 interface HeaderProps {
-    onBack?: () => void;              // 뒤로가기 버튼 클릭 핸들러
-    title?: string;                   // 중앙에 표시할 제목 텍스트
-    showDivider?: boolean;            // 구분선 표시 여부
-    rightContent?: React.ReactNode;   // 오른쪽 영역에 표시할 커스텀 컨텐츠 (건너뛰기 버튼, 아이콘 등)
+  onBack?: () => void;              // 뒤로가기 버튼 클릭 핸들러
+  title?: string;                   // 중앙에 표시할 제목 텍스트
+  showDivider?: boolean;            // 구분선 표시 여부
+  rightContent?: React.ReactNode;   // 오른쪽 영역에 표시할 커스텀 컨텐츠 (건너뛰기 버튼, 아이콘 등)
+  useSafeArea?: boolean;            // TopAppBar처럼 안전 영역을 직접 처리할지 여부 (기본값: false)
 }
 
 // 공통 Header 컴포넌트
@@ -21,11 +24,32 @@ export const Header: React.FC<HeaderProps> = ({
   title,
   showDivider = false,
   rightContent,
+  useSafeArea = false,
 }) => {
+  const insets = useSafeAreaInsets();
+
+  // 플랫폼별 기본 상단 패딩
+  // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
+  // iOS: 기존 디자인 스펙 유지 (16)
+  const verticalPadding = Platform.OS === 'android' ? 24 : 16;
+
+  // 상단 safeAreaTop 적용 여부
+  // useSafeArea가 true인 경우에만 안전 영역 높이를 계산하여 더해줌
+  // 이미 부모에서 SafeAreaView로 감싸고 있다면 false로 두어 이중 패딩 방지
+  const safeAreaTop = useSafeArea
+    ? (Platform.OS === 'android' ? Math.max(insets.top, 24) : insets.top)
+    : 0;
+
   return (
-    <>
-      <View style={styles.header}>
-        {/* 왼쪽: 뒤로가기 버튼 */}
+    <View style={[
+      styles.header,
+      showDivider && styles.headerBorder,
+      {
+        paddingTop: safeAreaTop + verticalPadding,
+        paddingBottom: showDivider ? verticalPadding - 1 : verticalPadding, // borderBottomWidth 1px 차감
+      }
+    ]}>
+      {/* 왼쪽: 뒤로가기 버튼 */}
         {onBack ? (
           <TouchableOpacity onPress={onBack} style={styles.backButton}>
             <BackIcon width={9} height={18} />
@@ -52,10 +76,6 @@ export const Header: React.FC<HeaderProps> = ({
           <View style={styles.backButtonPlaceholder} />
         )}
       </View>
-
-      {/* 구분선 */}
-      {showDivider && <View style={styles.divider} />}
-    </>
   );
 };
 
@@ -65,8 +85,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    // paddingVertical은 동적으로 처리하므로 제거
     backgroundColor: colors.white,
+  },
+  headerBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
   },
   backButton: {
     width: 24,

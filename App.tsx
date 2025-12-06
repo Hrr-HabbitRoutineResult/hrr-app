@@ -1,11 +1,13 @@
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, AppState, DeviceEventEmitter } from 'react-native';
 import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthOnboardingScreen } from './src/screens/Auth/AuthOnboardingScreen';
 import RootNavigator from './src/navigation/RootNavigator';
+import { LOGOUT_EVENT } from './src/libs/auth/logout';
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -37,10 +39,62 @@ function App() {
 
 function AppContent() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const appState = useRef(AppState.currentState);
+
+  // 인증 상태 확인 함수
+  const checkAuthStatus = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+
+      if (accessToken) {
+        setIsOnboardingComplete(true);
+      } else {
+        setIsOnboardingComplete(false);
+      }
+    } catch (error) {
+      setIsOnboardingComplete(false);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  useEffect(() => {
+    // 초기 인증 상태 확인
+    checkAuthStatus();
+
+    // 로그아웃 이벤트 리스너 (로그아웃 시 즉시 상태 업데이트)
+    const logoutSubscription = DeviceEventEmitter.addListener(LOGOUT_EVENT, () => {
+      setIsOnboardingComplete(false);
+      setIsCheckingAuth(false);
+    });
+
+    // 앱이 포커스될 때마다 인증 상태 재확인 (로그아웃 시 상태 반영)
+    const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        // 앱이 백그라운드에서 포그라운드로 돌아올 때 인증 상태 확인
+        checkAuthStatus();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      logoutSubscription.remove();
+      appStateSubscription.remove();
+    };
+  }, []);
 
   const handleOnboardingComplete = () => {
     setIsOnboardingComplete(true);
   };
+
+  // 인증 상태 확인 중에는 아무것도 렌더링하지 않고 스플래시 화면 유지
+  if (isCheckingAuth) {
+    return null;
+  }
 
   if (isOnboardingComplete) {
     return <RootNavigator />;

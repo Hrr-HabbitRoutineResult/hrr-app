@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '../../components/common/Text';
 import { Button } from '../../components/common/Button';
+import { CarouselPagination } from '../../components/common/CarouselPagination';
 import { colors } from '../../design/tokens';
 import LogoPrimarySvg from '../../../assets/images/logo-primary.svg';
 import BackgroundBlur1Svg from '../../../assets/images/background-blur-1.svg';
@@ -197,33 +198,10 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
           />
           {/* 페이지네이션 */}
           <View style={styles.paginationContainer}>
-            {MOCK_CHALLENGES.map((_, index) => {
-              const isActive = index === currentIndex;
-              const isEnd = index === 0 || index === MOCK_CHALLENGES.length - 1;
-
-              // 현재 인덱스에 따라 스타일 결정
-              let dotStyle;
-              if (isActive) {
-                // 현재 선택된 바
-                dotStyle = styles.paginationDotActive;
-              } else if (isEnd) {
-                // 맨 끝 작은 원
-                dotStyle = styles.paginationDotEnd;
-              } else {
-                // 양옆 원
-                dotStyle = styles.paginationDot;
-              }
-
-              return (
-                <View
-                  key={index}
-                  style={[
-                    dotStyle,
-                    index < MOCK_CHALLENGES.length - 1 && styles.paginationDotSpacing,
-                  ]}
-                />
-              );
-            })}
+            <CarouselPagination
+              currentIndex={currentIndex}
+              totalItems={MOCK_CHALLENGES.length}
+            />
           </View>
         </View>
       </View>
@@ -379,31 +357,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   paginationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingTop: 60,
-  },
-  paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.button,
-  },
-  paginationDotActive: {
-    width: 32,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.primary.main,
-  },
-  paginationDotEnd: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.button,
-  },
-  paginationDotSpacing: {
-    marginRight: 4,
   },
   bottomButtonContainer: {
     paddingHorizontal: 20,

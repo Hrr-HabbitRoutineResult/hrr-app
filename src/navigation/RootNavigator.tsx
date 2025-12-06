@@ -1,4 +1,3 @@
-// src/navigation/RootNavigator.tsx
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -12,10 +11,10 @@ import RandomMissionScreen from '../screens/RandomMissionScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
+import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
-import BottomTabBarIcons from '../components/home/BottomTabBarIcons';
-import CustomTabBar from '../components/home/CustomTabBar';
+import CustomTabBar from '../components/common/CustomTabBar';
 
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
@@ -47,6 +46,7 @@ const RootNavigator = () => (
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="ChallengeList" component={ChallengeListScreen} />
       <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
+      <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   </NavigationContainer>
 );

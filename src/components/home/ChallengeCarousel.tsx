@@ -8,9 +8,13 @@ import {
   Dimensions,
   Animated,
 } from 'react-native';
-import { Challenge } from '../../store/challengeSlice';
+import LinearGradient from 'react-native-linear-gradient';
+import { Challenge } from '../../libs/api/challenge';
 import { colors, typography, spacing } from '../../design/tokens';
-import Pagination from '../common/Pagination';
+import { CarouselPagination } from '../common/CarouselPagination';
+import PlusIcon from '../../../assets/icons/plus.svg';
+import CheckboxChecked from '../../../assets/icons/checkbox-checked.svg';
+import CheckboxUnchecked from '../../../assets/icons/checkbox-unchecked.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
 const ITEM_SIZE = 200;
@@ -51,13 +55,39 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
     return (
       <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
         <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+        <LinearGradient
+          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.9)']}
+          style={styles.gradientOverlay}
+        />
         <View style={styles.overlay}>
-          <Text style={styles.challengeName}>{item.title}</Text>
-          {item.todayEligible && <View style={styles.checkBadge} />}
+          <View style={styles.challengeInfo}>
+            {item.todayEligible ? (
+              <CheckboxChecked width={12} height={10} />
+            ) : (
+              <CheckboxUnchecked width={12} height={10} />
+            )}
+            <Text style={styles.challengeName}>{item.title}</Text>
+          </View>
         </View>
       </Animated.View>
     );
   };
+
+  // 빈 상태일 때
+  if (challenges.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyCircle}>
+          <View style={styles.contentWrapper}>
+            <PlusIcon width={20} height={20} />
+            <Text style={styles.emptyText}>
+              새로운 챌린지에{'\n'}가입해 보세요
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -86,14 +116,43 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         )}
         scrollEventThrottle={16}
       />
-      <Pagination total={challenges.length} current={currentIndex + 1} />
+      <View style={styles.paginationWrapper}>
+        <CarouselPagination currentIndex={currentIndex} totalItems={challenges.length} />
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: ITEM_SIZE + 40,
+    marginTop: 19,
+  },
+  paginationWrapper: {
+    marginTop: 12,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.lg,
+  },
+  emptyCircle: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    ...typography.xsReg,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginTop: 20,
+    lineHeight: 18,
   },
   itemContainer: {
     width: ITEM_SIZE,
@@ -107,23 +166,28 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: ITEM_SIZE / 2,
   },
+  gradientOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: ITEM_SIZE / 2,
+  },
   overlay: {
     position: 'absolute',
-    bottom: spacing.md,
-    left: spacing.md,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 36,
+  },
+  challengeInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   challengeName: {
-    ...typography.header4,
+    ...typography.xsMd,
     color: colors.white,
-  },
-  checkBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.primary.main,
-    marginLeft: spacing.xs,
+    marginLeft: 10,
   },
 });
 

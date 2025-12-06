@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,6 +7,8 @@ import {
   Image,
   Modal,
   Dimensions,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -18,6 +20,7 @@ import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
+import { getChallengeDetail, getChallengeProfile, likeChallenge, unlikeChallenge, joinChallenge, ChallengeDetail, ChallengeProfile } from '../../libs/api/challenge';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -57,8 +60,12 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
+  
+  const [data, setData] = useState<ChallengeDetail | null>(null);
+  const [profile, setProfile] = useState<ChallengeProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [isLiked, setIsLiked] = useState(false);
-  const [isObserverModeEnabled, setIsObserverModeEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'certification'>('profile');
   const [showParticipateModal, setShowParticipateModal] = useState(false);
   const [isPasswordMode, setIsPasswordMode] = useState(false);
@@ -83,23 +90,72 @@ export const ChallengeProfileScreen: React.FC = () => {
     토: 'none',
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [detailResult, profileResult] = await Promise.all([
+          getChallengeDetail(challengeId),
+          getChallengeProfile(challengeId),
+        ]);
+        
+        setData(detailResult);
+        setProfile(profileResult);
+        setIsLiked(detailResult.isLiked);
+        setIsParticipated(detailResult.isParticipant);
+      } catch (error: any) {
+        Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
+          { text: '확인', onPress: () => navigation.goBack() }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [challengeId, navigation]);
+
   const handleBack = () => {
     navigation.goBack();
   };
 
-  // 임시 데이터
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary.main} />
+      </View>
+    );
+  }
+
+  if (!data || !profile) return null;
+
+  // 요일 변환 함수
+  const formatDays = (days: string[]) => {
+    const dayMap: Record<string, string> = {
+      MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
+      FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
+    };
+    return days.map(d => dayMap[d] || d).join('/');
+  };
+
+  // 시간 포맷 함수 (HH:MM:SS -> HH:MM)
+  const formatTime = (time: string) => {
+    return time.substring(0, 5); // "06:00:00" -> "06:00"
+  };
+
+  // API 데이터 매핑
   const challengeData = {
-    name: '백준 실버3 코테',
-    description: '백준 실버3 매일 풀고 공유',
-    participants: 10,
-    maxParticipants: 30,
-    isObserverMode: true,
-    hostNickname: '김흐르',
+    name: data.title,
+    description: data.description,
+    participants: data.currentParticipantCount,
+    maxParticipants: data.maxParticipantCount,
+    isObserverMode: data.isObserverMode,
+    hostNickname: data.owner.nickname,
     schedule: {
-      days: '월/목',
-      timeRange: '10:00 ~ 18:00',
+      days: formatDays(profile.targetDays),
+      timeRange: `${formatTime(profile.verifyStartTime)} ~ ${formatTime(profile.verifyEndTime)}`,
     },
-    rules: '해당 챌린지는 월요일과 목요일, 일주일에 2번을 인증해야 합니다. 오전 10시부터 오후 6시까지만 인증이 가능하므로 그 시간 안에 코딩테스트를 풀고 작성해주세요.',
+    rules: profile.rule,
     rankings: [
       { rank: 1, nickname: '헤더', score: 156 },
       { rank: 2, nickname: '헤더', score: 102 },
@@ -156,10 +212,20 @@ export const ChallengeProfileScreen: React.FC = () => {
     console.log('공유하기');
   };
 
-  const handleLike = () => {
-    // TODO: 찜하기 기능 구현
-    // 현재는 아이콘 이미지 상태만 변경
-    setIsLiked(!isLiked);
+  const handleLike = async () => {
+    try {
+      if (isLiked) {
+        // 찜하기 취소
+        const result = await unlikeChallenge(challengeId);
+        setIsLiked(result.isLiked);
+      } else {
+        // 찜하기
+        const result = await likeChallenge(challengeId);
+        setIsLiked(result.isLiked);
+      }
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '찜하기 처리 중 오류가 발생했습니다.');
+    }
   };
 
   const handleHostProfile = () => {
@@ -174,30 +240,37 @@ export const ChallengeProfileScreen: React.FC = () => {
     setPasswordError(undefined);
   };
 
-  const handleParticipateConfirm = () => {
+  const handleParticipateConfirm = async () => {
     // 비공개 챌린지인 경우 비밀번호 입력 모달로 전환
-    const isPrivate = true; // TODO: API 연동 후 challengeData.isPrivate로 변경
-    if (isPrivate && !isPasswordMode) {
+    if (!data.isPublic && !isPasswordMode) {
       setIsPasswordMode(true);
       return;
     }
 
-    if (isPasswordMode) {
-      // 비밀번호 입력 확인
-      if (password === '1234') {
-        // TODO: API 연동 후 실제 참가 기능 구현하기
+    try {
+      if (isPasswordMode) {
+        // 비공개 챌린지 - 비밀번호와 함께 참가
+        await joinChallenge(challengeId, password);
         setShowParticipateModal(false);
         setIsPasswordMode(false);
         setPassword('');
         setPasswordError(undefined);
         setIsParticipated(true);
+        Alert.alert('완료', '챌린지에 참가했습니다.');
       } else {
-        setPasswordError('비밀번호를 다시 확인해 주세요');
+        // 공개 챌린지 - 비밀번호 없이 참가
+        await joinChallenge(challengeId);
+        setShowParticipateModal(false);
+        setIsParticipated(true);
+        Alert.alert('완료', '챌린지에 참가했습니다.');
       }
-    } else {
-      // TODO: API 연동 후 실제 참가 기능 구현하기
-      setShowParticipateModal(false);
-      setIsParticipated(true);
+    } catch (error: any) {
+      // 비밀번호 오류인 경우
+      if (isPasswordMode && error.message?.includes('비밀번호')) {
+        setPasswordError('비밀번호를 다시 확인해 주세요');
+      } else {
+        Alert.alert('오류', error.message || '챌린지 참가에 실패했습니다.');
+      }
     }
   };
 
@@ -216,10 +289,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={[]}>
       {/* 헤더 */}
       <Header
         onBack={handleBack}
+        useSafeArea={true}
         rightContent={
           <View style={styles.headerRightContent}>
             <TouchableOpacity
@@ -254,7 +328,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           {/* 배경 이미지 */}
           <View style={styles.heroImageContainer}>
             <Image
-              source={require('../../../assets/images/mock-challenge-profile.png')}
+              source={{ uri: data.imageUrl }}
               style={styles.heroImage}
               resizeMode="cover"
             />
@@ -283,30 +357,20 @@ export const ChallengeProfileScreen: React.FC = () => {
                   {challengeData.participants}/{challengeData.maxParticipants}
                 </Text>
               </View>
-              {/* 관찰자 모드 (참가 전에만 표시) */}
-              {!isParticipated && challengeData.isObserverMode && (
-                <TouchableOpacity
-                  style={styles.participantItem}
-                  onPress={() => {
-                    // TODO: UI 테스트를 위한 임시 토글 기능, API 연동 시 수정 예정
-                    setIsObserverModeEnabled(!isObserverModeEnabled);
-                  }}
-                  activeOpacity={0.7}
-                >
+              {/* 관찰자 모드 (참가 전이면 항상 표시, isObserverMode 값에 따라 활성화/비활성화) */}
+              {!isParticipated && (
+                <View style={styles.participantItem}>
                   <View style={styles.iconContainer24}>
-                    {isObserverModeEnabled ? (
+                    {data.isObserverMode ? (
                       <ObserverEnabledIcon width={13} height={12} />
                     ) : (
                       <ObserverDisabledIcon width={17} height={12} />
                     )}
                   </View>
-                  <Text
-                    variant="xxs"
-                    color={isObserverModeEnabled ? colors.white : colors.icon.gray}
-                  >
+                  <Text variant="xxs" color={data.isObserverMode ? colors.white : colors.icon.gray}>
                     관찰자 모드
                   </Text>
-                </TouchableOpacity>
+                </View>
               )}
             </View>
           </View>
@@ -318,7 +382,14 @@ export const ChallengeProfileScreen: React.FC = () => {
           onPress={handleHostProfile}
           activeOpacity={0.7}
         >
-          <DefaultProfileIcon width={40} height={40} />
+          {data.owner.profileImageUrl ? (
+            <Image
+              source={{ uri: data.owner.profileImageUrl.replace('http://', 'https://') }}
+              style={{ width: 40, height: 40, borderRadius: 20 }}
+            />
+          ) : (
+            <DefaultProfileIcon width={40} height={40} />
+          )}
           <Text variant="smMd" color={colors.text.primary} style={styles.hostNickname}>
             {challengeData.hostNickname}
           </Text>
@@ -330,8 +401,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         {/* 구분선 */}
         <View style={styles.sectionDivider} />
 
-        {/* 프로필/인증현황 탭 (관찰자 모드 활성화 또는 참가 후 표시) */}
-        {(isObserverModeEnabled || isParticipated) && (
+        {/* 프로필/인증현황 탭 (관찰자 모드가 지원되거나 참가 후 표시) */}
+        {(data.isObserverMode || isParticipated) && (
           <TabBar
             tabs={[
               { key: 'profile', label: '프로필' },
@@ -349,7 +420,7 @@ export const ChallengeProfileScreen: React.FC = () => {
         )}
 
         {/* 프로필/인증현황 탭 내용 */}
-        {(isObserverModeEnabled || isParticipated) && activeTab === 'certification' ? (
+        {(data.isObserverMode || isParticipated) && activeTab === 'certification' ? (
           // 인증현황 탭
           <View style={styles.certificationSection}>
             {/* 라운드 캐러셀 */}
@@ -604,7 +675,7 @@ export const ChallengeProfileScreen: React.FC = () => {
             )}
 
         {/* 챌린지 랭킹 */}
-        {isParticipated ? (
+        {isParticipated || data.isObserverMode ? (
           <View style={[styles.section, styles.rankingSection]}>
             <TouchableOpacity
               style={styles.sectionTitleRow}
@@ -788,10 +859,9 @@ const styles = StyleSheet.create({
   },
   headerIconButton: {
     width: 48,
-    height: 48,
+    height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: -12, // 레이아웃에서 위아래로 12px씩 당겨서 실제 차지 공간은 24px로 줄임
   },
   heroSection: {
     position: 'relative',

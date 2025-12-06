@@ -1,53 +1,81 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../design/tokens';
-import { StyleSheet as RNStyleSheet } from 'react-native';
-import Logo from '../../../assets/icons/topbar/logo.svg';
-import BellIcon from '../../../assets/icons/topbar/ic_alarm.svg';
+import Logo from '../../../assets/images/logo-primary.svg';
+import BellIcon from '../../../assets/icons/alarm.svg';
 
 const TopAppBar = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
+
+  // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
+  // iOS: 기존 디자인 스펙 유지 (16)
+  const verticalPadding = Platform.OS === 'android' ? 24 : 16;
+
+  // safeAreaTop 높이 계산
+  const safeAreaTop = Platform.OS === 'android'
+    ? Math.max(insets.top, 24) 
+    : insets.top;
 
   return (
-    <View style={styles.container}>
-      {/* 왼쪽 로고 */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('HomeTabs')}
-        activeOpacity={0.8}
-        style={styles.logoWrapper}
-      >
-        <Logo width={28} height={27} />
-      </TouchableOpacity>
+    <View style={[
+      styles.container, 
+      { 
+        paddingTop: safeAreaTop + verticalPadding,
+        paddingBottom: verticalPadding - 4 // borderBottomWidth 1px + 콘텐츠 높이 차이 3px 차감
+      }
+    ]}>
+      <View style={styles.contentContainer}>
+        {/* 왼쪽 로고 */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('HomeTabs')}
+          activeOpacity={0.8}
+          style={styles.logoWrapper}
+        >
+          <Logo width={27.99} height={27} />
+        </TouchableOpacity>
 
-      {/* 오른쪽 알림 아이콘 */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Notifications')}
-        activeOpacity={0.8}
-        style={styles.logoWrapper}
-      >
-        <BellIcon width={48} height={48} style={{ transform: [{ scale: 1.2 }] }} />
-      </TouchableOpacity>
+        {/* 오른쪽 알림 아이콘 */}
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Notifications')}
+          activeOpacity={0.8}
+          style={styles.iconWrapper}
+        >
+          <BellIcon width={18.82} height={20} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 100,
+    backgroundColor: colors.white,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.line,
+  },
+  contentContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    borderBottomWidth: RNStyleSheet.hairlineWidth, // ✅ 아주 얇은 선도 표시
-    borderBottomColor: '#E0E0E0', // ✅ 확실히 보이는 라인색
   },
   logoWrapper: {
-    marginTop: 50,
-  }
+    width: 28,
+    height: 27,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconWrapper: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default TopAppBar;

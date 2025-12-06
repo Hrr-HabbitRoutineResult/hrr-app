@@ -38,10 +38,12 @@ const CategoryChips = () => {
           accessibilityLabel={`${name} 카테고리 보기`}
           accessibilityRole="button"
         >
-          <Icon
-            width={48}
-            height={48}
-          />
+          <View style={id !== 'all' ? styles.iconWithShadow : undefined}>
+            <Icon
+              width={48}
+              height={48}
+            />
+          </View>
           <View style={styles.textWrapper}>
             <Text style={styles.chipText}>{name}</Text>
           </View>
@@ -59,14 +61,26 @@ const styles = StyleSheet.create({
   chip: {
     alignItems: 'center',
   },
+  iconWithShadow: {
+    // iOS 그림자
+    shadowColor: '#9FA7B4',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    // Android 그림자
+    elevation: 4,
+  },
   textWrapper: {
-    marginTop: 4,
+    marginTop: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   chipText: {
     ...typography.xxs,
-    color: colors.text.secondary,
+    color: colors.text.primary,
     textAlign: 'center',
     lineHeight: 12,
   },
