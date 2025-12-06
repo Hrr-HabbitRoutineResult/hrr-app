@@ -13,7 +13,7 @@ import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
-import CustomTabBar from '../components/home/CustomTabBar';
+import CustomTabBar from '../components/common/CustomTabBar';
 
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
