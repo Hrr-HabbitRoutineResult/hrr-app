@@ -12,6 +12,7 @@ import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
+import PopularChallengeScreen from '../screens/PopularChallengeScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -47,6 +48,7 @@ const RootNavigator = () => (
       <Stack.Screen name="ChallengeList" component={ChallengeListScreen} />
       <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
       <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   </NavigationContainer>
 );

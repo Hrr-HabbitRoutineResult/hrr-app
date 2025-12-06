@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { colors, typography, spacing, radius } from '../../design/tokens';
+import { colors, typography, spacing } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { DailyTopChallengeItem } from '../../libs/api/challenge';
 import ChevronRightIcGrey from '../../../assets/icons/chevron-right-ic-grey.svg';
-import PersonIcon from '../../../assets/icons/person.svg';
 import EmptyPopularChallenge from '../../../assets/images/empty-popular-challenge.svg';
+import ChallengeItem from '../common/ChallengeItem';
 
 interface PopularListProps {
   challenges: DailyTopChallengeItem[];
@@ -17,7 +17,7 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const handleSeeMore = () => {
-    navigation.navigate('ChallengeList', { category: 'popular' });
+    navigation.navigate('PopularChallenge');
   };
 
   // 요일 파싱 함수
@@ -76,50 +76,22 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
         challenges.map((item, index) => {
           const { info } = item;
           const daysText = parseDaysOfWeek(info.daysOfWeek);
-          const isDdayZero = info.ddayUntilStart === 0;
           const isLast = index === challenges.length - 1;
 
           return (
-            <TouchableOpacity 
+            <ChallengeItem
               key={info.challengeId} 
-              style={[styles.card, isLast && { marginBottom: 0 }]}
+              challengeId={info.challengeId}
+              thumbnailUrl={info.thumbnailUrl}
+              title={info.title}
+              description={info.description}
+              daysText={daysText}
+              currentParticipantCount={info.currentParticipantCount}
+              maxParticipantCount={info.maxParticipantCount}
+              ddayUntilStart={info.ddayUntilStart}
               onPress={() => navigation.navigate('ChallengeProfile', { challengeId: info.challengeId })}
-            >
-              <View style={styles.thumbnailWrapper}>
-                <Image
-                  source={{ uri: info.thumbnailUrl }}
-                  style={[styles.thumbnail, { backgroundColor: '#eee' }]}
-                  resizeMode="cover"
-                />
-                {!isDdayZero && (
-                  <View style={styles.dDayOverlay}>
-                    <Text style={styles.dDayText}>D-{info.ddayUntilStart}</Text>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.infoContainer}>
-                <Text style={styles.title}>{info.title}</Text>
-                <Text style={styles.subText} numberOfLines={1} ellipsizeMode="tail">
-                  {info.description}
-                </Text>
-              </View>
-
-              <View style={styles.rightContainer}>
-                <View style={styles.dailyBadge}>
-                  <Text style={styles.dailyText}>{daysText}</Text>
-                </View>
-
-                <View style={styles.participantRow}>
-                  <View style={styles.iconWrapper}>
-                    <PersonIcon width={14} height={14} />
-                  </View>
-                  <Text style={styles.participantCount}>
-                    {info.currentParticipantCount} / {info.maxParticipantCount}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
+              marginBottom={isLast ? 0 : 8}
+            />
           );
         })
       )}
@@ -152,103 +124,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    height: 80,
-    padding: spacing.md,
-    marginBottom: spacing.xs,
-    position: 'relative',
-  },
-
-  /* 썸네일 + 오버레이 래퍼 */
-  thumbnailWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 5.54,
-    overflow: 'hidden',
-    marginRight: spacing.sm,
-  },
-
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-
-  /* 썸네일 전체 오버레이 */
-  dDayOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  dDayText: {
-    ...typography.header3,
-    color: colors.white,
-  },
-
-  infoContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-
-  title: {
-    ...typography.smMd,
-    color: colors.text.primary,
-    marginBottom: 5,
-  },
-
-  subText: {
-    ...typography.xxs,
-    color: colors.text.tertiary,
-  },
-
-  rightContainer: {
-    height: 38,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginLeft: 8,
-  },
-
-  dailyBadge: {
-    paddingHorizontal: 8,
-    height: 18,
-    borderWidth: 1,
-    borderColor: colors.primary.main,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-
-  dailyText: {
-    ...typography.xxs,
-    color: colors.primary.main,
-    textAlign: 'center',
-  },
-
-  participantRow: {
-    height: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  iconWrapper: {
-    paddingTop: 2,
-  },
-
-  participantCount: {
-    ...typography.caption,
-    color: colors.text.primary,
-    marginLeft: 4,
-  },
-
   emptyContainer: {
     width: '100%',
     height: 80,
