@@ -40,3 +40,45 @@ export const kakaoLoginByToken = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 토큰 재발급
+ * ============================================
+ */
+
+/**
+ * 토큰 재발급 응답
+ * - result.accessToken: 새로운 액세스 토큰
+ */
+export interface TokenReissueResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    accessToken: string;
+  };
+}
+
+/**
+ * 리프레시 토큰으로 액세스 토큰 재발급
+ */
+export const reissueAccessToken = async (
+  refreshToken: string
+): Promise<TokenReissueResponse> => {
+  try {
+    const response = await apiClient.post<TokenReissueResponse>(
+      `/api/v1/auth/reissue`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
