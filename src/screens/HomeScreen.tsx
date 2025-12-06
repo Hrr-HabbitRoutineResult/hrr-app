@@ -59,9 +59,8 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.safeArea}>
+      <TopAppBar />
       <ScrollView style={styles.container}>
-        <TopAppBar />
-
         {/* 로딩 상태 */}
         {isLoading && (
           <View style={styles.centerBox}>
