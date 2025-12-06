@@ -35,12 +35,18 @@ export const OptionButton: React.FC<OptionButtonProps> = ({
   );
 };
 
+// 옵션 아이템 타입
+export interface OptionItem {
+  id: string;
+  label: string;
+}
+
 // 옵션 그룹 컴포넌트 Props
 interface OptionGroupProps {
   title: string;
-  options: string[];
+  options: OptionItem[] | string[];
   selectedOptions: string[];
-  onOptionSelect: (option: string) => void;
+  onOptionSelect: (id: string) => void;
   multiSelect?: boolean; // 다중 선택 가능 여부 (기본값: false, 단일 선택)
 }
 
@@ -52,21 +58,20 @@ export const OptionGroup: React.FC<OptionGroupProps> = ({
   onOptionSelect,
   multiSelect = false,
 }) => {
-  const handleOptionPress = (option: string) => {
+  const normalizedOptions: OptionItem[] = options.map((option) => {
+    if (typeof option === 'string') {
+      return { id: option, label: option };
+    }
+    return option;
+  });
+
+  const handleOptionPress = (id: string) => {
     if (multiSelect) {
-      // 다중 선택
-      if (selectedOptions.includes(option)) {
-        onOptionSelect(option); // 이미 선택된 경우 선택 해제
-      } else {
-        onOptionSelect(option); // 선택되지 않은 경우 선택 추가
-      }
+      // 다중 선택 토글
+      onOptionSelect(id);
     } else {
-      // 단일 선택
-      if (selectedOptions.includes(option)) {
-        onOptionSelect(option);
-      } else {
-        onOptionSelect(option);
-      }
+      // 단일 선택 토글
+      onOptionSelect(id);
     }
   };
 
@@ -76,12 +81,12 @@ export const OptionGroup: React.FC<OptionGroupProps> = ({
         {title}
       </Text>
       <View style={styles.optionsContainer}>
-        {options.map((option, index) => (
+        {normalizedOptions.map((option) => (
           <OptionButton
-            key={index}
-            label={option}
-            isSelected={selectedOptions.includes(option)}
-            onPress={() => handleOptionPress(option)}
+            key={option.id}
+            label={option.label}
+            isSelected={selectedOptions.includes(option.id)}
+            onPress={() => handleOptionPress(option.id)}
           />
         ))}
       </View>

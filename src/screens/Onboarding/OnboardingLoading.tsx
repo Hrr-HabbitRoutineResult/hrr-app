@@ -10,15 +10,33 @@ import { Text } from '../../components/common/Text';
 import { Header } from '../../components/common/Header';
 import { colors } from '../../design/tokens';
 import LoadingImage from '../../../assets/images/onboarding-loading.svg';
+import { getChallengeRecommendations, RecommendedChallenge } from '../../libs/api/challenge';
+import { getUserMe } from '../../libs/api/user';
 
 interface OnboardingLoadingProps {
   onBack: () => void;
   onComplete: () => void;
+  q1Gender: string;
+  q1Age: string;
+  q1Occupation: string;
+  q2TimeSlots: Set<string>;
+  q3Categories: string[];
+  q4Goal: string;
+  onSetRecommendedChallenges: (challenges: RecommendedChallenge[]) => void;
+  refreshKey: number;
 }
 
 export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
   onBack,
   onComplete,
+  q1Gender,
+  q1Age,
+  q1Occupation,
+  q2TimeSlots,
+  q3Categories,
+  q4Goal,
+  onSetRecommendedChallenges,
+  refreshKey,
 }) => {
   const slideAnim = useRef(new Animated.Value(0)).current;
   const imageWidth = 220;
@@ -55,15 +73,52 @@ export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
     };
   }, []);
 
-  // 4초 후 자동으로 다음 화면으로 전환
-  // TODO: API 연동 후 로딩에 성공하면 추천 챌린지 화면으로 이동
+  // API 호출하여 추천 챌린지 받기
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onComplete();
-    }, 4000);
+    const fetchRecommendations = async () => {
+      try {
+        // 사용자 정보 가져오기
+        const userInfo = await getUserMe();
+        const userId = userInfo.userId;
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+
+        // TODO: 시간대 다중 선택 지원 필요 -> 백엔드 API 확인 수정 필요
+        const firstTimeSlot = q2TimeSlots.size > 0 ? Array.from(q2TimeSlots)[0] : 'MORNING';
+        
+        // 카테고리 배열
+        const categories = q3Categories.length > 0 
+          ? q3Categories
+          : ['ALL'];
+
+        // API 요청 데이터 구성
+        const request = {
+          userId,
+          gender: q1Gender as 'MALE' | 'FEMALE',
+          ageGroup: q1Age as 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS',
+          job: q1Occupation as 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC',
+          availableTime: firstTimeSlot as 'EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT',
+          category: categories,
+          goal: q4Goal as 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING',
+        };
+
+        // API 호출
+        const recommendations = await getChallengeRecommendations(request);
+        
+        // 결과 저장
+        onSetRecommendedChallenges(recommendations);
+        
+        // 완료 처리
+        onComplete();
+      } catch (error) {
+        // 일단은 에러 발생 시에도 다음 화면으로 이동
+        console.error('추천 챌린지 조회 실패:', error);
+        onSetRecommendedChallenges([]);
+        onComplete();
+      }
+    };
+
+    fetchRecommendations();
+  }, [q1Gender, q1Age, q1Occupation, q2TimeSlots, q3Categories, q4Goal, onComplete, onSetRecommendedChallenges, refreshKey]);
 
   // 이미지 위치 계산
   const getImageTranslateX = (index: number) => {

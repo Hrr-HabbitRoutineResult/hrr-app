@@ -21,46 +21,13 @@ import ChevronRightIcon from '../../../assets/icons/chevron-right-primary.svg';
 import LikeSelectedIcon from '../../../assets/icons/like-selected-circle.svg';
 import LikeUnselectedIcon from '../../../assets/icons/like-unselected-circle.svg';
 import RefreshFabIcon from '../../../assets/icons/refresh-fab.svg';
+import { RecommendedChallenge } from '../../libs/api/challenge';
 
 interface OnboardingResultScreenProps {
   onGoHome: () => void;
   onRefresh: () => void;
+  recommendedChallenges: RecommendedChallenge[];
 }
-
-interface Challenge {
-  id: string;
-  title: string;
-  description: string;
-}
-
-// 목 데이터
-const MOCK_CHALLENGES: Challenge[] = [
-  {
-    id: '1',
-    title: '백준 실버3 코테',
-    description: '백준 실버3 매일 풀고 공유',
-  },
-  {
-    id: '2',
-    title: '미라클 모닝',
-    description: '매일 아침 6시에 기상한 후 인증샷 남기기',
-  },
-  {
-    id: '3',
-    title: '오운완',
-    description: '매일 운동하고 인증하기',
-  },
-  {
-    id: '4',
-    title: '프로젝트 완성하기',
-    description: '매일 최소 한 시간씩 개발 진행하기',
-  },
-  {
-    id: '5',
-    title: '일기쓰기',
-    description: '자기 전에 일기쓰기',
-  },
-];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = 310;
@@ -71,12 +38,16 @@ const CENTER_PADDING = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
   onGoHome,
   onRefresh,
+  recommendedChallenges,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedChallenges, setLikedChallenges] = useState<Set<string>>(new Set());
+  const [likedChallenges, setLikedChallenges] = useState<Set<number>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0); // 화면 새로고침을 위한 key
   const [bottomButtonTop, setBottomButtonTop] = useState(0); // 하단 버튼의 상단 위치
   const flatListRef = useRef<FlatList>(null);
+
+  // 추천 챌린지가 없을 경우 빈 배열 사용
+  const challenges = recommendedChallenges.length > 0 ? recommendedChallenges : [];
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetX = event.nativeEvent.contentOffset.x;
@@ -84,7 +55,7 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
     setCurrentIndex(index);
   };
 
-  const handleLikeToggle = (challengeId: string) => {
+  const handleLikeToggle = (challengeId: number) => {
     const newLiked = new Set(likedChallenges);
     if (newLiked.has(challengeId)) {
       newLiked.delete(challengeId);
@@ -95,17 +66,17 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
   };
 
   const handleRefresh = () => {
-    // TODO: API 연동 후 API 재호출하는 로직으로 변경
-    // 현재는 임시로 화면 새로고침
+    // API 재호출을 위해 상위 컴포넌트의 onRefresh 호출
     setCurrentIndex(0);
     setLikedChallenges(new Set());
     setRefreshKey((prev) => prev + 1);
     // 캐러셀을 첫 번째로 스크롤
     flatListRef.current?.scrollToIndex({ index: 0, animated: true });
+    onRefresh();
   };
 
-  const renderChallengeCard = ({ item }: { item: Challenge }) => {
-    const isLiked = likedChallenges.has(item.id);
+  const renderChallengeCard = ({ item }: { item: RecommendedChallenge }) => {
+    const isLiked = likedChallenges.has(item.challengeId);
 
     return (
       <View style={styles.cardContainer}>
@@ -120,7 +91,7 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
           {/* 좋아요 버튼 */}
           <TouchableOpacity
             style={styles.likeButton}
-            onPress={() => handleLikeToggle(item.id)}
+            onPress={() => handleLikeToggle(item.challengeId)}
             activeOpacity={0.7}
           >
             {isLiked ? (
@@ -180,29 +151,39 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
 
         {/* 캐러셀 영역 */}
         <View style={styles.carouselContainer}>
-          <FlatList
-            key={refreshKey}
-            ref={flatListRef}
-            data={MOCK_CHALLENGES}
-            renderItem={renderChallengeCard}
-            keyExtractor={(item) => item.id}
-            horizontal
-            pagingEnabled={false}
-            snapToInterval={CARD_WIDTH + CARD_SPACING}
-            decelerationRate="fast"
-            showsHorizontalScrollIndicator={false}
-            style={{ height: 360 }}
-            contentContainerStyle={styles.carouselContent}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-          />
-          {/* 페이지네이션 */}
-          <View style={styles.paginationContainer}>
-            <CarouselPagination
-              currentIndex={currentIndex}
-              totalItems={MOCK_CHALLENGES.length}
-            />
-          </View>
+          {challenges.length > 0 ? (
+            <>
+              <FlatList
+                key={refreshKey}
+                ref={flatListRef}
+                data={challenges}
+                renderItem={renderChallengeCard}
+                keyExtractor={(item) => item.challengeId.toString()}
+                horizontal
+                pagingEnabled={false}
+                snapToInterval={CARD_WIDTH + CARD_SPACING}
+                decelerationRate="fast"
+                showsHorizontalScrollIndicator={false}
+                style={{ height: 360 }}
+                contentContainerStyle={styles.carouselContent}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+              />
+              {/* 페이지네이션 */}
+              <View style={styles.paginationContainer}>
+                <CarouselPagination
+                  currentIndex={currentIndex}
+                  totalItems={challenges.length}
+                />
+              </View>
+            </>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text variant="md" color={colors.text.secondary}>
+                추천 챌린지가 없습니다
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -358,6 +339,11 @@ const styles = StyleSheet.create({
   },
   paginationContainer: {
     paddingTop: 60,
+  },
+  emptyContainer: {
+    height: 360,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomButtonContainer: {
     paddingHorizontal: 20,
