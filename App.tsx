@@ -4,6 +4,7 @@ import {
 } from 'react-native-safe-area-context';
 import React, { useEffect, useState } from 'react';
 import BootSplash from 'react-native-bootsplash';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthOnboardingScreen } from './src/screens/Auth/AuthOnboardingScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 
@@ -37,10 +38,37 @@ function App() {
 
 function AppContent() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    // 저장된 토큰으로 인증(로그인) 상태 확인
+    const checkAuthStatus = async () => {
+      try {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+
+        if (accessToken) {
+          setIsOnboardingComplete(true);
+        } else {
+          setIsOnboardingComplete(false);
+        }
+      } catch (error) {
+        setIsOnboardingComplete(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   const handleOnboardingComplete = () => {
     setIsOnboardingComplete(true);
   };
+
+  // 인증 상태 확인 중에는 아무것도 렌더링하지 않고 스플래시 화면 유지
+  if (isCheckingAuth) {
+    return null;
+  }
 
   if (isOnboardingComplete) {
     return <RootNavigator />;
