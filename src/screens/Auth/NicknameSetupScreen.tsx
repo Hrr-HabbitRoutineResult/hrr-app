@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/common/Text';
 import { TextField } from '../../components/common/TextField';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
 import { colors } from '../../design/tokens';
+import { checkNickname, setNickname } from '../../libs/api/auth';
 import CheckIcon from '../../../assets/icons/checkbox-checked.svg';
 
 interface NicknameSetupScreenProps {
@@ -22,17 +25,22 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
   onBack,
   onComplete,
 }) => {
-  const [nickname, setNickname] = useState('');
+  const [nickname, setNicknameValue] = useState('');
   const [status, setStatus] = useState<NicknameStatus>('idle');
+  const [isChecking, setIsChecking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const MAX_LENGTH = 10;
   const isNicknameValid = nickname.length > 0 && status === 'success';
 
   const handleNicknameChange = (text: string) => {
     // 최대 길이 제한
-    if (text.length > MAX_LENGTH) return;
+    if (text.length > MAX_LENGTH) {
+      return;
+    }
 
-    setNickname(text);
+    setNicknameValue(text);
 
     // 입력이 변경되면 상태 초기화
     if (status !== 'idle') {
@@ -40,21 +48,74 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
     }
   };
 
-  const handleCheckNickname = () => {
-    if (nickname.length === 0) return;
+  // 닉네임 중복 확인
+  // 입력 필드에서 포커스가 벗어날 때(onBlur) 자동으로 호출
+  const handleCheckNickname = async () => {
+    if (nickname.length === 0) {
+      setStatus('idle');
+      return;
+    }
 
-    // TODO:  API 호출로 닉네임 중복 확인
-    // 임시로 "김흐르"일 때 에러, 그 외에는 성공으로 처리
-    if (nickname === '김흐르') {
+    try {
+      setIsChecking(true);
+      const accessToken = await AsyncStorage.getItem('accessToken');
+
+      if (!accessToken) {
+        setStatus('error');
+        return;
+      }
+
+      // 닉네임 중복 확인 API 호출
+      const response = await checkNickname(accessToken, nickname);
+
+      if (response.isSuccess && response.result === true) {
+        // 닉네임 사용 가능
+        setStatus('success');
+      } else {
+        // 닉네임 중복 또는 사용 불가
+        setStatus('error');
+      }
+    } catch (error) {
+      // API 호출 실패 시 에러 상태로 표시
       setStatus('error');
-    } else {
-      setStatus('success');
+    } finally {
+      setIsChecking(false);
     }
   };
 
-  const handleComplete = () => {
-    if (isNicknameValid) {
-      onComplete(nickname);
+  // 닉네임 설정 완료
+  const handleComplete = async () => {
+    if (!isNicknameValid) {
+      return;
+    }
+
+    const accessToken = await AsyncStorage.getItem('accessToken');
+
+    if (!accessToken) {
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // 닉네임 설정 API 호출
+      const response = await setNickname(accessToken, nickname);
+
+      if (response.isSuccess) {
+        // 닉네임 저장 성공 -> AsyncStorage에 저장하고 다음 단계로 이동
+        await AsyncStorage.setItem('nickname', response.result.nickname);
+        onComplete(nickname);
+      } else {
+        Alert.alert('오류', response.message || '닉네임 설정에 실패했습니다.');
+      }
+    } catch (error: any) {
+      // 서버에서 오는 에러 메시지가 있으면 우선 표시, 없으면 기본 메시지
+      const errorMessage = error?.response?.data?.message || 
+                          error?.response?.data?.error || 
+                          '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
+      Alert.alert('오류', errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -111,7 +172,7 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
           variant={isNicknameValid ? 'black' : 'gray'}
           size="medium"
           onPress={handleComplete}
-          disabled={!isNicknameValid}
+          disabled={!isNicknameValid || isSubmitting || isChecking}
         >
           완료
         </Button>

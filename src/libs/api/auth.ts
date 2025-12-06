@@ -43,6 +43,183 @@ export const kakaoLoginByToken = async (
 
 /**
  * ============================================
+ * 약관 관련
+ * ============================================
+ */
+
+/**
+ * 개별 약관 데이터
+ */
+export interface Term {
+  id: number;
+  title: string;
+  isRequired: boolean;
+}
+
+/**
+ * 약관 목록 조회 응답
+ */
+export interface TermsListResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: Term[];
+}
+
+/**
+ * 약관 동의 요청 바디
+ */
+export interface TermsAgreeRequest {
+  agreedTermIds: number[];
+}
+
+/**
+ * 약관 동의 응답
+ */
+export interface TermsAgreeResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result?: any;
+}
+
+/**
+ * 약관 목록 조회
+ */
+export const getTermsList = async (
+  accessToken: string
+): Promise<TermsListResponse> => {
+  try {
+    const response = await apiClient.get<TermsListResponse>(
+      `/api/v1/terms`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * 약관 동의 요청
+ * - 사용자가 선택한 약관 ID 배열을 서버에 전달
+ */
+export const agreeTerms = async (
+  accessToken: string,
+  agreedTermIds: number[]
+): Promise<TermsAgreeResponse> => {
+  try {
+    const response = await apiClient.post<TermsAgreeResponse>(
+      `/api/v1/users/terms/agree`,
+      { agreedTermIds },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 닉네임 관련
+ * ============================================
+ */
+
+/**
+ * 닉네임 중복 확인 응답
+ * - result: true: 사용 가능, false: 사용 불가
+ */
+export interface NicknameCheckResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: boolean;
+}
+
+/**
+ * 닉네임 설정 요청 바디
+ */
+export interface NicknameSetRequest {
+  nickname: string;
+}
+
+/**
+ * 닉네임 설정 응답
+ */
+export interface NicknameSetResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    nickname: string;
+    message: string;
+    nextStep: string;
+  };
+}
+
+/**
+ * 닉네임 중복 여부 조회
+ */
+export const checkNickname = async (
+  accessToken: string,
+  nickname: string
+): Promise<NicknameCheckResponse> => {
+  try {
+    const response = await apiClient.get<NicknameCheckResponse>(
+      `/api/v1/user/nickname/check`,
+      {
+        params: {
+          nickname,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 닉네임 설정
+ */
+export const setNickname = async (
+  accessToken: string,
+  nickname: string
+): Promise<NicknameSetResponse> => {
+  try {
+    const response = await apiClient.post<NicknameSetResponse>(
+      `/api/v1/user/nickname`,
+      { nickname },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
  * 토큰 재발급
  * ============================================
  */
