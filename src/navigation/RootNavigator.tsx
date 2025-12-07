@@ -49,6 +49,7 @@ const RootNavigator = () => (
       <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
       <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   </NavigationContainer>
 );

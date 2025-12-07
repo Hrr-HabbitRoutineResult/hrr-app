@@ -161,7 +161,7 @@ const ChallengeListScreen = ({ route }: Props) => {
         rightContent={
           <TouchableOpacity
             onPress={() => {
-              // TODO: 검색 화면으로 이동
+              navigation.navigate('Search');
             }}
             style={styles.searchButton}
           >
