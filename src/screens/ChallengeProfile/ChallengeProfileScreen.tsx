@@ -60,11 +60,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
-  
+
   const [data, setData] = useState<ChallengeDetail | null>(null);
   const [profile, setProfile] = useState<ChallengeProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [isLiked, setIsLiked] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'certification'>('profile');
   const [showParticipateModal, setShowParticipateModal] = useState(false);
@@ -98,7 +98,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           getChallengeDetail(challengeId),
           getChallengeProfile(challengeId),
         ]);
-        
+
         setData(detailResult);
         setProfile(profileResult);
         setIsLiked(detailResult.isLiked);
@@ -209,7 +209,6 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleShare = () => {
     // TODO: 공유 기능 구현
-    console.log('공유하기');
   };
 
   const handleLike = async () => {
@@ -230,7 +229,6 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleHostProfile = () => {
     // TODO: 방장 프로필 화면으로 이동
-    console.log('방장 프로필');
   };
 
   const handleParticipate = () => {
@@ -539,7 +537,6 @@ export const ChallengeProfileScreen: React.FC = () => {
                   containerPadding={0} // section에 이미 paddingHorizontal: 24가 있으므로 0으로 설정
                   onItemPress={(item) => {
                     // TODO: 인증 상세 화면으로 이동
-                    console.log('인증 아이템 클릭:', item.id);
                   }}
                 />
               ) : (
@@ -674,77 +671,77 @@ export const ChallengeProfileScreen: React.FC = () => {
               </>
             )}
 
-        {/* 챌린지 랭킹 */}
-        {isParticipated || data.isObserverMode ? (
-          <View style={[styles.section, styles.rankingSection]}>
-            <TouchableOpacity
-              style={styles.sectionTitleRow}
-              activeOpacity={0.7}
-              onPress={() => {
-                navigation.navigate('ChallengeRanking', { challengeId: route.params.challengeId });
-              }}
-            >
-              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
-                챌린지 랭킹
-              </Text>
-              <View style={styles.sectionChevronButton}>
-                <ChevronRightIcGreyIcon width={5} height={10} />
+            {/* 챌린지 랭킹 */}
+            {isParticipated || data.isObserverMode ? (
+              <View style={[styles.section, styles.rankingSection]}>
+                <TouchableOpacity
+                  style={styles.sectionTitleRow}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    navigation.navigate('ChallengeRanking', { challengeId: route.params.challengeId });
+                  }}
+                >
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
+                    챌린지 랭킹
+                  </Text>
+                  <View style={styles.sectionChevronButton}>
+                    <ChevronRightIcGreyIcon width={5} height={10} />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.contentBox}>
+                  {challengeData.rankings.map((item, index) => (
+                    <View
+                      key={item.rank}
+                      style={[
+                        styles.rankingItem,
+                        index === challengeData.rankings.length - 1 && styles.rankingItemLast,
+                      ]}
+                    >
+                      <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
+                        {item.rank}
+                      </Text>
+                      <DefaultProfileIcon width={40} height={40} />
+                      <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
+                        {item.nickname}
+                      </Text>
+                      <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
+                        {item.score}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-            </TouchableOpacity>
-            <View style={styles.contentBox}>
-              {challengeData.rankings.map((item, index) => (
-                <View
-                  key={item.rank}
-                  style={[
-                    styles.rankingItem,
-                    index === challengeData.rankings.length - 1 && styles.rankingItemLast,
-                  ]}
-                >
-                  <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
-                    {item.rank}
-                  </Text>
-                  <DefaultProfileIcon width={40} height={40} />
-                  <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
-                    {item.nickname}
-                  </Text>
-                  <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
-                    {item.score}
+            ) : (
+              <View style={[styles.section, styles.rankingSection]}>
+                <View style={styles.sectionTitleRow}>
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
+                    챌린지 랭킹
                   </Text>
                 </View>
-              ))}
-            </View>
-          </View>
-        ) : (
-          <View style={[styles.section, styles.rankingSection]}>
-            <View style={styles.sectionTitleRow}>
-              <Text variant="header4" color={colors.text.primary} style={styles.sectionTitleNoMargin}>
-                챌린지 랭킹
-              </Text>
-            </View>
-            <View style={styles.contentBox}>
-              {challengeData.rankings.map((item, index) => (
-                <View
-                  key={item.rank}
-                  style={[
-                    styles.rankingItem,
-                    index === challengeData.rankings.length - 1 && styles.rankingItemLast,
-                  ]}
-                >
-                  <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
-                    {item.rank}
-                  </Text>
-                  <DefaultProfileIcon width={40} height={40} />
-                  <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
-                    {item.nickname}
-                  </Text>
-                  <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
-                    {item.score}
-                  </Text>
+                <View style={styles.contentBox}>
+                  {challengeData.rankings.map((item, index) => (
+                    <View
+                      key={item.rank}
+                      style={[
+                        styles.rankingItem,
+                        index === challengeData.rankings.length - 1 && styles.rankingItemLast,
+                      ]}
+                    >
+                      <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
+                        {item.rank}
+                      </Text>
+                      <DefaultProfileIcon width={40} height={40} />
+                      <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
+                        {item.nickname}
+                      </Text>
+                      <Text variant="smReg" color={colors.text.tertiary} style={styles.rankingScore}>
+                        {item.score}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
-          </View>
-        )}
+              </View>
+            )}
           </>
         )}
       </ScrollView>
@@ -755,7 +752,7 @@ export const ChallengeProfileScreen: React.FC = () => {
         <Button
           variant={isParticipated ? 'black' : 'primary'}
           size="medium"
-          onPress={isParticipated ? () => console.log('인증하기') : handleParticipate}
+          onPress={isParticipated ? () => { } : handleParticipate}
         >
           {isParticipated ? '인증하기' : '참가하기'}
         </Button>

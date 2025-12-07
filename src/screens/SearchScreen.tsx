@@ -46,7 +46,7 @@ const SearchScreen = () => {
           }
         }
       } catch (error) {
-        console.error('최근 검색어 불러오기 실패:', error);
+        // 최근 검색어 불러오기 실패
       }
     };
 
@@ -58,7 +58,7 @@ const SearchScreen = () => {
     try {
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches));
     } catch (error) {
-      console.error('최근 검색어 저장 실패:', error);
+      // 최근 검색어 저장 실패
     }
   };
 

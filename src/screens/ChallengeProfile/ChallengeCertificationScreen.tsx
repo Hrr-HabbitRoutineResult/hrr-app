@@ -244,7 +244,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   items={mockCertifications}
                   onItemPress={(item) => {
                     // TODO: 인증 상세 화면으로 이동
-                    console.log('인증 아이템 클릭:', item.id);
                   }}
                 />
               </View>
@@ -254,7 +253,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 items={mockTextCertifications}
                 onItemPress={(item) => {
                   // TODO: 인증 상세 화면으로 이동
-                  console.log('인증 아이템 클릭:', item.id);
                 }}
               />
             )}
@@ -408,7 +406,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   items={mockCertifications}
                   onItemPress={(item) => {
                     // TODO: 인증 상세 화면으로 이동
-                    console.log('인증 아이템 클릭:', item.id);
                   }}
                 />
               </View>
@@ -418,7 +415,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 items={mockTextCertifications}
                 onItemPress={(item) => {
                   // TODO: 인증 상세 화면으로 이동
-                  console.log('인증 아이템 클릭:', item.id);
                 }}
               />
             )}
