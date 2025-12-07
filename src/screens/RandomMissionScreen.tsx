@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -8,9 +8,27 @@ import { Button } from '../components/common/Button';
 import { Text } from '../components/common/Text';
 import { colors } from '../design/tokens';
 import RandomMissionFrame from '../../assets/images/random-mission-frame.svg';
+import { getDailyMission, DailyMissionInfo } from '../libs/api/challenge';
 
 const RandomMissionScreen = () => {
   const navigation = useNavigation();
+  const [missionData, setMissionData] = useState<DailyMissionInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMission = async () => {
+      try {
+        const data = await getDailyMission();
+        setMissionData(data);
+      } catch (error) {
+        console.error('랜덤 미션 조회 실패:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMission();
+  }, []);
 
   const handleBack = () => {
     navigation.goBack();
@@ -31,8 +49,16 @@ const RandomMissionScreen = () => {
 
         {/* 이미지 + 오버레이 + 텍스트 컨테이너 */}
         <View style={styles.imageContainer}>
-          {/* 임시 회색 배경 (추후 이미지로 대체) */}
-          <View style={styles.placeholder} />
+          {/* 미션 이미지 */}
+          {missionData?.imageUrl ? (
+            <Image
+              source={{ uri: missionData.imageUrl }}
+              style={styles.missionImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.placeholder} />
+          )}
 
           {/* 그라데이션 오버레이 */}
           <LinearGradient
@@ -50,10 +76,10 @@ const RandomMissionScreen = () => {
           {/* 텍스트 오버레이 */}
           <View style={styles.textOverlay}>
             <Text variant="header1" color={colors.white} style={styles.missionTitle}>
-              건강식 한 끼 먹기
+              {missionData?.title || '로딩 중...'}
             </Text>
             <Text variant="smMd" color={colors.white} style={styles.missionDescription}>
-              운동에 관심이 많은 당신, 한 끼는 건강하게 챙겨요!
+              {missionData?.content || ''}
             </Text>
           </View>
         </View>
@@ -94,6 +120,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: colors.line,
+  },
+  missionImage: {
+    width: '100%',
+    height: '100%',
   },
   gradientOverlay: {
     position: 'absolute',

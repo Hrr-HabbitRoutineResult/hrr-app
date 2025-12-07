@@ -453,3 +453,44 @@ export const getDailyMissionCompleted = async (): Promise<boolean> => {
     throw error;
   }
 };
+
+/**
+ * 오늘의 랜덤미션 정보
+ */
+export interface DailyMissionInfo {
+  missionId: number;
+  title: string;
+  content: string;
+  isCompleted: boolean;
+  imageUrl: string;
+}
+
+/**
+ * 오늘의 랜덤미션 조회 응답
+ */
+export interface DailyMissionResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: DailyMissionInfo;
+}
+
+/**
+ * 오늘의 랜덤미션 조회
+ */
+export const getDailyMission = async (): Promise<DailyMissionInfo> => {
+  try {
+    const response = await apiClient.get<DailyMissionResponse>(
+      '/api/v1/users/mission/daily'
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '랜덤미션을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
