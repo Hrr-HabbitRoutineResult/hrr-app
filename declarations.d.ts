@@ -4,3 +4,14 @@ declare module '*.svg' {
   const content: React.FC<SvgProps>;
   export default content;
 }
+
+declare module 'react-native-config' {
+  export interface NativeConfig {
+    API_BASE_URL?: string;
+    S3_BUCKET_NAME?: string;
+    S3_REGION?: string;
+  }
+
+  export const Config: NativeConfig;
+  export default Config;
+}
