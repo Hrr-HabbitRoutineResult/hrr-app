@@ -1,10 +1,53 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/types';
+import { colors, typography } from '../design/tokens';
+import { Header } from '../components/common/Header';
+import LogoGray from '../../assets/images/logo-gray.svg';
 
 const NotificationsScreen = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const [activeFilter, setActiveFilter] = useState<string>('챌린지');
+
+  const filters = ['챌린지', '인증', '팔로우', '뱃지'];
+
   return (
     <View style={styles.container}>
-      <Text>알림 목록</Text>
+      <Header
+        onBack={() => navigation.goBack()}
+        title="알림"
+        showDivider={true}
+        useSafeArea={true}
+      />
+      
+      <View style={styles.filterContainer}>
+        {filters.map((filter) => (
+          <TouchableOpacity
+            key={filter}
+            style={[
+              styles.filterButton,
+              activeFilter === filter && styles.filterButtonActive,
+            ]}
+            onPress={() => setActiveFilter(filter)}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                activeFilter === filter && styles.filterButtonTextActive,
+              ]}
+            >
+              {filter}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.emptyContainer}>
+        <LogoGray width={124.16} height={119.79} />
+        <Text style={styles.emptyText}>받은 알림이 없어요</Text>
+      </View>
     </View>
   );
 };
@@ -12,8 +55,47 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: colors.white,
+  },
+  filterContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
+    gap: 8,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.text.primary,
+    borderWidth: 0,
+  },
+  filterButtonText: {
+    ...typography.xsReg,
+    color: colors.text.primary,
+  },
+  filterButtonTextActive: {
+    color: colors.white,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingTop: 150,
+  },
+  emptyText: {
+    ...typography.smReg,
+    color: colors.icon.gray,
+    textAlign: 'center',
+    lineHeight: 21,
+    marginTop: 32,
   },
 });
 

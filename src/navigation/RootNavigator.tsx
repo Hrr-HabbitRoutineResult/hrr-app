@@ -50,7 +50,7 @@ const RootNavigator = () => (
     >
       <Stack.Navigator>
         <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
