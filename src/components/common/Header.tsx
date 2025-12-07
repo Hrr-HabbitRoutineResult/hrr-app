@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 중앙: 제목 */}
       {title ? (
-        <Text variant="md" color={colors.text.primary} style={styles.headerTitle}>
+        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
           {title}
         </Text>
       ) : (
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    // paddingVertical은 동적으로 처리하므로 제거
     backgroundColor: colors.white,
   },
   headerBorder: {
