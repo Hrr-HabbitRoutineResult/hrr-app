@@ -52,7 +52,7 @@ const RootNavigator = () => (
         <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
+        <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />

@@ -417,3 +417,39 @@ export const createChallenge = async (data: CreateChallengeRequest): Promise<Cre
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 랜덤 미션 관련
+ * ============================================
+ */
+
+/**
+ * 오늘의 랜덤미션 완료 여부 응답
+ */
+export interface DailyMissionCompletedResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: boolean;
+}
+
+/**
+ * 오늘의 랜덤미션 완료 여부 조회
+ */
+export const getDailyMissionCompleted = async (): Promise<boolean> => {
+  try {
+    const response = await apiClient.get<DailyMissionCompletedResponse>(
+      '/api/v1/users/mission/daily/completed'
+    );
+
+    if (response.data.isSuccess) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '랜덤미션 완료 여부를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
