@@ -28,37 +28,37 @@ interface TimeSlotOption {
 
 const TIME_SLOT_OPTIONS: TimeSlotOption[] = [
   {
-    id: 'morning-early',
+    id: 'EARLY_MORNING',
     timeRange: '오전 05:00 - 오전 09:00',
     description: '상쾌하게 하루를 시작하며 출근·등교 전 참여해요',
   },
   {
-    id: 'morning',
+    id: 'MORNING',
     timeRange: '오전 09:00 - 오후 12:00',
     description: '집중력 좋은 시간에 가벼운 활동을 실행해요',
   },
   {
-    id: 'lunch',
+    id: 'LUNCH',
     timeRange: '오후 12:00 - 오후 02:00',
     description: '식사 후 짧게 참여하며 휴식과 함께 즐겨요',
   },
   {
-    id: 'afternoon',
+    id: 'AFTERNOON',
     timeRange: '오후 02:00 - 오후 06:00',
     description: '일과 사이에 활력을 더하며 꾸준히 이어가요',
   },
   {
-    id: 'evening',
+    id: 'EVENING',
     timeRange: '오후 06:00 - 오후 09:00',
     description: '퇴근·하교 후 여유롭게 친구와 함께 해요',
   },
   {
-    id: 'night',
+    id: 'NIGHT',
     timeRange: '오후 09:00 - 오전 12:00',
     description: '하루를 마무리하며 오늘을 체크해요',
   },
   {
-    id: 'late-night',
+    id: 'LATE_NIGHT',
     timeRange: '오전 12:00 - 오전 05:00',
     description: '야행성 혹은 해외에서도 함께 해요',
   },
@@ -186,8 +186,8 @@ const styles = StyleSheet.create({
   },
   q2TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 39,
+    paddingBottom: 39,
   },
   q2Title: {
     textAlign: 'left',
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 0,
-    paddingBottom: 20,
+    paddingBottom: 39,
     gap: 10,
     alignItems: 'center',
   },

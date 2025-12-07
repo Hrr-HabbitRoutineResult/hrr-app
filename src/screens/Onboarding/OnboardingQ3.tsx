@@ -27,18 +27,24 @@ export const OnboardingQ3: React.FC<OnboardingQ3Props> = ({
   selectedCategories,
   onCategoriesChange,
 }) => {
-  const categoryOptions = ['운동', '학업', '취미', '취업준비', '생활습관'];
+  const categoryOptions = [
+    { id: 'HEALTH', label: '운동' },
+    { id: 'STUDY', label: '학업' },
+    { id: 'HOBBY', label: '취미' },
+    { id: 'CAREER', label: '취업준비' },
+    { id: 'HABIT', label: '생활습관' },
+  ];
 
   const MAX_SELECTIONS = 3;
 
-  const handleCategorySelect = (option: string) => {
-    if (selectedCategories.includes(option)) {
+  const handleCategorySelect = (id: string) => {
+    if (selectedCategories.includes(id)) {
       // 이미 선택된 카테고리 제거
-      onCategoriesChange(selectedCategories.filter((item) => item !== option));
+      onCategoriesChange(selectedCategories.filter((item) => item !== id));
     } else {
       // 최대 3개까지만 선택 가능
       if (selectedCategories.length < MAX_SELECTIONS) {
-        onCategoriesChange([...selectedCategories, option]);
+        onCategoriesChange([...selectedCategories, id]);
       }
     }
   };
@@ -116,8 +122,8 @@ const styles = StyleSheet.create({
   },
   q3TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 39,
+    marginBottom: 39,
   },
   q3Title: {
     textAlign: 'left',
@@ -130,7 +136,6 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flex: 1,
-    paddingTop: 20,
   },
   buttonContainer: {
     paddingHorizontal: 20,

@@ -6,6 +6,7 @@ import { OnboardingQ3 } from './OnboardingQ3';
 import { OnboardingQ4 } from './OnboardingQ4';
 import { OnboardingLoading } from './OnboardingLoading';
 import { OnboardingResultScreen } from './OnboardingResultScreen';
+import { RecommendedChallenge } from '../../libs/api/challenge';
 
 export type OnboardingStep = 'intro' | 'q1' | 'q2' | 'q3' | 'q4' | 'loading' | 'challengeRecommendation' | 'end';
 
@@ -29,6 +30,11 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
 
   // Q4 상태
   const [q4Goal, setQ4Goal] = useState<string>('');
+
+  // 추천 챌린지 결과
+  const [recommendedChallenges, setRecommendedChallenges] = useState<RecommendedChallenge[]>([]);
+  // API 재호출을 위한 refresh key
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSkip = () => {
     // 홈 화면으로 이동
@@ -93,7 +99,9 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
   };
 
   const handleRefresh = () => {
-    // TODO: 추천 챌린지 API 재호출하기
+    // 추천 챌린지 API 재호출
+    setRefreshKey((prev) => prev + 1);
+    setCurrentStep('loading');
   };
 
   const renderCurrentStep = () => {
@@ -154,6 +162,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           <OnboardingLoading
             onBack={handleLoadingBack}
             onComplete={handleLoadingComplete}
+            q1Gender={q1Gender}
+            q1Age={q1Age}
+            q1Occupation={q1Occupation}
+            q2TimeSlots={q2TimeSlots}
+            q3Categories={q3Categories}
+            q4Goal={q4Goal}
+            onSetRecommendedChallenges={setRecommendedChallenges}
+            refreshKey={refreshKey}
           />
         );
       case 'challengeRecommendation':
@@ -161,6 +177,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }
           <OnboardingResultScreen
             onGoHome={handleGoHome}
             onRefresh={handleRefresh}
+            recommendedChallenges={recommendedChallenges}
           />
         );
       case 'end':

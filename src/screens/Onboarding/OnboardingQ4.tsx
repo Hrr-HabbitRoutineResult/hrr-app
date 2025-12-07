@@ -44,49 +44,49 @@ interface GoalOption {
 
 const GOAL_OPTIONS: GoalOption[] = [
   {
-    id: 'exercise',
+    id: 'BUILD_EXERCISE_HABIT',
     title: '운동 습관 만들기',
     description: '가볍게 몸을 움직이며 활력을 채워가요',
     SelectedIcon: ExerciseSelectedIcon,
     UnselectedIcon: ExerciseUnselectedIcon,
   },
   {
-    id: 'health',
+    id: 'HEALTHY_DAY',
     title: '건강한 하루 챙기기',
     description: '식단 등 건강 관리로 균형 잡힌 하루를 만들어요',
     SelectedIcon: HealthSelectedIcon,
     UnselectedIcon: HealthUnselectedIcon,
   },
   {
-    id: 'study',
+    id: 'EXAM_CAREER_PREP',
     title: '시험·취업 준비하기',
     description: '자격증·시험·취업을 향해 차근차근 준비해요',
     SelectedIcon: StudySelectedIcon,
     UnselectedIcon: StudyUnselectedIcon,
   },
   {
-    id: 'hobby-new',
+    id: 'FIND_NEW_HOBBY',
     title: '새로운 취미 발견하기',
     description: '낯선 활동에 도전하며 새로운 나를 만나봐요',
     SelectedIcon: HobbyNewSelectedIcon,
     UnselectedIcon: HobbyNewUnselectedIcon,
   },
   {
-    id: 'hobby-together',
+    id: 'ENJOY_HOBBY_TOGETHER',
     title: '함께 취미 즐기기',
     description: '독서·그림 등 좋아하는 활동을 공유하며 즐겨요',
     SelectedIcon: HobbyTogetherSelectedIcon,
     UnselectedIcon: HobbyTogetherUnselectedIcon,
   },
   {
-    id: 'focus',
+    id: 'FOCUS_ON_MYSELF',
     title: '나에게 몰입하기',
     description: '글쓰기·명상 같은 활동에 집중하며 여유를 찾아가요',
     SelectedIcon: FocusSelectedIcon,
     UnselectedIcon: FocusUnselectedIcon,
   },
   {
-    id: 'consistency',
+    id: 'KEEP_GOING',
     title: '꾸준함 이어가기',
     description: '작심삼일을 넘어서 습관을 흐름처럼 지켜가요',
     SelectedIcon: ConsistencySelectedIcon,
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
   },
   q4TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 30,
+    paddingTop: 39,
+    marginBottom: 39,
   },
   q4Title: {
     textAlign: 'left',

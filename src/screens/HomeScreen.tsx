@@ -93,9 +93,9 @@ const HomeScreen = () => {
 
             <View style={styles.suggestButtonContainer}>
               <ChallengeSuggestButton
-                onPress={() =>
-                  navigation.navigate('ChallengeList', { recommend: true })
-                }
+                onPress={() => {
+                  navigation.navigate('Onboarding');
+                }}
               />
             </View>
 

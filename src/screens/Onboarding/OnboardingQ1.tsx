@@ -35,10 +35,27 @@ export const OnboardingQ1: React.FC<OnboardingQ1Props> = ({
   onAgeChange,
   onOccupationChange,
 }) => {
+  const genderOptions = [
+    { id: 'MALE', label: '남성' },
+    { id: 'FEMALE', label: '여성' },
+  ];
 
-  const genderOptions = ['남성', '여성'];
-  const ageOptions = ['10대', '20대', '30대', '40대', '50대 이상'];
-  const occupationOptions = ['중고등학생', '대학생', '취준생', '직장인', '주부', '기타'];
+  const ageOptions = [
+    { id: 'TEENS', label: '10대' },
+    { id: 'TWENTIES', label: '20대' },
+    { id: 'THIRTIES', label: '30대' },
+    { id: 'FORTIES', label: '40대' },
+    { id: 'FIFTIES_PLUS', label: '50대 이상' },
+  ];
+
+  const occupationOptions = [
+    { id: 'STUDENT_MIDDLE_HIGH', label: '중고등학생' },
+    { id: 'STUDENT_UNIVERSITY', label: '대학생' },
+    { id: 'JOB_SEEKER', label: '취준생' },
+    { id: 'EMPLOYEE', label: '직장인' },
+    { id: 'HOMEMAKER', label: '주부' },
+    { id: 'ETC', label: '기타' },
+  ];
 
   const isNextEnabled = selectedGender && selectedAge && selectedOccupation;
 
@@ -76,21 +93,21 @@ export const OnboardingQ1: React.FC<OnboardingQ1Props> = ({
             title="성별"
             options={genderOptions}
             selectedOptions={selectedGender ? [selectedGender] : []}
-            onOptionSelect={(option) => onGenderChange(selectedGender === option ? '' : option)}
+            onOptionSelect={(id) => onGenderChange(selectedGender === id ? '' : id)}
           />
 
           <OptionGroup
             title="연령대"
             options={ageOptions}
             selectedOptions={selectedAge ? [selectedAge] : []}
-            onOptionSelect={(option) => onAgeChange(selectedAge === option ? '' : option)}
+            onOptionSelect={(id) => onAgeChange(selectedAge === id ? '' : id)}
           />
 
           <OptionGroup
             title="직업"
             options={occupationOptions}
             selectedOptions={selectedOccupation ? [selectedOccupation] : []}
-            onOptionSelect={(option) => onOccupationChange(selectedOccupation === option ? '' : option)}
+            onOptionSelect={(id) => onOccupationChange(selectedOccupation === id ? '' : id)}
           />
         </View>
 
@@ -126,8 +143,8 @@ const styles = StyleSheet.create({
   },
   q1TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: 39,
+    marginBottom: 48,
   },
   q1Title: {
     textAlign: 'left',
@@ -140,7 +157,6 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     flex: 1,
-    paddingTop: 20,
   },
   buttonContainer: {
     paddingHorizontal: 20,
