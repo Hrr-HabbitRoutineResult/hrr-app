@@ -6,6 +6,8 @@ export type RootStackParamList = {
   ChallengeProfile: { challengeId: number };
   PopularChallenge: undefined;
   Search: undefined;
+  CreateChallengeQ1: undefined;
+  CreateChallengeQ2: undefined;
 };
 
 export type HomeTabParamList = {
