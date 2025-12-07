@@ -535,3 +535,75 @@ export const verifyDailyMission = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 챌린지 추천 관련
+ * ============================================
+ */
+
+/**
+ * 챌린지 추천 요청
+ */
+export interface ChallengeRecommendationRequest {
+  userId: number;
+  gender: 'MALE' | 'FEMALE';
+  ageGroup: 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
+  job: 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC';
+  // TODO: 시간대 다중 선택 지원 필요
+  availableTime: 'EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT';
+  category: string[];
+  goal: 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING';
+}
+
+/**
+ * 추천 챌린지 아이템
+ */
+export interface RecommendedChallenge {
+  challengeId: number;
+  title: string;
+  description: string;
+  category: string;
+  verifyStartTime: string;
+  verifyEndTime: string;
+  cert_time_slots: string;
+  goal_text: string;
+}
+
+/**
+ * 챌린지 추천 응답
+ */
+export interface ChallengeRecommendationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    userId: number;
+    modelVersion: string;
+    latencyMs: number;
+    recommendations: RecommendedChallenge[];
+  };
+}
+
+/**
+ * 챌린지 추천 받기
+ */
+export const getChallengeRecommendations = async (
+  request: ChallengeRecommendationRequest
+): Promise<RecommendedChallenge[]> => {
+  try {
+    const response = await apiClient.post<ChallengeRecommendationResponse>(
+      '/api/v1/challenges/recommendations',
+      request
+    );
+    
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result.recommendations;
+    }
+    
+    throw new Error(response.data.message || '챌린지 추천을 받는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};

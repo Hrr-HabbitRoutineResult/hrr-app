@@ -10,6 +10,7 @@ export type RootStackParamList = {
   CreateChallengeQ2: undefined;
   CreateChallengeQ3: undefined;
   CreateChallengeQ4: undefined;
+  Onboarding: undefined;
 };
 
 export type HomeTabParamList = {

@@ -1,7 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import RNBootSplash from 'react-native-bootsplash'; // ← 추가
 
 import HomeScreen from '../screens/HomeScreen';
@@ -18,12 +19,25 @@ import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2'
 import { CreateChallengeQ3 } from '../screens/CreateChallenge/CreateChallengeQ3';
 import { CreateChallengeQ4 } from '../screens/CreateChallenge/CreateChallengeQ4';
 import { CreateChallengeProvider } from '../contexts/CreateChallengeContext';
+import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
 
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
+
+const OnboardingScreenWrapper = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  
+  return (
+    <OnboardingScreen
+      onComplete={() => {
+        navigation.goBack();
+      }}
+    />
+  );
+};
 
 const HomeTabs = () => (
   <Tab.Navigator
@@ -60,6 +74,7 @@ const RootNavigator = () => (
         <Stack.Screen name="CreateChallengeQ2" component={CreateChallengeQ2} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ4" component={CreateChallengeQ4} options={{ headerShown: false }} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>
