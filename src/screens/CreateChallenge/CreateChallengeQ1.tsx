@@ -95,7 +95,7 @@ export const CreateChallengeQ1 = () => {
         {/* 타이틀 */}
         <View style={styles.titleContainer}>
           <Text variant="header1" color={colors.text.primary} style={styles.title}>
-            챌린지 유형을 선택해주세요
+            챌린지 유형을 선택해 주세요
           </Text>
         </View>
 

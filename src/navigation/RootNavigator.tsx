@@ -15,6 +15,8 @@ import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengePro
 import PopularChallengeScreen from '../screens/PopularChallengeScreen';
 import { CreateChallengeQ1 } from '../screens/CreateChallenge/CreateChallengeQ1';
 import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2';
+import { CreateChallengeQ3 } from '../screens/CreateChallenge/CreateChallengeQ3';
+import { CreateChallengeQ4 } from '../screens/CreateChallenge/CreateChallengeQ4';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -54,6 +56,8 @@ const RootNavigator = () => (
       <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
       <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />
       <Stack.Screen name="CreateChallengeQ2" component={CreateChallengeQ2} options={{ headerShown: false }} />
+      <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />
+      <Stack.Screen name="CreateChallengeQ4" component={CreateChallengeQ4} options={{ headerShown: false }} />
     </Stack.Navigator>
   </NavigationContainer>
 );
