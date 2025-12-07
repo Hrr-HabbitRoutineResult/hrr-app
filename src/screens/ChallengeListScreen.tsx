@@ -348,7 +348,7 @@ const ChallengeListScreen = ({ route }: Props) => {
       <TouchableOpacity
         style={styles.fabButton}
         onPress={() => {
-          // TODO: 챌린지 생성 화면으로 이동
+          navigation.navigate('CreateChallengeQ1');
         }}
         activeOpacity={0.7}
       >
