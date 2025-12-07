@@ -123,11 +123,13 @@ const SearchScreen = () => {
     setHasSearched(true);
 
     try {
-      const result = await getChallenges({
+      const searchParams = {
         title: trimmedQuery,
-        page: 0,
+        page: 1,
         size: 20,
-      });
+      };
+
+      const result = await getChallenges(searchParams);
       setSearchResults(result.content);
 
       // 최근 검색어에 추가 (중복 제거, 최신순 유지)

@@ -91,10 +91,14 @@ const ChallengeListScreen = ({ route }: Props) => {
       try {
         const apiCategory = mapCategoryToApi(activeTab);
         const params: any = {
-          category: apiCategory,
-          page: 0,
+          page: 1,
           size: 20,
         };
+
+        // category가 "ALL"이 아닐 때만 파라미터에 추가
+        if (apiCategory !== 'ALL') {
+          params.category = apiCategory;
+        }
 
         // 적용된 필터만 API에 전달
         if (appliedOnlyUpcoming) {
