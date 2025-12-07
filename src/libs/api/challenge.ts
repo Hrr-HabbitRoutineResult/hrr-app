@@ -425,7 +425,7 @@ export const createChallenge = async (data: CreateChallengeRequest): Promise<Cre
  */
 
 /**
- * 오늘의 랜덤미션 완료 여부 응답
+ * 오늘의 랜덤 미션 완료 여부 응답
  */
 export interface DailyMissionCompletedResponse {
   isSuccess: boolean;
@@ -436,7 +436,7 @@ export interface DailyMissionCompletedResponse {
 }
 
 /**
- * 오늘의 랜덤미션 완료 여부 조회
+ * 오늘의 랜덤 미션 완료 여부 조회
  */
 export const getDailyMissionCompleted = async (): Promise<boolean> => {
   try {
@@ -448,14 +448,14 @@ export const getDailyMissionCompleted = async (): Promise<boolean> => {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '랜덤미션 완료 여부를 불러오는데 실패했습니다.');
+    throw new Error(response.data.message || '랜덤 미션 완료 여부를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
   }
 };
 
 /**
- * 오늘의 랜덤미션 정보
+ * 오늘의 랜덤 미션 정보
  */
 export interface DailyMissionInfo {
   missionId: number;
@@ -466,7 +466,7 @@ export interface DailyMissionInfo {
 }
 
 /**
- * 오늘의 랜덤미션 조회 응답
+ * 오늘의 랜덤 미션 조회 응답
  */
 export interface DailyMissionResponse {
   isSuccess: boolean;
@@ -477,7 +477,7 @@ export interface DailyMissionResponse {
 }
 
 /**
- * 오늘의 랜덤미션 조회
+ * 오늘의 랜덤 미션 조회
  */
 export const getDailyMission = async (): Promise<DailyMissionInfo> => {
   try {
@@ -489,7 +489,48 @@ export const getDailyMission = async (): Promise<DailyMissionInfo> => {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '랜덤미션을 불러오는데 실패했습니다.');
+    throw new Error(response.data.message || '랜덤 미션을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 오늘의 랜덤 미션 인증 요청
+ */
+export interface VerifyDailyMissionRequest {
+  missionId: number;
+  imageKey: string;
+}
+
+/**
+ * 오늘의 랜덤 미션 인증 응답
+ */
+export interface VerifyDailyMissionResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: string;
+}
+
+/**
+ * 오늘의 랜덤 미션 인증
+ */
+export const verifyDailyMission = async (
+  data: VerifyDailyMissionRequest
+): Promise<string> => {
+  try {
+    const response = await apiClient.post<VerifyDailyMissionResponse>(
+      '/api/v1/users/mission/daily/verify',
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '랜덤 미션 인증에 실패했습니다.');
   } catch (error: any) {
     throw error;
   }
