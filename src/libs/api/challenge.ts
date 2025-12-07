@@ -309,3 +309,111 @@ export const getChallenges = async (params?: GetChallengesParams): Promise<GetCh
     throw error;
   }
 };
+
+/**
+ * S3 Presigned URL 요청 응답
+ */
+export interface PresignedUrlResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    presignedUrl: string;
+    s3Key: string;
+  };
+}
+
+/**
+ * S3 Presigned URL 요청
+ */
+export const getPresignedUrl = async (fileName: string): Promise<PresignedUrlResponse['result']> => {
+  try {
+    const response = await apiClient.post<PresignedUrlResponse>(
+      '/api/s3/presigned-url',
+      { fileName }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || 'Presigned URL을 받는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 챌린지 생성 요청
+ */
+export interface CreateChallengeRequest {
+  title: string;
+  description: string;
+  isPublic: boolean;
+  password?: string;
+  category: 'HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT';
+  verificationType: 'PHOTO' | 'TEXT';
+  startDate: string;
+  maxParticipants: number;
+  isViewerMode: boolean;
+  rule: string;
+  verifyStartTime: string;
+  verifyEndTime: string;
+  daysOfWeek: string[];
+  imageKey: string;
+}
+
+/**
+ * 챌린지 생성 응답
+ */
+export interface CreateChallengeResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    id: number;
+  };
+}
+
+/**
+ * 챌린지 생성 에러 응답
+ */
+export interface CreateChallengeErrorResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+}
+
+/**
+ * 챌린지 생성
+ */
+export const createChallenge = async (data: CreateChallengeRequest): Promise<CreateChallengeResponse['result']> => {
+  try {
+    const response = await apiClient.post<CreateChallengeResponse>(
+      '/api/v1/challenges',
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    // 에러 응답 생성
+    const error: any = new Error(response.data.message || '챌린지 생성에 실패했습니다.');
+    error.response = {
+      data: {
+        isSuccess: response.data.isSuccess,
+        status: response.data.status,
+        code: response.data.code,
+        message: response.data.message,
+      } as CreateChallengeErrorResponse,
+    };
+    throw error;
+  } catch (error: any) {
+    // axios 에러인 경우 그대로 throw
+    throw error;
+  }
+};

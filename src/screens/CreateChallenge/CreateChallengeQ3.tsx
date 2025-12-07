@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
 import { ProgressBar } from '../../components/onboarding/ProgressBar';
 import { colors } from '../../design/tokens';
+import { useCreateChallenge } from '../../contexts/CreateChallengeContext';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import ChevronRightSubIcon from '../../../assets/icons/chevron-right-sub.svg';
 
@@ -18,11 +19,22 @@ const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export const CreateChallengeQ3 = () => {
   const navigation = useNavigation<CreateChallengeQ3NavigationProp>();
+  const { data, updateData } = useCreateChallenge();
+
 
   // 현재 날짜 기준 달력 상태
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(data.startDate);
+
+  // Context에서 날짜가 있으면 초기화
+  useEffect(() => {
+    if (data.startDate) {
+      setSelectedDate(data.startDate);
+      const date = data.startDate;
+      setCurrentDate(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+  }, []);
 
   // 달력 데이터 생성
   const calendarData = useMemo(() => {
@@ -88,7 +100,8 @@ export const CreateChallengeQ3 = () => {
   const isNextEnabled = selectedDate !== null;
 
   const handleNext = () => {
-    if (isNextEnabled) {
+    if (isNextEnabled && selectedDate) {
+      updateData({ startDate: selectedDate });
       navigation.navigate('CreateChallengeQ4');
     }
   };

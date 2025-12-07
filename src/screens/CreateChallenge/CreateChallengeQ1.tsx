@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,7 +6,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
 import { Text } from '../../components/common/Text';
@@ -15,6 +15,7 @@ import { Header } from '../../components/common/Header';
 import { ProgressBar } from '../../components/onboarding/ProgressBar';
 import { OptionGroup } from '../../components/onboarding/OptionGroup';
 import { colors } from '../../design/tokens';
+import { useCreateChallenge } from '../../contexts/CreateChallengeContext';
 import PublicSelectedIcon from '../../../assets/icons/challenge-create/hobby-together-selected.svg';
 import PublicUnselectedIcon from '../../../assets/icons/challenge-create/hobby-together-unselected.svg';
 import PrivateSelectedIcon from '../../../assets/icons/challenge-create/private-selected.svg';
@@ -47,10 +48,51 @@ const PRIVACY_OPTIONS: PrivacyOption[] = [
   },
 ];
 
+const categoryMap: Record<string, 'HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT'> = {
+  '운동': 'HEALTH',
+  '학업': 'STUDY',
+  '취미': 'HOBBY',
+  '취업준비': 'CAREER',
+  '생활습관': 'HABIT',
+};
+
 export const CreateChallengeQ1 = () => {
   const navigation = useNavigation<CreateChallengeQ1NavigationProp>();
+  const { data, updateData, resetData } = useCreateChallenge();
+
+  // 로컬 state 초기값 (항상 빈 값으로 시작)
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedPrivacy, setSelectedPrivacy] = useState<'public' | 'private' | ''>('');
+
+  // 초기화 여부 체크 (처음 진입 시에만 초기화, 뒤로가기로 돌아왔을 때는 초기화하지 않음)
+  const [hasInitialized, setHasInitialized] = useState(false);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!hasInitialized) {
+        resetData();
+        setHasInitialized(true);
+        // 초기화 후 로컬 state도 빈 값으로 설정
+        setSelectedCategory('');
+        setSelectedPrivacy('');
+      } else {
+        // 뒤로가기로 돌아왔을 때는 Context 값으로 복원
+        if (data.category) {
+          const categoryKey = Object.keys(categoryMap).find(key => categoryMap[key] === data.category);
+          if (categoryKey) {
+            setSelectedCategory(categoryKey);
+          }
+        } else {
+          setSelectedCategory('');
+        }
+        // 카테고리 및 공개/비공개 설정이 모두 있으면 복원
+        if (data.category && data.isPublic !== null) {
+          setSelectedPrivacy(data.isPublic ? 'public' : 'private');
+        } else {
+          setSelectedPrivacy('');
+        }
+      }
+    }, [resetData, hasInitialized, data.category, data.isPublic, data.password])
+  );
 
   const categoryOptions = ['운동', '학업', '취미', '취업준비', '생활습관'];
 
@@ -76,6 +118,15 @@ export const CreateChallengeQ1 = () => {
 
   const handleNext = () => {
     if (isNextEnabled) {
+      // 다음 버튼 클릭 시 Context에 저장
+      const apiCategory = categoryMap[selectedCategory];
+      const isPublic = selectedPrivacy === 'public';
+
+      updateData({
+        category: apiCategory,
+        isPublic: isPublic,
+      });
+
       navigation.navigate('CreateChallengeQ2');
     }
   };

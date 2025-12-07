@@ -7,6 +7,7 @@ import {
   TextInput,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -18,6 +19,8 @@ import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
 import { ProgressBar } from '../../components/onboarding/ProgressBar';
 import { colors } from '../../design/tokens';
+import { useCreateChallenge } from '../../contexts/CreateChallengeContext';
+import { getPresignedUrl } from '../../libs/api/challenge';
 import CameraIcon from '../../../assets/icons/challenge-create/camera.svg';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-ic-grey.svg';
@@ -29,17 +32,20 @@ type CreateChallengeQ2NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export const CreateChallengeQ2 = () => {
   const navigation = useNavigation<CreateChallengeQ2NavigationProp>();
+  const { data, updateData } = useCreateChallenge();
+
 
   // 입력 상태들
-  const [challengeName, setChallengeName] = useState('');
-  const [oneLiner, setOneLiner] = useState('');
-  const [verificationMethod, setVerificationMethod] = useState<'photo' | 'text' | ''>('');
-  const [verificationDays, setVerificationDays] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState<{ period: 'AM' | 'PM'; hour: string; minute: string } | null>(null);
-  const [endTime, setEndTime] = useState<{ period: 'AM' | 'PM'; hour: string; minute: string } | null>(null);
-  const [maxParticipants, setMaxParticipants] = useState<number>(0);
-  const [challengeRules, setChallengeRules] = useState('');
-  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
+  const [challengeName, setChallengeName] = useState(data.challengeName);
+  const [oneLiner, setOneLiner] = useState(data.oneLiner);
+  const [verificationMethod, setVerificationMethod] = useState<'photo' | 'text' | ''>(data.verificationMethod);
+  const [verificationDays, setVerificationDays] = useState<string[]>(data.verificationDays);
+  const [startTime, setStartTime] = useState<{ period: 'AM' | 'PM'; hour: string; minute: string } | null>(data.startTime);
+  const [endTime, setEndTime] = useState<{ period: 'AM' | 'PM'; hour: string; minute: string } | null>(data.endTime);
+  const [maxParticipants, setMaxParticipants] = useState<number>(data.maxParticipants);
+  const [challengeRules, setChallengeRules] = useState(data.challengeRules);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(data.thumbnailImageUri);
+  const [isUploading, setIsUploading] = useState(false);
 
   // 바텀시트 상태들
   const [showMethodSheet, setShowMethodSheet] = useState(false);
@@ -55,16 +61,92 @@ export const CreateChallengeQ2 = () => {
     verificationDays.length > 0 &&
     startTime !== null &&
     endTime !== null &&
-    maxParticipants > 0 &&
+    maxParticipants >= 1 &&
+    maxParticipants <= 30 &&
     challengeRules.trim() !== '';
 
   const handleNext = () => {
     if (isNextEnabled) {
+      // Context에 데이터 저장
+      updateData({
+        challengeName,
+        oneLiner,
+        verificationMethod,
+        verificationDays,
+        startTime,
+        endTime,
+        maxParticipants,
+        challengeRules,
+        thumbnailImageUri: thumbnailImage,
+      });
+
       try {
         navigation.navigate('CreateChallengeQ3');
       } catch (error) {
         // Navigation failed
       }
+    }
+  };
+
+  // MIME type 결정 헬퍼 함수
+  const getMimeType = (extension: string): string => {
+    const mimeTypes: Record<string, string> = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+    };
+    return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
+  };
+
+  const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
+    try {
+      setIsUploading(true);
+
+      // 파일 확장자 추출
+      const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `image.${fileExtension}`;
+
+      // 1. Presigned URL 요청
+      const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
+
+      // 2. 이미지를 Blob으로 변환
+      const response = await fetch(imageUri);
+      if (!response.ok) {
+        throw new Error('이미지 로드 실패');
+      }
+      const blob = await response.blob();
+
+      // 3. S3 업로드 헤더 구성
+      const uploadHeaders: HeadersInit = {
+        'Content-Type': blob.type || getMimeType(fileExtension),
+      };
+
+      // x-amz-acl이 서명에 포함된 경우 헤더 추가
+      const signedHeaders = new URL(presignedUrl).searchParams.get('X-Amz-SignedHeaders');
+      if (signedHeaders?.includes('x-amz-acl')) {
+        uploadHeaders['x-amz-acl'] = 'public-read';
+      }
+
+      // 4. S3에 업로드
+      const uploadResponse = await fetch(presignedUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: uploadHeaders,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`업로드 실패 (${uploadResponse.status})`);
+      }
+
+      return s3Key;
+    } catch (error: any) {
+      const errorMessage = error.message || '알 수 없는 오류';
+      Alert.alert('이미지 업로드 실패', errorMessage);
+      return null;
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -83,6 +165,13 @@ export const CreateChallengeQ2 = () => {
             const asset = await openCamera();
             if (asset?.uri) {
               setThumbnailImage(asset.uri);
+              updateData({ thumbnailImageUri: asset.uri });
+
+              // 이미지 업로드
+              const s3Key = await uploadImageToS3(asset.uri);
+              if (s3Key) {
+                updateData({ imageKey: s3Key });
+              }
             }
           },
         },
@@ -92,6 +181,13 @@ export const CreateChallengeQ2 = () => {
             const asset = await openGallery();
             if (asset?.uri) {
               setThumbnailImage(asset.uri);
+              updateData({ thumbnailImageUri: asset.uri });
+
+              // 이미지 업로드
+              const s3Key = await uploadImageToS3(asset.uri);
+              if (s3Key) {
+                updateData({ imageKey: s3Key });
+              }
             }
           },
         },
@@ -148,8 +244,11 @@ export const CreateChallengeQ2 = () => {
           style={styles.imageBox}
           onPress={handleImagePicker}
           activeOpacity={0.7}
+          disabled={isUploading}
         >
-          {thumbnailImage ? (
+          {isUploading ? (
+            <ActivityIndicator size="large" color={colors.primary.main} />
+          ) : thumbnailImage ? (
             <Image source={{ uri: thumbnailImage }} style={styles.thumbnailImage} />
           ) : (
             <CameraIcon width={24} height={24} />
@@ -164,7 +263,13 @@ export const CreateChallengeQ2 = () => {
               placeholder="챌린지명을 적어주세요"
               placeholderTextColor={colors.icon.gray}
               value={challengeName}
-              onChangeText={setChallengeName}
+              onChangeText={(text) => {
+                // 10자 이내로 제한
+                const limitedText = text.length > 10 ? text.substring(0, 10) : text;
+                setChallengeName(limitedText);
+                updateData({ challengeName: limitedText });
+              }}
+              maxLength={10}
             />
           </View>
           <View style={styles.divider} />
@@ -174,7 +279,13 @@ export const CreateChallengeQ2 = () => {
               placeholder="한줄소개를 적어주세요"
               placeholderTextColor={colors.icon.gray}
               value={oneLiner}
-              onChangeText={setOneLiner}
+              onChangeText={(text) => {
+                // 20자 이내로 제한
+                const limitedText = text.length > 20 ? text.substring(0, 20) : text;
+                setOneLiner(limitedText);
+                updateData({ oneLiner: limitedText });
+              }}
+              maxLength={20}
             />
           </View>
         </View>
@@ -292,11 +403,17 @@ export const CreateChallengeQ2 = () => {
             <View style={styles.participantsInputContainer}>
               <TextInput
                 style={styles.participantsInput}
-                value={maxParticipants > 0 ? String(maxParticipants) : ''}
+                value={maxParticipants >= 1 ? String(maxParticipants) : ''}
                 onChangeText={(text) => {
                   const number = parseInt(text) || 0;
-                  if (number >= 0 && number <= 30) {
+                  // 1 이상 30 이하로 제한
+                  if (number >= 1 && number <= 30) {
                     setMaxParticipants(number);
+                    updateData({ maxParticipants: number });
+                  } else if (number === 0) {
+                    // 0 입력 시 빈 값으로 설정
+                    setMaxParticipants(0);
+                    updateData({ maxParticipants: 0 });
                   }
                 }}
                 keyboardType="number-pad"
@@ -318,9 +435,15 @@ export const CreateChallengeQ2 = () => {
             placeholder="챌린지 규칙을 설명해 주세요 (진행 방식 등)"
             placeholderTextColor={colors.icon.gray}
             value={challengeRules}
-            onChangeText={setChallengeRules}
+            onChangeText={(text) => {
+              // 200자 이내로 제한
+              const limitedText = text.length > 200 ? text.substring(0, 200) : text;
+              setChallengeRules(limitedText);
+              updateData({ challengeRules: limitedText });
+            }}
             multiline
             textAlignVertical="top"
+            maxLength={200}
           />
         </View>
 
@@ -370,14 +493,20 @@ export const CreateChallengeQ2 = () => {
         visible={showMethodSheet}
         onClose={() => setShowMethodSheet(false)}
         selectedMethod={verificationMethod}
-        onSelect={(method) => setVerificationMethod(method)}
+        onSelect={(method) => {
+          setVerificationMethod(method);
+          updateData({ verificationMethod: method });
+        }}
       />
 
       <VerificationDaysSheet
         visible={showDaysSheet}
         onClose={() => setShowDaysSheet(false)}
         selectedDays={verificationDays}
-        onConfirm={(days) => setVerificationDays(days)}
+        onConfirm={(days) => {
+          setVerificationDays(days);
+          updateData({ verificationDays: days });
+        }}
       />
 
       <TimePickerSheet
@@ -387,6 +516,7 @@ export const CreateChallengeQ2 = () => {
         initialTime={startTime || { period: 'AM', hour: '12', minute: '00' }}
         onConfirm={(time) => {
           setStartTime(time);
+          updateData({ startTime: time });
           // 약간의 딜레이를 주어 부드러운 전환
           setTimeout(() => {
             setShowTimeSheet('end');
@@ -399,7 +529,10 @@ export const CreateChallengeQ2 = () => {
         onClose={() => setShowTimeSheet(null)}
         title="마감 시간을 선택해 주세요"
         initialTime={endTime || { period: 'PM', hour: '11', minute: '50' }}
-        onConfirm={(time) => setEndTime(time)}
+        onConfirm={(time) => {
+          setEndTime(time);
+          updateData({ endTime: time });
+        }}
       />
     </SafeAreaView>
   );
