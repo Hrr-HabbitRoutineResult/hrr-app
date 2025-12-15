@@ -24,7 +24,7 @@ import ChevronRightIcon from '../../../assets/icons/chevron-right-primary.svg';
 import LikeSelectedIcon from '../../../assets/icons/like-selected-circle.svg';
 import LikeUnselectedIcon from '../../../assets/icons/like-unselected-circle.svg';
 import RefreshFabIcon from '../../../assets/icons/refresh-fab.svg';
-import { RecommendedChallenge } from '../../libs/api/challenge';
+import { RecommendedChallenge, trackChallengeClick } from '../../libs/api/challenge';
 import { getS3ImageUrl } from '../../libs/s3';
 import { RootStackParamList } from '../../navigation/types';
 
@@ -90,6 +90,7 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
         style={styles.cardContainer}
         activeOpacity={0.9}
         onPress={() => {
+          trackChallengeClick(item.challengeId);
           navigation.navigate('ChallengeProfile', { challengeId: item.challengeId });
         }}
       >
