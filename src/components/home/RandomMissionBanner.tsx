@@ -27,18 +27,19 @@ const RandomMissionBanner = () => {
         preserveAspectRatio="none"
         style={styles.backgroundSvg} 
       />
-      {isCompleted ? (
-        <View style={styles.textContainer}>
-          <Text style={styles.description}>
-            랜덤미션을 완료했어요!{'\n'}내일 새로운 미션으로 돌아올게요
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.notCompletedContainer}>
-          <Text style={styles.descriptionLine1}>새로운 랜덤미션이 도착했어요!</Text>
-          <Text style={styles.descriptionLine2}>참여하고 플로우 스코어를 받아요</Text>
-        </View>
-      )}
+      <View style={styles.notCompletedContainer}>
+        {isCompleted ? (
+          <>
+            <Text style={styles.descriptionLine1}>랜덤미션을 완료했어요!</Text>
+            <Text style={styles.descriptionLine2}>내일 새로운 미션으로 돌아올게요</Text>
+          </>
+        ) : (
+          <>
+            <Text style={styles.descriptionLine1}>새로운 랜덤미션이 도착했어요!</Text>
+            <Text style={styles.descriptionLine2}>참여하고 플로우 스코어를 받아요</Text>
+          </>
+        )}
+      </View>
     </TouchableOpacity>
   );
 };
@@ -55,21 +56,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  textContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingLeft: 21,
-    paddingVertical: 22,
-  },
   notCompletedContainer: {
     flex: 1,
     justifyContent: 'center',
     paddingLeft: 21,
     paddingVertical: 22,
-  },
-  description: {
-    ...typography.smReg, // 15px regular
-    color: colors.text.secondary,
   },
   descriptionLine1: {
     ...typography.smMd,

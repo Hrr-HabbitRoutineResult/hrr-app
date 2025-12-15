@@ -1,0 +1,294 @@
+import React, { useState } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Header } from '../../components/common/Header';
+import { Text } from '../../components/common/Text';
+import { colors } from '../../design/tokens';
+import { RootStackParamList } from '../../navigation/types';
+import { createPhotoVerification } from '../../libs/api/challenge';
+import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
+import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
+
+type ChallengeCertificationPostScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationPost'>;
+type ChallengeCertificationPostScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'ChallengeCertificationPost'
+>;
+
+export const ChallengeCertificationPostScreen: React.FC = () => {
+  const navigation = useNavigation<ChallengeCertificationPostScreenNavigationProp>();
+  const route = useRoute<ChallengeCertificationPostScreenRouteProp>();
+  const { challengeId, imageUri } = route.params;
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [isQuestionEnabled, setIsQuestionEnabled] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 이미지 URI 받은 그대로 사용
+  React.useEffect(() => {
+    console.log('PostScreen - 받은 imageUri (S3 URL):', imageUri);
+  }, [imageUri]);
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  // S3 URL에서 s3Key 추출
+  const extractS3Key = (s3Url: string): string | null => {
+    try {
+      const url = new URL(s3Url);
+      // pathname에서 첫 번째 슬래시 제거
+      return url.pathname.substring(1);
+    } catch (error) {
+      console.error('S3 Key 추출 실패:', error);
+      return null;
+    }
+  };
+
+  const handlePost = async () => {
+    if (!title.trim()) {
+      Alert.alert('알림', '제목을 입력해주세요.');
+      return;
+    }
+
+    if (!content.trim()) {
+      Alert.alert('알림', '내용을 입력해주세요.');
+      return;
+    }
+
+    // S3 URL에서 s3Key 추출
+    const s3Key = extractS3Key(imageUri);
+    if (!s3Key) {
+      Alert.alert('오류', '이미지 정보를 가져올 수 없습니다.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const result = await createPhotoVerification(challengeId, {
+        title: title.trim(),
+        content: content.trim(),
+        s3Key,
+        isQuestion: isQuestionEnabled,
+      });
+
+      // 게시글 상세 화면으로 이동 (응답 데이터 전달)
+      navigation.navigate('ChallengeCertificationDetail', {
+        verification: result,
+      });
+    } catch (error: any) {
+      console.error('게시글 작성 실패:', error);
+      Alert.alert('오류', error.message || '게시글 작성에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleContentChange = (text: string) => {
+    if (text.length <= 200) {
+      setContent(text);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <Header
+        onBack={handleBack}
+        title="새 게시글"
+        showDivider={true}
+        rightContent={
+          <TouchableOpacity 
+            onPress={handlePost} 
+            activeOpacity={0.7}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color={colors.text.primary} />
+            ) : (
+              <Text variant="smMd" color={colors.text.primary}>
+                게시
+              </Text>
+            )}
+          </TouchableOpacity>
+        }
+      />
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 이미지 썸네일 */}
+        <View style={styles.imageContainer}>
+          <View style={styles.thumbnailContainer}>
+            {imageUri && !imageError ? (
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.thumbnailImage}
+                resizeMode="cover"
+                onError={(error) => {
+                  console.error('이미지 로드 실패:', error);
+                  console.error('시도한 URI:', imageUri);
+                  setImageError(true);
+                }}
+                onLoad={() => {
+                  console.log('이미지 로드 성공:', imageUri);
+                }}
+              />
+            ) : (
+              <View style={[styles.thumbnailImage, styles.placeholderContainer]}>
+                <Text variant="sm" color={colors.text.tertiary}>
+                  {imageError ? '이미지를 불러올 수 없습니다' : '이미지 로딩 중...'}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* 제목 입력 필드 */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="제목을 입력하세요"
+              placeholderTextColor={colors.icon.gray}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+        </View>
+
+        {/* 내용 입력 필드 */}
+        <View style={styles.rulesContainer}>
+          <TextInput
+            style={styles.rulesInput}
+            placeholder="내용을 입력하세요 (200자 이내)"
+            placeholderTextColor={colors.icon.gray}
+            value={content}
+            onChangeText={handleContentChange}
+            multiline
+            textAlignVertical="top"
+            maxLength={200}
+          />
+        </View>
+        <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
+          {content.length}/200
+        </Text>
+
+        {/* 질문 등록 토글 */}
+        <View style={styles.questionSection}>
+          <View style={styles.questionInfo}>
+            <Text variant="md" color={colors.text.primary}>
+              질문 등록
+            </Text>
+            <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
+              챌린저들에게 빠른 답변을 받을 수 있어요
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
+            activeOpacity={0.7}
+          >
+            {isQuestionEnabled ? (
+              <ToggleOnIcon width={48} height={28} />
+            ) : (
+              <ToggleOffIcon width={48} height={28} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  imageContainer: {
+    marginBottom: 20,
+  },
+  thumbnailContainer: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  thumbnailImage: {
+    width: 200,
+    height: 200,
+  },
+  placeholderContainer: {
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    height: 54,
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  inputRow: {
+    flex: 1,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+  },
+  input: {
+    fontSize: 15,
+    fontFamily: 'Pretendard-Regular',
+    color: colors.text.primary,
+    padding: 0,
+    minHeight: 40,
+  },
+  rulesContainer: {
+    height: 208,
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    marginBottom: 8,
+  },
+  rulesInput: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: 'Pretendard-Regular',
+    color: colors.text.secondary,
+    padding: 0,
+  },
+  characterCount: {
+    marginBottom: 20,
+    textAlign: 'right',
+    paddingRight: 4,
+  },
+  questionSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  questionInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  questionDescription: {
+    marginTop: 4,
+    lineHeight: 18,
+  },
+});

@@ -7,8 +7,11 @@ import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from '../../components/common/Text';
 import { Button } from '../../components/common/Button';
@@ -21,7 +24,9 @@ import ChevronRightIcon from '../../../assets/icons/chevron-right-primary.svg';
 import LikeSelectedIcon from '../../../assets/icons/like-selected-circle.svg';
 import LikeUnselectedIcon from '../../../assets/icons/like-unselected-circle.svg';
 import RefreshFabIcon from '../../../assets/icons/refresh-fab.svg';
-import { RecommendedChallenge } from '../../libs/api/challenge';
+import { RecommendedChallenge, trackChallengeClick } from '../../libs/api/challenge';
+import { getS3ImageUrl } from '../../libs/s3';
+import { RootStackParamList } from '../../navigation/types';
 
 interface OnboardingResultScreenProps {
   onGoHome: () => void;
@@ -40,6 +45,7 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
   onRefresh,
   recommendedChallenges,
 }) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [likedChallenges, setLikedChallenges] = useState<Set<number>>(new Set());
   const [refreshKey, setRefreshKey] = useState(0); // 화면 새로고침을 위한 key
@@ -77,12 +83,28 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
 
   const renderChallengeCard = ({ item }: { item: RecommendedChallenge }) => {
     const isLiked = likedChallenges.has(item.challengeId);
+    const imageUrl = getS3ImageUrl(item.image_key);
 
     return (
-      <View style={styles.cardContainer}>
+      <TouchableOpacity
+        style={styles.cardContainer}
+        activeOpacity={0.9}
+        onPress={() => {
+          trackChallengeClick(item.challengeId);
+          navigation.navigate('ChallengeProfile', { challengeId: item.challengeId });
+        }}
+      >
         {/* 이미지 영역 - 회색 박스 + 하단 흰색 그라데이션 + 텍스트 오버레이 */}
         <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder} />
+          {imageUrl ? (
+            <Image
+              source={{ uri: imageUrl }}
+              style={styles.challengeImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagePlaceholder} />
+          )}
           {/* 그라데이션 효과를 위한 오버레이 */}
           <LinearGradient
             colors={['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)']}
@@ -91,7 +113,10 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
           {/* 좋아요 버튼 */}
           <TouchableOpacity
             style={styles.likeButton}
-            onPress={() => handleLikeToggle(item.challengeId)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleLikeToggle(item.challengeId);
+            }}
             activeOpacity={0.7}
           >
             {isLiked ? (
@@ -113,7 +138,7 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
             </Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -299,6 +324,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: colors.line,
+  },
+  challengeImage: {
+    width: '100%',
+    height: '100%',
   },
   gradientOverlay: {
     position: 'absolute',

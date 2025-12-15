@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity, Alert } from 'react-native';
 import { useChallengeStore } from '../store/challengeSlice';
+import { useUserStore } from '../store/userSlice';
 import { colors, typography, spacing } from '../design/tokens';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { getUserMe, getOngoingChallenges } from '../libs/api/user';
-import { Challenge } from '../libs/api/challenge';
+import { Challenge, getDailyMissionCompleted } from '../libs/api/challenge';
+import { handleLogout } from '../libs/auth/logout';
 
 import TopAppBar from '../components/home/TopAppBar';
 import { ChallengeSuggestButton } from '../components/home/ChallengeSuggestButton';
@@ -17,9 +19,18 @@ import RandomMissionBanner from '../components/home/RandomMissionBanner';
 
 const HomeScreen = () => {
   const { dailyTop, isLoading, error, fetchDailyTop } = useChallengeStore();
+  const { setRandomMissionCompleted } = useUserStore();
   const [nickname, setNickname] = useState('');
   const [ongoingChallenges, setOngoingChallenges] = useState<Challenge[]>([]);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  // const handleLogoutTest = async () => {
+  //   try {
+  //     await handleLogout();
+  //   } catch (error) {
+  //     alert('로그아웃 실패: ' + JSON.stringify(error));
+  //   }
+  // };
 
   useEffect(() => {
     fetchDailyTop();
@@ -53,9 +64,20 @@ const HomeScreen = () => {
       }
     };
 
+    // 오늘의 랜덤미션 완료 여부 조회
+    const fetchDailyMissionCompleted = async () => {
+      try {
+        const isCompleted = await getDailyMissionCompleted();
+        setRandomMissionCompleted(isCompleted);
+      } catch (error) {
+        // 에러가 나도 화면은 정상 동작하도록 함
+      }
+    };
+
     fetchUserInfo();
     fetchOngoingChallenges();
-  }, [fetchDailyTop]);
+    fetchDailyMissionCompleted();
+  }, [fetchDailyTop, setRandomMissionCompleted]);
 
   return (
     <View style={styles.safeArea}>
@@ -87,6 +109,7 @@ const HomeScreen = () => {
             <View style={styles.welcomeContainer}>
               <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
               <Text style={styles.welcomeTitle}>오늘도 챌린지를 해볼까요?</Text>
+              {/* <Button title="로그아웃 테스트" onPress={handleLogoutTest} /> */}
             </View>
 
             <ChallengeCarousel challenges={ongoingChallenges} />

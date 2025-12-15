@@ -50,32 +50,36 @@ export const Header: React.FC<HeaderProps> = ({
       }
     ]}>
       {/* 왼쪽: 뒤로가기 버튼 */}
-        {onBack ? (
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <BackIcon width={9} height={18} />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.backButtonPlaceholder} />
-        )}
+      {onBack ? (
+        <TouchableOpacity
+          onPress={onBack}
+          style={styles.backButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <BackIcon width={9} height={18} />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.backButtonPlaceholder} />
+      )}
 
-        {/* 중앙: 제목 */}
-        {title ? (
-          <Text variant="md" color={colors.text.primary} style={styles.headerTitle}>
-            {title}
-          </Text>
-        ) : (
-          <View style={styles.headerTitle} />
-        )}
+      {/* 중앙: 제목 */}
+      {title ? (
+        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
+          {title}
+        </Text>
+      ) : (
+        <View style={styles.headerTitle} />
+      )}
 
-        {/* 오른쪽: 커스텀 컨텐츠 또는 플레이스홀더 */}
-        {rightContent ? (
-          <View style={styles.rightContentContainer}>
-            {rightContent}
-          </View>
-        ) : (
-          <View style={styles.backButtonPlaceholder} />
-        )}
-      </View>
+      {/* 오른쪽: 커스텀 컨텐츠 또는 플레이스홀더 */}
+      {rightContent ? (
+        <View style={styles.rightContentContainer}>
+          {rightContent}
+        </View>
+      ) : (
+        <View style={styles.backButtonPlaceholder} />
+      )}
+    </View>
   );
 };
 
@@ -85,7 +89,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    // paddingVertical은 동적으로 처리하므로 제거
     backgroundColor: colors.white,
   },
   headerBorder: {

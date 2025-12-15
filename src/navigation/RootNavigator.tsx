@@ -13,6 +13,15 @@ import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
+import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
+import { ChallengeCertificationPostScreen } from '../screens/ChallengeProfile/ChallengeCertificationPostScreen';
+import { ChallengeCertificationDetailScreen } from '../screens/ChallengeProfile/ChallengeCertificationDetailScreen';
+import PopularChallengeScreen from '../screens/PopularChallengeScreen';
+import { CreateChallengeQ1 } from '../screens/CreateChallenge/CreateChallengeQ1';
+import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2';
+import { CreateChallengeQ3 } from '../screens/CreateChallenge/CreateChallengeQ3';
+import { CreateChallengeQ4 } from '../screens/CreateChallenge/CreateChallengeQ4';
+import { CreateChallengeProvider } from '../contexts/CreateChallengeContext';
 import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
@@ -23,7 +32,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const OnboardingScreenWrapper = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  
+
   return (
     <OnboardingScreen
       onComplete={() => {
@@ -49,21 +58,32 @@ const HomeTabs = () => (
 );
 
 const RootNavigator = () => (
-  <NavigationContainer
-    onReady={() => {
-      // 네비가 준비되면 스플래시를 숨김
-      RNBootSplash.hide({ fade: true });
-    }}
-  >
-    <Stack.Navigator>
-      <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
-      <Stack.Screen name="Notifications" component={NotificationsScreen} />
-      <Stack.Screen name="ChallengeList" component={ChallengeListScreen} />
-      <Stack.Screen name="RandomMission" component={RandomMissionScreen} />
-      <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
-    </Stack.Navigator>
-  </NavigationContainer>
+  <CreateChallengeProvider>
+    <NavigationContainer
+      onReady={() => {
+        // 네비가 준비되면 스플래시를 숨김
+        RNBootSplash.hide({ fade: true });
+      }}
+    >
+      <Stack.Navigator>
+        <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationPost" component={ChallengeCertificationPostScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationDetail" component={ChallengeCertificationDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateChallengeQ2" component={CreateChallengeQ2} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateChallengeQ4" component={CreateChallengeQ4} options={{ headerShown: false }} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  </CreateChallengeProvider>
 );
 
 export default RootNavigator;
