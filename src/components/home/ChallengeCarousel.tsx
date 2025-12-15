@@ -7,11 +7,15 @@ import {
   FlatList,
   Dimensions,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-import { Challenge } from '../../libs/api/challenge';
+import { Challenge, trackChallengeClick } from '../../libs/api/challenge';
 import { colors, typography, spacing } from '../../design/tokens';
 import { CarouselPagination } from '../common/CarouselPagination';
+import { RootStackParamList } from '../../navigation/types';
 import PlusIcon from '../../../assets/icons/plus.svg';
 import CheckboxChecked from '../../../assets/icons/checkbox-checked.svg';
 import CheckboxUnchecked from '../../../assets/icons/checkbox-unchecked.svg';
@@ -26,6 +30,7 @@ type ChallengeCarouselProps = {
 };
 
 const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<any>>(null);
@@ -53,23 +58,31 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
     });
 
     return (
-      <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
-        <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.9)']}
-          style={styles.gradientOverlay}
-        />
-        <View style={styles.overlay}>
-          <View style={styles.challengeInfo}>
-            {item.todayEligible ? (
-              <CheckboxChecked width={12} height={10} />
-            ) : (
-              <CheckboxUnchecked width={12} height={10} />
-            )}
-            <Text style={styles.challengeName}>{item.title}</Text>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => {
+          trackChallengeClick(item.id);
+          navigation.navigate('ChallengeProfile', { challengeId: item.id });
+        }}
+      >
+        <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
+          <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
+          <LinearGradient
+            colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.9)']}
+            style={styles.gradientOverlay}
+          />
+          <View style={styles.overlay}>
+            <View style={styles.challengeInfo}>
+              {item.todayEligible ? (
+                <CheckboxChecked width={12} height={10} />
+              ) : (
+                <CheckboxUnchecked width={12} height={10} />
+              )}
+              <Text style={styles.challengeName}>{item.title}</Text>
+            </View>
           </View>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </TouchableOpacity>
     );
   };
 

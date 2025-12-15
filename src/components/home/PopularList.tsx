@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { DailyTopChallengeItem } from '../../libs/api/challenge';
+import { DailyTopChallengeItem, trackChallengeClick } from '../../libs/api/challenge';
 import ChevronRightIcGrey from '../../../assets/icons/chevron-right-ic-grey.svg';
 import EmptyPopularChallenge from '../../../assets/images/empty-popular-challenge.svg';
 import ChallengeItem from '../common/ChallengeItem';
@@ -24,7 +24,7 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
   const parseDaysOfWeek = (daysData: string | string[]) => {
     try {
       let days: string[] = [];
-      
+
       if (Array.isArray(daysData)) {
         days = daysData;
       } else if (typeof daysData === 'string') {
@@ -35,12 +35,12 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
 
       if (Array.isArray(days)) {
         if (days.length === 7) return '매일';
-        
+
         const dayMap: Record<string, string> = {
           MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
           FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
         };
-        
+
         // API에서 오는 요일 데이터를 한글로 변환
         return days.map(d => dayMap[d] || d).join(' / ');
       }
@@ -61,9 +61,9 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
 
       {challenges.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <EmptyPopularChallenge 
-            width="100%" 
-            height="100%" 
+          <EmptyPopularChallenge
+            width="100%"
+            height="100%"
             preserveAspectRatio="none"
             style={styles.emptyBackground}
           />
@@ -80,7 +80,7 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
 
           return (
             <ChallengeItem
-              key={info.challengeId} 
+              key={info.challengeId}
               challengeId={info.challengeId}
               thumbnailUrl={info.thumbnailUrl}
               title={info.title}
@@ -89,7 +89,10 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
               currentParticipantCount={info.currentParticipantCount}
               maxParticipantCount={info.maxParticipantCount}
               ddayUntilStart={info.ddayUntilStart}
-              onPress={() => navigation.navigate('ChallengeProfile', { challengeId: info.challengeId })}
+              onPress={() => {
+                trackChallengeClick(info.challengeId);
+                navigation.navigate('ChallengeProfile', { challengeId: info.challengeId });
+              }}
               marginBottom={isLast ? 0 : 8}
             />
           );
@@ -101,7 +104,7 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
 
 const styles = StyleSheet.create({
   container: {
-    
+
   },
 
   header: {

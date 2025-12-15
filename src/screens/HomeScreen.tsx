@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity, Alert } from 'react-native';
 import { useChallengeStore } from '../store/challengeSlice';
 import { useUserStore } from '../store/userSlice';
 import { colors, typography, spacing } from '../design/tokens';
