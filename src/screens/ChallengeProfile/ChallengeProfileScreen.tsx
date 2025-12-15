@@ -73,36 +73,97 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
-  // TODO: API 연동 후 인증 타입 정보 가져오기
-  const [certificationType, setCertificationType] = useState<'text' | 'image'>('text');
-  // TODO: API 연동 후 참가 상태 정보 가져오기
+  const [certificationType, setCertificationType] = useState<'text' | 'image'>('image');
   const [isParticipated, setIsParticipated] = useState(false);
-  // TODO: API 연동 후 요일별 인증 상태 정보 가져오기
   const [dayStatuses, setDayStatuses] = useState<{
     [key: string]: 'none' | 'required' | 'completed';
   }>({
     일: 'none',
-    월: 'completed', // 인증 요일, 인증 완료
+    월: 'none',
     화: 'none',
     수: 'none',
-    목: 'required', // 인증 요일, 인증 전
+    목: 'none',
     금: 'none',
     토: 'none',
   });
+
+  // 프로필 정보 처리 함수
+  const processProfileData = (profileResult: ChallengeProfile) => {
+    setProfile(profileResult);
+
+    // 참가 상태 설정
+    setIsParticipated(profileResult.isParticipating);
+
+    // 요일별 인증 상태 설정
+    const dayMap: Record<string, string> = {
+      MONDAY: '월',
+      TUESDAY: '화',
+      WEDNESDAY: '수',
+      THURSDAY: '목',
+      FRIDAY: '금',
+      SATURDAY: '토',
+      SUNDAY: '일',
+    };
+
+    // 모든 요일을 'none'으로 초기화
+    const newDayStatuses: { [key: string]: 'none' | 'required' | 'completed' } = {
+      일: 'none',
+      월: 'none',
+      화: 'none',
+      수: 'none',
+      목: 'none',
+      금: 'none',
+      토: 'none',
+    };
+
+    // targetDays의 요일들을 'required'로 설정
+    if (profileResult.targetDays && Array.isArray(profileResult.targetDays)) {
+      profileResult.targetDays.forEach((day) => {
+        const koreanDay = dayMap[day];
+        if (koreanDay) {
+          newDayStatuses[koreanDay] = 'required';
+        }
+      });
+    }
+
+    // verifiedDaysThisWeek의 요일들을 'completed'로 설정 (required를 덮어씀)
+    if (profileResult.verifiedDaysThisWeek && Array.isArray(profileResult.verifiedDaysThisWeek)) {
+      profileResult.verifiedDaysThisWeek.forEach((day) => {
+        const koreanDay = dayMap[day];
+        if (koreanDay) {
+          newDayStatuses[koreanDay] = 'completed';
+        }
+      });
+    }
+
+    setDayStatuses(newDayStatuses);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [detailResult, profileResult] = await Promise.all([
-          getChallengeDetail(challengeId),
-          getChallengeProfile(challengeId),
-        ]);
 
+        // 먼저 챌린지 기본 정보 조회
+        const detailResult = await getChallengeDetail(challengeId);
         setData(detailResult);
-        setProfile(profileResult);
         setIsLiked(detailResult.isLiked);
         setIsParticipated(detailResult.isParticipant);
+
+        // 참가한 경우에만 프로필 정보 조회
+        if (detailResult.isParticipant) {
+          try {
+            const profileResult = await getChallengeProfile(challengeId);
+            processProfileData(profileResult);
+          } catch (profileError: any) {
+            // 프로필 조회 실패 시 무시 (가입하지 않은 경우일 수 있음)
+            console.warn('프로필 정보 조회 실패:', profileError.message);
+            setProfile(null);
+          }
+        } else {
+          // 참가하지 않은 경우 프로필은 null
+          setProfile(null);
+        }
       } catch (error: any) {
         Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
           { text: '확인', onPress: () => navigation.goBack() }
@@ -127,7 +188,7 @@ export const ChallengeProfileScreen: React.FC = () => {
     );
   }
 
-  if (!data || !profile) return null;
+  if (!data) return null;
 
   // 요일 변환 함수
   const formatDays = (days: string[]) => {
@@ -151,11 +212,14 @@ export const ChallengeProfileScreen: React.FC = () => {
     maxParticipants: data.maxParticipantCount,
     isObserverMode: data.isObserverMode,
     hostNickname: data.owner.nickname,
-    schedule: {
-      days: formatDays(profile.targetDays),
-      timeRange: `${formatTime(profile.verifyStartTime)} ~ ${formatTime(profile.verifyEndTime)}`,
+    schedule: profile ? {
+      days: formatDays(profile.targetDays || []),
+      timeRange: `${formatTime(profile.verifyStartTime || '00:00:00')} ~ ${formatTime(profile.verifyEndTime || '00:00:00')}`,
+    } : {
+      days: '',
+      timeRange: '',
     },
-    rules: profile.rule,
+    rules: profile?.rule || '',
     rankings: [
       { rank: 1, nickname: '헤더', score: 156 },
       { rank: 2, nickname: '헤더', score: 102 },
@@ -254,12 +318,30 @@ export const ChallengeProfileScreen: React.FC = () => {
         setPassword('');
         setPasswordError(undefined);
         setIsParticipated(true);
+
+        // 참가 후 프로필 정보 다시 불러오기
+        try {
+          const profileResult = await getChallengeProfile(challengeId);
+          processProfileData(profileResult);
+        } catch (profileError) {
+          console.warn('프로필 정보 조회 실패:', profileError);
+        }
+
         Alert.alert('완료', '챌린지에 참가했습니다.');
       } else {
         // 공개 챌린지 - 비밀번호 없이 참가
         await joinChallenge(challengeId);
         setShowParticipateModal(false);
         setIsParticipated(true);
+
+        // 참가 후 프로필 정보 다시 불러오기
+        try {
+          const profileResult = await getChallengeProfile(challengeId);
+          processProfileData(profileResult);
+        } catch (profileError) {
+          console.warn('프로필 정보 조회 실패:', profileError);
+        }
+
         Alert.alert('완료', '챌린지에 참가했습니다.');
       }
     } catch (error: any) {
@@ -752,7 +834,9 @@ export const ChallengeProfileScreen: React.FC = () => {
         <Button
           variant={isParticipated ? 'black' : 'primary'}
           size="medium"
-          onPress={isParticipated ? () => { } : handleParticipate}
+          onPress={isParticipated ? () => {
+            navigation.navigate('ChallengeCertificationCamera', { challengeId });
+          } : handleParticipate}
         >
           {isParticipated ? '인증하기' : '참가하기'}
         </Button>
