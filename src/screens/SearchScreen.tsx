@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../navigation/types';
 import { colors, typography, spacing } from '../design/tokens';
 import { Text } from '../components/common/Text';
-import { getChallenges, ChallengeInfo } from '../libs/api/challenge';
+import { getChallenges, ChallengeInfo, trackChallengeClick } from '../libs/api/challenge';
 import ChallengeItem from '../components/common/ChallengeItem';
 import LogoGray from '../../assets/images/logo-gray.svg';
 import BackIcon from '../../assets/icons/back.svg';
@@ -221,7 +221,10 @@ const SearchScreen = () => {
                       currentParticipantCount={challenge.currentParticipantCount}
                       maxParticipantCount={challenge.maxParticipantCount}
                       ddayUntilStart={challenge.ddayUntilStart}
-                      onPress={() => navigation.navigate('ChallengeProfile', { challengeId: challenge.challengeId })}
+                      onPress={() => {
+                        trackChallengeClick(challenge.challengeId);
+                        navigation.navigate('ChallengeProfile', { challengeId: challenge.challengeId });
+                      }}
                       marginBottom={isLast ? 0 : 8}
                       marginHorizontal={0}
                     />

@@ -11,7 +11,7 @@ import { DaySelector } from '../components/common/DaySelector';
 import { SortSelector } from '../components/common/SortSelector';
 import { Text as CustomText } from '../components/common/Text';
 import ChallengeItem from '../components/common/ChallengeItem';
-import { ChallengeInfo, getChallenges } from '../libs/api/challenge';
+import { ChallengeInfo, getChallenges, trackChallengeClick } from '../libs/api/challenge';
 import SearchTextPrimary from '../../assets/icons/search-text-primay.svg';
 import CheckboxUnchecked from '../../assets/icons/checkbox-unchecked.svg';
 import CheckboxChecked from '../../assets/icons/checkbox-checked.svg';
@@ -273,7 +273,10 @@ const ChallengeListScreen = ({ route }: Props) => {
                 currentParticipantCount={challenge.currentParticipantCount}
                 maxParticipantCount={challenge.maxParticipantCount}
                 ddayUntilStart={challenge.ddayUntilStart}
-                onPress={() => navigation.navigate('ChallengeProfile', { challengeId: challenge.challengeId })}
+                onPress={() => {
+                  trackChallengeClick(challenge.challengeId);
+                  navigation.navigate('ChallengeProfile', { challengeId: challenge.challengeId });
+                }}
                 marginBottom={isLast ? 0 : 8}
                 marginHorizontal={20}
               />

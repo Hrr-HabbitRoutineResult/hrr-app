@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { Header } from '../components/common/Header';
 import ChallengeItem from '../components/common/ChallengeItem';
 import LogoGray from '../../assets/images/logo-gray.svg';
+import { trackChallengeClick } from '../libs/api/challenge';
 
 const PopularChallengeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -21,7 +22,7 @@ const PopularChallengeScreen = () => {
   const parseDaysOfWeek = (daysData: string | string[]) => {
     try {
       let days: string[] = [];
-      
+
       if (Array.isArray(daysData)) {
         days = daysData;
       } else if (typeof daysData === 'string') {
@@ -31,12 +32,12 @@ const PopularChallengeScreen = () => {
 
       if (Array.isArray(days)) {
         if (days.length === 7) return '매일';
-        
+
         const dayMap: Record<string, string> = {
           MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
           FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
         };
-        
+
         return days.map(d => dayMap[d] || d).join(' / ');
       }
       return '매일';
@@ -91,7 +92,10 @@ const PopularChallengeScreen = () => {
               maxParticipantCount={info.maxParticipantCount}
               ddayUntilStart={info.ddayUntilStart}
               rank={rank}
-              onPress={() => navigation.navigate('ChallengeProfile', { challengeId: info.challengeId })}
+              onPress={() => {
+                trackChallengeClick(info.challengeId);
+                navigation.navigate('ChallengeProfile', { challengeId: info.challengeId });
+              }}
               marginBottom={isLast ? 0 : 6}
               marginHorizontal={20}
             />
