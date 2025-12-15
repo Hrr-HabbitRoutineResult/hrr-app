@@ -258,6 +258,18 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
 };
 
 /**
+ * 챌린지 클릭 처리 (인기 챌린지 집계용)
+ */
+export const trackChallengeClick = async (challengeId: number): Promise<void> => {
+  try {
+    await apiClient.post(`/api/v1/challenges/${challengeId}/click`);
+  } catch (error: any) {
+    // 클릭 트래킹 실패는 조용히 무시 (사용자 경험에 영향 없음)
+    console.warn('챌린지 클릭 트래킹 실패:', error);
+  }
+};
+
+/**
  * 챌린지 목록 조회 파라미터
  */
 export interface GetChallengesParams {
@@ -568,6 +580,7 @@ export interface RecommendedChallenge {
   verifyEndTime: string;
   cert_time_slots: string;
   goal_text: string;
+  image_key: string;
 }
 
 /**
@@ -597,12 +610,203 @@ export const getChallengeRecommendations = async (
       '/api/v1/challenges/recommendations',
       request
     );
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result.recommendations;
     }
-    
+
     throw new Error(response.data.message || '챌린지 추천을 받는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 챌린지 인증 관련
+ * ============================================
+ */
+
+/**
+ * 사진 인증 게시글 작성 요청
+ */
+export interface CreatePhotoVerificationRequest {
+  title: string;
+  content: string;
+  s3Key: string;
+  isQuestion: boolean;
+}
+
+/**
+ * 사진 인증 게시글 작성 응답
+ */
+export interface VerificationDetail {
+  verificationId: number;
+  roundId: number;
+  challengeId: number;
+  userChallengeId: number;
+  type: string;
+  title: string;
+  content: string;
+  photoUrl: string;
+  textUrl: string;
+  isQuestion: boolean;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  userNickname: string;
+  isAdopted: boolean;
+  verificationCount: number;
+}
+
+export interface CreatePhotoVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationDetail;
+}
+
+/**
+ * 사진 인증 게시글 작성
+ */
+export const createPhotoVerification = async (
+  challengeId: number,
+  data: CreatePhotoVerificationRequest
+): Promise<VerificationDetail> => {
+  try {
+    const response = await apiClient.post<CreatePhotoVerificationResponse>(
+      `/api/v1/verifications/${challengeId}/photo`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '게시글 작성에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 게시글 상세 조회 요청 파라미터
+ */
+export interface GetVerificationDetailParams {
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 게시글 상세 조회 응답 - 댓글
+ */
+export interface Comment {
+  commentId: number;
+  parentId: number;
+  verificationId: number;
+  userId: number;
+  userName: string;
+  userProfileUrl: string;
+  depth: number;
+  content: string;
+  likesCount: number;
+  createdAt: string;
+  updatedAt: string;
+  anonymous: boolean;
+}
+
+/**
+ * 게시글 상세 조회 응답 - 댓글 목록
+ */
+export interface CommentsData {
+  comments: Comment[];
+  currentPage: number;
+  totalPages: number;
+  totalParentElements: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
+/**
+ * 게시글 상세 조회 응답 - 사용자 정보
+ */
+export interface VerificationUser {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string;
+  role: string;
+}
+
+/**
+ * 게시글 상세 조회 응답 - 라운드 정보
+ */
+export interface RoundInfo {
+  startDate: string;
+  endDate: string;
+  verificationCount: number;
+  warnCount: number;
+}
+
+/**
+ * 게시글 상세 조회 응답
+ */
+export interface VerificationDetailResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    verificationId: number;
+    roundId: number;
+    roundNumber: number;
+    challengeId: number;
+    challengeName: string;
+    type: string;
+    title: string;
+    content: string;
+    textUrl: string;
+    photoUrl: string;
+    isQuestion: boolean;
+    isResolved: boolean;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+    isMine: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canSelectComment: boolean;
+    user: VerificationUser;
+    roundInfo: RoundInfo;
+    comments: CommentsData;
+  };
+}
+
+/**
+ * 게시글 상세 조회
+ */
+export const getVerificationDetail = async (
+  verificationId: number,
+  params?: GetVerificationDetailParams
+): Promise<VerificationDetailResponse['result']> => {
+  try {
+    const response = await apiClient.get<VerificationDetailResponse>(
+      `/api/v1/verifications/${verificationId}`,
+      {
+        params: {
+          page: params?.page || 1,
+          size: params?.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '게시글을 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
   }
