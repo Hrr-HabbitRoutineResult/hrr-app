@@ -1,9 +1,14 @@
+import { VerificationDetail, VerificationDetailResponse } from '../libs/api/challenge';
+
 export type RootStackParamList = {
   HomeTabs: undefined;
   Notifications: undefined;
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
   ChallengeProfile: { challengeId: number };
+  ChallengeCertificationCamera: { challengeId: number };
+  ChallengeCertificationPost: { challengeId: number; imageUri: string };
+  ChallengeCertificationDetail: { verification?: VerificationDetail; verificationId?: number };
   PopularChallenge: undefined;
   Search: undefined;
   CreateChallengeQ1: undefined;
