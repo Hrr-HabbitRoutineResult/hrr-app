@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import React, { useEffect, useRef, useState } from 'react'
 import { View, Pressable, Text } from 'react-native'
-import { Pagination } from '../homescreen/Pagination'
+import Pagination from '../common/Pagination'
 
 // Pagination 컴포넌트의 props 타입 추론
 type Props = React.ComponentProps<typeof Pagination>
