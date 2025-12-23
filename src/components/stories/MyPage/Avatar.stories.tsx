@@ -2,7 +2,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Avatar } from '../../common/Avatar';
+import { Avatar } from '../../MyPage/Avatar';
 
 const meta: Meta<typeof Avatar> = {
   title: 'Components/MyPage/Avatar',
