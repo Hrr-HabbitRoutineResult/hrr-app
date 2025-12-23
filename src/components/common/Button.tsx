@@ -1,126 +1,129 @@
 import React from 'react';
 import {
-    TouchableOpacity,
-    StyleSheet,
-    ViewStyle,
-    TouchableOpacityProps,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacityProps,
 } from 'react-native';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
-// 버튼 variant 타입
-type ButtonVariant = 'black' | 'primary' | 'white' | 'gray';
-
-// 버튼 사이즈 타입
+type ButtonVariant = 'black' | 'primary' | 'white' | 'gray' | 'outlinePrimary';
 type ButtonSize = 'small' | 'medium';
 
+// ✅ Text 컴포넌트의 variant 타입을 정확히 모르니,
+// 일단 string으로 열어두고(안전), 나중에 Text의 타입을 가져와도 됩니다.
+// 예: import type { TextVariant } from './Text';
+type ButtonTextVariant = string;
+
 interface ButtonProps extends TouchableOpacityProps {
-    variant?: ButtonVariant;        // 버튼 스타일 종류
-    size?: ButtonSize;              // 버튼 크기
-    disabled?: boolean;             // 비활성화 여부
-    onPress: () => void;            // 클릭 이벤트
-    children: string;               // 버튼 텍스트
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  disabled?: boolean;
+  onPress: () => void;
+  children: React.ReactNode;
+
+  // ✅ 추가: 버튼 내부 기본 텍스트 variant를 덮어쓰기
+  // 안 주면 기존처럼 'md'
+  textVariant?: ButtonTextVariant;
+
+  // ✅ 추가(선택): 기본 텍스트 색상도 덮어쓰기
+  // 안 주면 기존 getTextColor() 사용
+  textColor?: string;
 }
 
-// 공통 Button 컴포넌트
 export const Button: React.FC<ButtonProps> = ({
-    variant = 'primary',
-    size = 'medium',
-    disabled = false,
-    onPress,
-    children,
-    style,
-    ...rest
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+  onPress,
+  children,
+  style,
+  textVariant = 'md', // ✅ 기본값: 기존 유지
+  textColor,          // ✅ 선택
+  ...rest
 }) => {
-    // variant에 따른 스타일 결정
-    const getVariantStyle = (): ViewStyle => {
-        // 버튼이 비활성화 상태일 경우 gray 스타일 적용
-        if (disabled) {
-            return {
-                backgroundColor: colors.line,
-            };
-        }
+  const getVariantStyle = (): ViewStyle => {
+    if (disabled) {
+      return { backgroundColor: colors.line };
+    }
 
-        switch (variant) {
-            case 'black':
-                return {
-                    backgroundColor: colors.text.primary
-                };
-            case 'primary':
-                return {
-                    backgroundColor: colors.primary.main
-                };
-            case 'white':
-                return {
-                    backgroundColor: colors.white,
-                    borderWidth: 1.5,
-                    borderColor: colors.line,
-                };
-            case 'gray':
-                return {
-                    backgroundColor: colors.line,
-                };
-            default:
-                return {
-                    backgroundColor: colors.primary.main
-                };
-        }
-    };
+    switch (variant) {
+      case 'black':
+        return { backgroundColor: colors.text.primary };
+      case 'primary':
+        return { backgroundColor: colors.primary.main };
+      case 'white':
+        return {
+          backgroundColor: colors.white,
+          borderWidth: 1.5,
+          borderColor: colors.line,
+        };
+      case 'gray':
+        return { backgroundColor: colors.line };
+      case 'outlinePrimary':
+        return {
+          backgroundColor: colors.white,
+          borderWidth: 1.5,
+          borderColor: colors.primary.main,
+        };
+      default:
+        return { backgroundColor: colors.primary.main };
+    }
+  };
 
-    // variant에 따른 텍스트 색상 결정
-    const getTextColor = (): string => {
-        // 버튼이 비활성화 상태일 경우
-        if (disabled) {
-            return colors.icon.gray;
-        }
+  const getTextColor = (): string => {
+    if (disabled) return colors.icon.gray;
 
-        switch (variant) {
-            case 'black':
-                return colors.white;
-            case 'primary':
-                return colors.white;
-            case 'white':
-                return colors.text.tertiary;
-            case 'gray':
-                return colors.icon.gray;
-            default:
-                return colors.white;
-        }
-    };
+    switch (variant) {
+      case 'black':
+      case 'primary':
+        return colors.white;
+      case 'white':
+        return colors.text.tertiary;
+      case 'gray':
+        return colors.icon.gray;
+      case 'outlinePrimary':
+        return colors.primary.main;
+      default:
+        return colors.white;
+    }
+  };
 
-    // size에 따른 width 결정 (medium: 350px, small: 170px)
-    const getWidth = (): number => {
-        return size === 'medium' ? 350 : 170;
-    };
+  const getWidth = (): number => {
+    return size === 'medium' ? 350 : 170;
+  };
 
-    // 렌더링
-    return (
-        <TouchableOpacity
-            style={[
-                styles.button,         // 기본 스타일 적용 (높이, borderRadius 등)
-                getVariantStyle(),     // variant에 따른 버튼 색상
-                { width: getWidth() }, // 사이즈에 따른 width
-                style,                 // 사용자가 입력한 스타일 (우선 적용)
-            ]}
-            onPress={onPress}
-            disabled={disabled}        // true면 버튼 비활성화
-            activeOpacity={0.9}        // 터치 시 투명도
-            {...rest}                  // 나머지 Props 전달
-        >
-            <Text variant="md" color={getTextColor()}>
-                {children}
-            </Text>
-        </TouchableOpacity>
-    );
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        getVariantStyle(),
+        { width: getWidth() },
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.9}
+      {...rest}
+    >
+      {typeof children === 'string' ? (
+        <Text variant={textVariant} color={textColor ?? getTextColor()}>
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
+    </TouchableOpacity>
+  );
 };
 
 const styles = StyleSheet.create({
-    button: {
-        height: 48,               // 고정 높이
-        borderRadius: 10,         // 모서리
-        paddingVertical: 14,      // 위아래 여백
-        // paddingHorizontal: 10,    // 좌우 여백
-        justifyContent: 'center', // 세로 중앙 정렬
-        alignItems: 'center',     // 가로 중앙 정렬
-    },
+  button: {
+    height: 48,
+    borderRadius: 10,
+    paddingVertical: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
