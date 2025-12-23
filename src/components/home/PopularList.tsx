@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../../design/tokens';
@@ -111,25 +112,25 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 2,
+    paddingBottom: verticalScale(2),
   },
 
   headerTitle: {
     ...typography.header4,
     color: colors.text.primary,
     marginRight: spacing.xxs,
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
 
   iconContainer: {
-    width: 36,
-    height: 36,
+    width: scale(36),
+    height: verticalScale(36),
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyContainer: {
     width: '100%',
-    height: 80,
+    height: verticalScale(80),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -141,13 +142,13 @@ const styles = StyleSheet.create({
   emptyTextContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingLeft: 21,
-    paddingVertical: 22,
+    paddingLeft: scale(21),
+    paddingVertical: verticalScale(22),
   },
   emptyTitle: {
     ...typography.smMd,
     color: colors.text.primary,
-    marginBottom: 2,
+    marginBottom: verticalScale(2),
   },
   emptySubtitle: {
     ...typography.xxs,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 
@@ -96,21 +97,21 @@ export const OptionGroup: React.FC<OptionGroupProps> = ({
 
 const styles = StyleSheet.create({
   group: {
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   title: {
-    marginBottom: 12,
-    lineHeight: 24,
+    marginBottom: verticalScale(12),
+    lineHeight: verticalScale(24),
   },
   optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: scale(10),
   },
   button: {
-    width: 110,
-    height: 38,
-    borderRadius: 40,
+    width: scale(110),
+    height: verticalScale(38),
+    borderRadius: scale(40),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -120,11 +121,11 @@ const styles = StyleSheet.create({
   },
   unselectedButton: {
     backgroundColor: colors.white,
-    borderWidth: 1.5,
+    borderWidth: scale(1.5),
     borderColor: colors.line,
   },
   buttonText: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
 });
 

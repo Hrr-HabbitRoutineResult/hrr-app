@@ -5,6 +5,7 @@ import {
     ViewStyle,
     TouchableOpacityProps,
 } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
@@ -90,7 +91,7 @@ export const Button: React.FC<ButtonProps> = ({
 
     // size에 따른 width 결정 (medium: 350px, small: 170px)
     const getWidth = (): number => {
-        return size === 'medium' ? 350 : 170;
+        return size === 'medium' ? scale(350) : scale(170);
     };
 
     // 렌더링
@@ -116,10 +117,10 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
     button: {
-        height: 48,               // 고정 높이
-        borderRadius: 10,         // 모서리
-        paddingVertical: 14,      // 위아래 여백
-        // paddingHorizontal: 10,    // 좌우 여백
+        height: verticalScale(48),               // 고정 높이
+        borderRadius: scale(10),         // 모서리
+        paddingVertical: verticalScale(14),      // 위아래 여백
+        // paddingHorizontal: scale(10),    // 좌우 여백
         justifyContent: 'center', // 세로 중앙 정렬
         alignItems: 'center',     // 가로 중앙 정렬
     },

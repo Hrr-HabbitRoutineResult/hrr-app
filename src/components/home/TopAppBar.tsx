@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +15,7 @@ const TopAppBar = () => {
 
   // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
   // iOS: 기존 디자인 스펙 유지 (16)
-  const verticalPadding = Platform.OS === 'android' ? 24 : 16;
+  const verticalPadding = Platform.OS === 'android' ? verticalScale(24) : verticalScale(16);
 
   // safeAreaTop 높이 계산
   const safeAreaTop = Platform.OS === 'android'
@@ -55,8 +56,8 @@ const TopAppBar = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
+    paddingHorizontal: scale(24),
+    borderBottomWidth: scale(1),
     borderBottomColor: colors.line,
   },
   contentContainer: {
@@ -65,14 +66,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   logoWrapper: {
-    width: 28,
-    height: 27,
+    width: scale(28),
+    height: verticalScale(27),
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
   },

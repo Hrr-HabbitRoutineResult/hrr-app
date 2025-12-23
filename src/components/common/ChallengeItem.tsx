@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { colors, typography } from '../../design/tokens';
 import PersonIcon from '../../../assets/icons/person.svg';
 
@@ -105,21 +106,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: 20,
-    height: 80,
-    padding: 16,
+    borderRadius: scale(20),
+    height: verticalScale(80),
+    padding: scale(16),
     position: 'relative',
   },
   thumbnailContainer: {
-    width: 48,
-    height: 48,
-    marginRight: 12,
+    width: scale(48),
+    height: verticalScale(48),
+    marginRight: scale(12),
     position: 'relative',  // 랭킹 circle absolute 위치 기준
   },
   thumbnailWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 5.54,
+    width: scale(48),
+    height: verticalScale(48),
+    borderRadius: scale(5.54),
     overflow: 'hidden',
   },
   thumbnail: {
@@ -141,11 +142,11 @@ const styles = StyleSheet.create({
   },
   rankCircle: {
     position: 'absolute',
-    top: -5,
-    left: -5,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: scale(-5),
+    left: scale(-5),
+    width: scale(20),
+    height: verticalScale(20),
+    borderRadius: scale(10),
     backgroundColor: colors.primary.main, // 1~3위
     justifyContent: 'center',
     alignItems: 'center',
@@ -165,27 +166,27 @@ const styles = StyleSheet.create({
   title: {
     ...typography.smMd,
     color: colors.text.primary,
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   subText: {
     ...typography.xxs,
     color: colors.text.tertiary,
   },
   rightContainer: {
-    height: 38,
+    height: verticalScale(38),
     alignItems: 'flex-end',
     justifyContent: 'center',
-    marginLeft: 8,
+    marginLeft: scale(8),
   },
   dailyBadge: {
-    paddingHorizontal: 8,
-    height: 18,
-    borderWidth: 1,
+    paddingHorizontal: scale(8),
+    height: verticalScale(18),
+    borderWidth: scale(1),
     borderColor: colors.primary.main,
-    borderRadius: 20,
+    borderRadius: scale(20),
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: verticalScale(6),
   },
   dailyText: {
     ...typography.xxs,
@@ -193,17 +194,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   participantRow: {
-    height: 14,
+    height: verticalScale(14),
     flexDirection: 'row',
     alignItems: 'center',
   },
   iconWrapper: {
-    paddingTop: 2,
+    paddingTop: verticalScale(2),
   },
   participantCount: {
     ...typography.caption,
     color: colors.text.primary,
-    marginLeft: 4,
+    marginLeft: scale(4),
   },
 });
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
@@ -27,10 +28,10 @@ export const TabBar: React.FC<TabBarProps> = ({
   activeTab, 
   onTabChange,
   scrollable = false,
-  tabWidth = 80,
-  tabHeight = 48,
-  tabGap = 4,
-  horizontalPadding = 20,
+  tabWidth = scale(80),
+  tabHeight = verticalScale(48),
+  tabGap = scale(4),
+  horizontalPadding = scale(20),
 }) => {
   // scrollable=true 일 때 사용
   if (scrollable) {
@@ -102,13 +103,13 @@ export const TabBar: React.FC<TabBarProps> = ({
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
-    paddingTop: 16,
+    paddingTop: verticalScale(16),
     paddingBottom: 0,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingBottom: 12,
+    paddingBottom: verticalScale(12),
     position: 'relative',
   },
   scrollableTabContainer: {
@@ -119,23 +120,23 @@ const styles = StyleSheet.create({
   scrollableTab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 6,
+    paddingBottom: verticalScale(6),
     position: 'relative',
   },
   tabUnderline: {
     position: 'absolute',
     bottom: 0,
-    width: 48,
-    height: 3,
+    width: scale(48),
+    height: verticalScale(3),
     backgroundColor: colors.primary.main,
   },
   tabDivider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
-    marginHorizontal: 20,
+    marginHorizontal: scale(20),
   },
   tabDividerFullWidth: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
     marginHorizontal: 0,
   },

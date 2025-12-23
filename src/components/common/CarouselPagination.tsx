@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { colors } from '../../design/tokens';
 
 interface CarouselPaginationProps {
@@ -51,25 +52,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: scale(6),
+    height: verticalScale(6),
+    borderRadius: scale(3),
     backgroundColor: colors.button,
   },
   paginationDotActive: {
-    width: 32,
-    height: 6,
-    borderRadius: 3,
+    width: scale(32),
+    height: verticalScale(6),
+    borderRadius: scale(3),
     backgroundColor: colors.primary.main,
   },
   paginationDotEnd: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: scale(4),
+    height: verticalScale(4),
+    borderRadius: scale(2),
     backgroundColor: colors.button,
   },
   paginationDotSpacing: {
-    marginRight: 4,
+    marginRight: scale(4),
   },
 });
 

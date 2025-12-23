@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { colors, typography } from '../../design/tokens';
 import ChallengeSuggestBtn from '../../../assets/icons/homescreen/challenge_suggest_btn.svg';
 
-const BUTTON_HEIGHT = 60;
+const BUTTON_HEIGHT = verticalScale(60);
 
 export const ChallengeSuggestButton = ({ onPress }: { onPress: () => void }) => {
   return (
@@ -38,9 +39,9 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1,
-    paddingTop: 21,
-    paddingBottom: 20,
-    paddingLeft: 36,
+    paddingTop: verticalScale(21),
+    paddingBottom: verticalScale(20),
+    paddingLeft: scale(36),
   },
   text: {
     ...typography.md,

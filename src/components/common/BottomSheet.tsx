@@ -7,6 +7,7 @@ import {
   Dimensions,
   ScrollView,
 } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { colors } from '../../design/tokens';
 
 interface BottomSheetProps {
@@ -60,25 +61,25 @@ const styles = StyleSheet.create({
   },
   bottomSheet: {
     backgroundColor: colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: scale(20),
+    borderTopRightRadius: scale(20),
   },
   handleContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: verticalScale(16),
   },
   handle: {
-    width: 60,
-    height: 4,
+    width: scale(60),
+    height: verticalScale(4),
     backgroundColor: colors.line,
-    borderRadius: 10,
+    borderRadius: scale(10),
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 32,
-    paddingBottom: 40,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(32),
+    paddingBottom: verticalScale(40),
   },
 });

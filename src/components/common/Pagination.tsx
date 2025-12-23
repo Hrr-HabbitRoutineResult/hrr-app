@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { colors, spacing } from '../../design/tokens';
 
 type PaginationProps = {
@@ -31,9 +32,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: scale(8),
+    height: verticalScale(8),
+    borderRadius: scale(4),
     marginHorizontal: spacing.xxs,
   },
 });

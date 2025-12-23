@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
@@ -87,20 +88,20 @@ export const VerificationMethodSheet: React.FC<VerificationMethodSheetProps> = (
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   methodList: {
-    gap: 10,
+    gap: verticalScale(10),
   },
   methodCard: {
     width: '100%',
-    height: 80,
-    borderRadius: 20,
-    borderWidth: 1.5,
+    height: verticalScale(80),
+    borderRadius: scale(20),
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(16),
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -108,18 +109,18 @@ const styles = StyleSheet.create({
     borderColor: colors.primary.main,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
-    marginRight: 12,
+    width: scale(24),
+    height: verticalScale(24),
+    marginRight: scale(12),
   },
   methodTextContainer: {
     flex: 1,
   },
   methodTitle: {
-    marginBottom: 4,
-    lineHeight: 20,
+    marginBottom: verticalScale(4),
+    lineHeight: verticalScale(20),
   },
   methodDescription: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
   },
 });

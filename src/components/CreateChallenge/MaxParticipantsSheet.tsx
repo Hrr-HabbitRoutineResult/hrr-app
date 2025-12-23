@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { scale, verticalScale } from 'react-native-size-matters';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { Button } from '../common/Button';
@@ -12,7 +13,7 @@ interface MaxParticipantsSheetProps {
   onConfirm: (count: number) => void;
 }
 
-const ITEM_HEIGHT = 50;
+const ITEM_HEIGHT = verticalScale(50);
 const VISIBLE_ITEMS = 5;
 const CONTAINER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
@@ -96,14 +97,14 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   pickerWrapper: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   pickerContainer: {
-    width: 150,
+    width: scale(150),
     height: CONTAINER_HEIGHT,
     position: 'relative',
   },
@@ -124,12 +125,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: ITEM_HEIGHT,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderTopWidth: scale(1),
+    borderBottomWidth: scale(1),
     borderColor: colors.line,
   },
   button: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
 });
 
