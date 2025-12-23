@@ -5,7 +5,7 @@ import { DaySelector } from '../common/DaySelector';
 import { useArgs } from '@storybook/preview-api';
 
 const meta: Meta<typeof DaySelector> = {
-  title: 'Components/DaySelector',
+  title: 'Components/Common/DaySelector',
   component: DaySelector,
   parameters: {
     layout: 'centered',

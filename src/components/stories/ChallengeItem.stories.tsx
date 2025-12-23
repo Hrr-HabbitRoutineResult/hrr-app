@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import ChallengeItem from '../common/ChallengeItem';
 
 const meta: Meta<typeof ChallengeItem> = {
-  title: 'Components/ChallengeItem',
+  title: 'Components/Common/ChallengeItem',
   component: ChallengeItem,
   decorators: [
     (Story) => (

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { CarouselPagination } from '../common/CarouselPagination';
 
 const meta: Meta<typeof CarouselPagination> = {
-  title: 'Components/CarouselPagination',
+  title: 'Components/Common/CarouselPagination',
   component: CarouselPagination,
   parameters: {
     layout: 'centered',

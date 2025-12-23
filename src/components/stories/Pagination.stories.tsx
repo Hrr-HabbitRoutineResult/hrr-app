@@ -7,7 +7,7 @@ import Pagination from '../common/Pagination'
 type Props = React.ComponentProps<typeof Pagination>
 
 const meta: Meta<Props> = {
-  title: 'Components/Pagination',
+  title: 'Components/Common/Pagination',
   component: Pagination,
   parameters: { layout: 'centered', controls: { expanded: true } },
   argTypes: {

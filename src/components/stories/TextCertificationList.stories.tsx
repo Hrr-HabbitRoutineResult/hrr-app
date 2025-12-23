@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { TextCertificationList, TextCertificationItem } from '../common/TextCertificationList';
 
 const meta: Meta<typeof TextCertificationList> = {
-  title: 'Components/TextCertificationList',
+  title: 'Components/Common/TextCertificationList',
   component: TextCertificationList,
   decorators: [
     (Story) => (

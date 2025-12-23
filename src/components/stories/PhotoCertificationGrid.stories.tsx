@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { PhotoCertificationGrid, PhotoCertificationItem } from '../common/PhotoCertificationGrid';
 
 const meta: Meta<typeof PhotoCertificationGrid> = {
-  title: 'Components/PhotoCertificationGrid',
+  title: 'Components/Common/PhotoCertificationGrid',
   component: PhotoCertificationGrid,
   decorators: [
     (Story) => (

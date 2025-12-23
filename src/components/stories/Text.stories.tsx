@@ -6,7 +6,7 @@ import { Text } from '../common/Text'
 import { colors } from '../../design/tokens'
 
 const meta: Meta<typeof Text> = {
-  title: 'Components/Text',
+  title: 'Components/Common/Text',
   component: Text,
   parameters: { layout: 'centered', controls: { expanded: true } },
   argTypes: {

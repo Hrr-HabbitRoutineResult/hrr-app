@@ -5,7 +5,7 @@ import SegmentedRows, { SegmentedRowsProps } from '../common/SegmentedRows'
 import { colors } from '../../design/tokens'
 
 const meta: Meta<typeof SegmentedRows> = {
-  title: 'Components/SegmentedRows',
+  title: 'Components/Common/SegmentedRows',
   component: SegmentedRows,
   parameters: { layout: 'centered', controls: { expanded: true } },
   argTypes: {

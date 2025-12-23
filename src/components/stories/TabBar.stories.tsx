@@ -6,7 +6,7 @@ import { useArgs } from '@storybook/preview-api';
 import { View } from 'react-native';
 
 const meta: Meta<typeof TabBar> = {
-  title: 'Components/TabBar',
+  title: 'Components/Common/TabBar',
   component: TabBar,
   parameters: {
     layout: 'centered',

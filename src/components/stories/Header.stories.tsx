@@ -6,7 +6,7 @@ import { Header } from '../common/Header';
 import { colors } from '../../design/tokens';
 
 const meta: Meta<typeof Header> = {
-  title: 'Components/Header',
+  title: 'Components/Common/Header',
   component: Header,
   decorators: [
     (Story) => (

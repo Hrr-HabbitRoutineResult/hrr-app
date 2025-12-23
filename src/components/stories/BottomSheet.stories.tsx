@@ -5,7 +5,7 @@ import { View, Text, Button } from 'react-native';
 import { BottomSheet } from '../common/BottomSheet';
 
 const meta: Meta<typeof BottomSheet> = {
-  title: 'Components/BottomSheet',
+  title: 'Components/Common/BottomSheet',
   component: BottomSheet,
   parameters: {
     layout: 'centered',

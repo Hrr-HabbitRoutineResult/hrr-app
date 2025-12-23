@@ -5,7 +5,7 @@ import { SortSelector } from '../common/SortSelector';
 import { useArgs } from '@storybook/preview-api';
 
 const meta: Meta<typeof SortSelector> = {
-  title: 'Components/SortSelector',
+  title: 'Components/Common/SortSelector',
   component: SortSelector,
   parameters: {
     layout: 'centered',

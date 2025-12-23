@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import SectionHeader from '../common/SectionHeader';
 
 const meta: Meta<typeof SectionHeader> = {
-  title: 'Components/SectionHeader',
+  title: 'Components/Common/SectionHeader',
   component: SectionHeader,
   decorators: [
     (Story) => (

@@ -7,7 +7,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { NavigationHelpers, TabNavigationState } from '@react-navigation/native';
 
 const meta: Meta<typeof CustomTabBar> = {
-  title: 'Components/CustomTabBar',
+  title: 'Components/Common/CustomTabBar',
   component: CustomTabBar,
   parameters: {
     layout: 'fullscreen',
