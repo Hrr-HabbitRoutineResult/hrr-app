@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -174,22 +175,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(20),
   },
   titleContainer: {
     alignItems: 'flex-start',
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
     width: '100%',
   },
   title: {
     textAlign: 'left',
-    lineHeight: 32,
-    marginBottom: 12,
+    lineHeight: verticalScale(32),
+    marginBottom: verticalScale(12),
   },
   subtitle: {
     textAlign: 'left',
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
   },
   imageContainer: {
     flex: 1,
@@ -202,8 +203,8 @@ const styles = StyleSheet.create({
   },
   animatedImage: {
     position: 'absolute',
-    width: 220,
-    height: 320,
+    width: scale(220),
+    height: verticalScale(320),
   },
 });
 

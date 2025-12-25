@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -60,19 +61,19 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
-    gap: 8,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(24),
+    gap: scale(8),
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(6),
+    borderRadius: scale(20),
     backgroundColor: colors.white,
-    borderWidth: 1,
+    borderWidth: scale(1),
     borderColor: colors.line,
   },
   filterButtonActive: {
@@ -88,14 +89,14 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: 150,
+    paddingTop: verticalScale(150),
   },
   emptyText: {
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: 21,
-    marginTop: 32,
+    lineHeight: verticalScale(21),
+    marginTop: verticalScale(32),
   },
 });
 

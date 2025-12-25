@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -226,40 +227,40 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
   },
   titleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 20,
-    paddingBottom: 52,
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(52),
   },
   title: {
     textAlign: 'left',
-    lineHeight: 32,
+    lineHeight: verticalScale(32),
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: verticalScale(20),
   },
   divider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
-    marginBottom: 36,
+    marginBottom: verticalScale(36),
   },
   privacySection: {
-    gap: 10,
+    gap: scale(10),
   },
   privacyCard: {
     width: '100%',
-    height: 80,
-    borderRadius: 20,
-    borderWidth: 1.5,
+    height: verticalScale(80),
+    borderRadius: scale(20),
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(16),
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -267,23 +268,23 @@ const styles = StyleSheet.create({
     borderColor: colors.primary.main,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
-    marginRight: 12,
+    width: scale(24),
+    height: verticalScale(24),
+    marginRight: scale(12),
   },
   privacyTextContainer: {
     flex: 1,
   },
   privacyTitle: {
-    marginBottom: 4,
-    lineHeight: 20,
+    marginBottom: verticalScale(4),
+    lineHeight: verticalScale(20),
   },
   privacyDescription: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
 });

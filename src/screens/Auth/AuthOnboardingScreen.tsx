@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -8,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Shadow } from 'react-native-shadow-2';
 import { Text } from '../../components/common/Text';
 import { Button } from '../../components/common/Button';
@@ -23,10 +24,14 @@ import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
 import OnboardingStep4 from '../../../assets/images/onboarding-step-4.svg';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const H_PADDING = 24;
-const CARD_HEIGHT = 460; // SVG 이미지 높이
-const SWIPE_THRESHOLD = 50; // 스와이프 감지 임계값
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const H_PADDING = scale(24);
+// 이미지 크기: 390x844 기준 342x460이 원래 크기 (비율 = 342/460 = 0.7435)
+const ORIGINAL_RATIO = 342 / 460; // 원본 이미지 비율
+
+// 이미지를 제외한 나머지 고정 공간 계산
+// 위: 60 + 그림자여유: 20 + 인디케이터간격: 62 + 인디케이터: 10 + 텍스트간격: 24 + 텍스트: 60 + 버튼영역: 80 = 316px
+const SWIPE_THRESHOLD = scale(50); // 스와이프 감지 임계값
 
 export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname' | 'userOnboarding';
 
@@ -51,7 +56,25 @@ const ONBOARDING_IMAGES = [
 ];
 
 export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOnboardingComplete }) => {
+  const insets = useSafeAreaInsets();
   const [step, setStep] = useState<AuthOnboardingStep>('onboarding');
+
+  // 이미지 크기 및 레이아웃 공간 계산 (Safe Area 고려)
+  // 이미지를 제외한 나머지 고정 공간 계산 (단위: px)
+  // 위: 40 + 그림자여유: 20 + 인디케이터간격: 62 + 인디케이터: 10 + 텍스트간격: 24 + 텍스트: 60 + 버튼영역: 80 = 296px
+  const FIXED_SPACE = verticalScale(40 + 20 + 62 + 10 + 24 + 60 + 80);
+
+  // 실제 가용 높이 (전체 높이 - 상하단 Safe Area)
+  const USABLE_HEIGHT = SCREEN_HEIGHT - insets.top - insets.bottom;
+
+  // 이미지가 사용할 수 있는 최대 높이
+  const MAX_HEIGHT = Math.min(verticalScale(460), USABLE_HEIGHT - FIXED_SPACE);
+  const MAX_WIDTH = Math.min(scale(342), SCREEN_WIDTH * 0.85);
+
+  // 비율을 유지하면서 최대 크기 이하로 맞춤
+  const IMAGE_WIDTH = Math.min(MAX_WIDTH, MAX_HEIGHT * ORIGINAL_RATIO);
+  const IMAGE_HEIGHT = IMAGE_WIDTH / ORIGINAL_RATIO;
+
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -247,12 +270,13 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
       <View style={styles.contentWrapper}>
         {/* 1) 이미지 슬라이드 영역 */}
         <View style={styles.fullWidthSliderWrapper}>
-          <View style={styles.sliderContainer} {...panResponder.panHandlers}>
+          <View style={[styles.sliderContainer, { height: verticalScale(40) + IMAGE_HEIGHT + verticalScale(20) }]} {...panResponder.panHandlers}>
             <Animated.View
               style={[
                 styles.sliderContent,
                 {
                   transform: [{ translateX: slideAnim }],
+                  width: SCREEN_WIDTH * TOTAL_ONBOARDING_STEPS,
                 },
               ]}
             >
@@ -262,15 +286,16 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
                   <View key={index} style={styles.slide}>
                     <View style={styles.imageArea}>
                       <Shadow
-                        distance={16}
+                        distance={verticalScale(16)}
                         startColor="rgba(0, 0, 0, 0.08)"
-                        offset={[0, 4]}
-                        containerStyle={{ borderRadius: 30 }}
+                        offset={[0, verticalScale(4)]}
+                        containerStyle={{ borderRadius: scale(30) }}
                       >
-                        <View style={styles.imageContainer}>
+                        <View style={[styles.imageContainer, { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }]}>
                           <OnboardingImage
-                            width={342}
-                            height={460}
+                            width="100%"
+                            height="100%"
+                            preserveAspectRatio="none"
                           />
                         </View>
                       </Shadow>
@@ -320,6 +345,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
           variant={currentOnboardingStep === TOTAL_ONBOARDING_STEPS ? 'primary' : 'gray'}
           size="medium"
           onPress={handleSkip}
+          style={styles.button}
         >
           {currentOnboardingStep === TOTAL_ONBOARDING_STEPS ? '시작하기' : '건너뛰기'}
         </Button>
@@ -341,60 +367,60 @@ const styles = StyleSheet.create({
   // 슬라이드만 그리드 밖으로
   fullWidthSliderWrapper: {
     marginHorizontal: -H_PADDING, // 패딩을 상쇄시켜 슬라이드만 화면에 풀로 보이게
-    overflow: 'hidden', // 옆 슬라이드 안 보이게
   },
   sliderContainer: {
-    height: CARD_HEIGHT + 100, // 위에 paddingTop 주는 만큼 여유 + 그림자 높이
     overflow: 'visible', // 그림자는 보이게
   },
   sliderContent: {
     flexDirection: 'row',
-    width: SCREEN_WIDTH * TOTAL_ONBOARDING_STEPS,
   },
   slide: {
     width: SCREEN_WIDTH,
   },
   imageArea: {
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: verticalScale(40),
   },
   imageContainer: {
-    width: 342,
-    height: 460,
-    borderRadius: 30,
+    borderRadius: scale(30),
     backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   indicatorContainer: {
     flexDirection: 'row',
-    marginTop: 26,
-    marginBottom: 24,
-    gap: 4,
+    marginTop: verticalScale(62),
+    marginBottom: verticalScale(24),
+    gap: scale(4),
   },
   indicatorActive: {
-    width: 32,
-    height: 6,
-    borderRadius: 3,
+    width: scale(32),
+    height: verticalScale(6),
+    borderRadius: scale(3),
     backgroundColor: colors.primary.main,
   },
   indicatorInactive: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: scale(6),
+    height: verticalScale(6),
+    borderRadius: scale(3),
     backgroundColor: colors.button,
   },
   textContainer: {
-    marginBottom: 48,
-    flexShrink: 1, // 공간이 부족하면 줄어들 수 있게
+    marginBottom: verticalScale(48),
   },
   text: {
-    lineHeight: 28,
+    lineHeight: moderateScale(28),
+    includeFontPadding: false,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
     flexShrink: 0, // 버튼이 항상 보이게
+  },
+  button: {
+    width: '100%',
+    maxWidth: scale(350), // 최대 너비 제한
   },
 });

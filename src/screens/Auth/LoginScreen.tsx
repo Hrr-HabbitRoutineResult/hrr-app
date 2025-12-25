@@ -1,4 +1,5 @@
 import React from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -25,7 +26,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       {/* 로고 + 슬로건 */}
       <View style={styles.logoSection}>
         <View style={styles.logoContainer}>
-          <LogoPrimarySvg width={100} height={100} />
+          <LogoPrimarySvg width={scale(100)} height={verticalScale(100)} />
         </View>
         <Text variant="header4" color={colors.primary.main} style={styles.slogan}>
           흐르르 따라 흐르는 나의 성장
@@ -53,15 +54,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   slogan: {
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
 });

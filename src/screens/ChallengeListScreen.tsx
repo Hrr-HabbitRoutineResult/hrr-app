@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -180,10 +181,10 @@ const ChallengeListScreen = ({ route }: Props) => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           scrollable={true}
-          tabWidth={80}
-          tabHeight={40}
-          tabGap={4}
-          horizontalPadding={20}
+          tabWidth={scale(80)}
+          tabHeight={verticalScale(40)}
+          tabGap={scale(4)}
+          horizontalPadding={scale(20)}
         />
       </View>
 
@@ -277,8 +278,8 @@ const ChallengeListScreen = ({ route }: Props) => {
                   trackChallengeClick(challenge.challengeId);
                   navigation.navigate('ChallengeProfile', { challengeId: challenge.challengeId });
                 }}
-                marginBottom={isLast ? 0 : 8}
-                marginHorizontal={20}
+                marginBottom={isLast ? 0 : verticalScale(8)}
+                marginHorizontal={scale(20)}
               />
             );
           })
@@ -377,14 +378,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(12),
     backgroundColor: colors.background,
   },
   filterButtonsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: scale(4),
   },
   checkboxRow: {
     flexDirection: 'row',
@@ -393,16 +394,16 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     ...typography.xsReg,
     color: colors.text.primary,
-    marginLeft: 10,
+    marginLeft: scale(10),
   },
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(6),
+    borderRadius: scale(20),
     backgroundColor: colors.white,
-    borderWidth: 1,
+    borderWidth: scale(1),
     borderColor: colors.line,
   },
   filterButtonActive: {
@@ -417,11 +418,11 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   filterButtonIcon: {
-    marginLeft: 5,
+    marginLeft: scale(5),
   },
   searchButton: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -430,44 +431,44 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(40),
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: 150,
+    paddingTop: verticalScale(150),
   },
   emptyText: {
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: 21,
-    marginTop: 32,
+    lineHeight: verticalScale(21),
+    marginTop: verticalScale(32),
   },
   errorText: {
     ...typography.smReg,
     color: colors.primary.main,
   },
   bottomSheetContent: {
-    gap: 32,
+    gap: verticalScale(32),
   },
   filterSection: {
-    gap: 16,
+    gap: verticalScale(16),
   },
   sectionTitle: {
     marginBottom: 0,
   },
   daySelectorContainer: {
-    marginTop: 4,
+    marginTop: verticalScale(4),
   },
   checkboxRowBottomSheet: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    height: verticalScale(48),
+    paddingHorizontal: scale(20),
+    borderRadius: scale(12),
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     backgroundColor: colors.white,
   },
@@ -479,10 +480,10 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     backgroundColor: colors.text.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: verticalScale(16),
+    borderRadius: scale(12),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   applyButtonText: {
     ...typography.md,
@@ -490,18 +491,18 @@ const styles = StyleSheet.create({
   },
   fabButton: {
     position: 'absolute',
-    right: 20,
-    bottom: 82,
-    width: 56,
-    height: 56,
+    right: scale(20),
+    bottom: verticalScale(82),
+    width: scale(56),
+    height: verticalScale(56),
     zIndex: 2,
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
-      height: 3,
+      height: verticalScale(3),
     },
     shadowOpacity: 0.2,
-    shadowRadius: 6,
+    shadowRadius: scale(6),
     elevation: 6, // Android
   },
 });

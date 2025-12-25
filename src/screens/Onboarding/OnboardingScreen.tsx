@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { OnboardingIntro } from './OnboardingIntro';
 import { OnboardingQ1 } from './OnboardingQ1';
 import { OnboardingQ2 } from './OnboardingQ2';

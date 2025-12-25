@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -215,23 +216,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 32,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(24),
+    paddingBottom: verticalScale(32),
   },
   imageContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   thumbnailContainer: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
+    width: scale(200),
+    height: verticalScale(200),
+    borderRadius: scale(10),
     overflow: 'hidden',
     position: 'relative',
   },
   thumbnailImage: {
-    width: 200,
-    height: 200,
+    width: scale(200),
+    height: verticalScale(200),
   },
   placeholderContainer: {
     backgroundColor: colors.background,
@@ -239,15 +240,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputContainer: {
-    height: 54,
+    height: verticalScale(54),
     backgroundColor: colors.background,
-    borderRadius: 10,
-    marginBottom: 12,
+    borderRadius: scale(10),
+    marginBottom: verticalScale(12),
     overflow: 'hidden',
   },
   inputRow: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: scale(16),
     justifyContent: 'center',
   },
   input: {
@@ -258,12 +259,12 @@ const styles = StyleSheet.create({
     minHeight: 40,
   },
   rulesContainer: {
-    height: 208,
+    height: verticalScale(208),
     backgroundColor: colors.background,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    marginBottom: 8,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(16),
+    paddingTop: verticalScale(18),
+    marginBottom: verticalScale(8),
   },
   rulesInput: {
     flex: 1,
@@ -273,22 +274,22 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   characterCount: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
     textAlign: 'right',
-    paddingRight: 4,
+    paddingRight: scale(4),
   },
   questionSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   questionInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: scale(16),
   },
   questionDescription: {
-    marginTop: 4,
-    lineHeight: 18,
+    marginTop: verticalScale(4),
+    lineHeight: verticalScale(18),
   },
 });

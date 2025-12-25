@@ -1,4 +1,5 @@
 import React from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -181,27 +182,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 40,
-    gap: 12,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(40),
+    gap: scale(12),
   },
   // 내 프로필 + 탑3 랭킹
   topRankingBox: {
     backgroundColor: colors.white,
-    borderRadius: 10,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(20),
   },
   myProfileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingBottom: 15,
+    gap: scale(12),
+    paddingBottom: verticalScale(15),
   },
   profileImageContainer: {
-    width: 32,
-    height: 32,
+    width: scale(32),
+    height: verticalScale(32),
   },
   myNickname: {
     marginRight: -5,
@@ -211,9 +212,9 @@ const styles = StyleSheet.create({
   },
   dot: {
     marginRight: -5,
-    width: 2,
-    height: 2,
-    borderRadius: 1,
+    width: scale(2),
+    height: verticalScale(2),
+    borderRadius: scale(1),
     backgroundColor: colors.text.primary,
   },
   // 랭킹 탑3 컨테이너
@@ -221,26 +222,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    marginBottom: 0,
-    paddingHorizontal: 0,
+    marginBottom: verticalScale(0),
+    paddingHorizontal: scale(0),
     minHeight: 200, // 막대 그래프 공간 확보
-    gap: 16,
+    gap: scale(16),
   },
   topThreeItem: {
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingBottom: 0,
+    paddingBottom: verticalScale(0),
   },
   topThreeNickname: {
-    marginTop: 12,
-    marginBottom: 4,
+    marginTop: verticalScale(12),
+    marginBottom: verticalScale(4),
   },
   topThreeScore: {
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   // 막대 그래프
   barChart: {
-    width: 80,
+    width: scale(80),
     borderTopLeftRadius: 70,
     borderTopRightRadius: 70,
     minHeight: 20,
@@ -255,35 +256,35 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.lighter,
   },
   divider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   // 순위 리스트 박스
   rankingListBox: {
     backgroundColor: colors.white,
-    borderRadius: 10,
-    paddingRight: 20,
-    paddingLeft: 10,
-    paddingVertical: 14,
-    gap: 10,
-    marginBottom: 24,
+    borderRadius: scale(10),
+    paddingRight: scale(20),
+    paddingLeft: scale(10),
+    paddingVertical: verticalScale(14),
+    gap: scale(10),
+    marginBottom: verticalScale(24),
   },
   // 순위 리스트
   rankingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    height: 40,
+    gap: scale(12),
+    height: verticalScale(40),
   },
   rankingLeft: {
-    width: 40,
-    height: 40,
+    width: scale(40),
+    height: verticalScale(40),
     alignItems: 'center',
     justifyContent: 'center',
   },
   rankNumber: {
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
     textAlign: 'center',
   },
   rankIconContainer: {
@@ -291,8 +292,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileContainer: {
-    width: 40,
-    height: 40,
+    width: scale(40),
+    height: verticalScale(40),
     marginLeft: -5,
   },
   rankingNickname: {

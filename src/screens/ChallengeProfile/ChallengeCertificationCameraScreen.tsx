@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, Alert, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -58,7 +59,7 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
         },
         (error) => {
           console.error('이미지 크기 가져오기 실패:', error);
-          setImageSize({ width: 1024, height: 1024 });
+          setImageSize({ width: scale(1024), height: 1024 });
         }
       );
     } else {
@@ -279,8 +280,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 <View style={[
                   styles.timestampContainer,
                   {
-                    bottom: 16,
-                    right: 16,
+                    bottom: verticalScale(16),
+                    right: scale(16),
                   }
                 ]}>
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
@@ -314,8 +315,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 <View style={[
                   styles.timestampContainer,
                   {
-                    bottom: 16,
-                    right: 16,
+                    bottom: verticalScale(16),
+                    right: scale(16),
                   }
                 ]}>
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
@@ -368,10 +369,10 @@ const styles = StyleSheet.create({
   },
   certificationContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(28),
     justifyContent: 'space-between',
-    paddingBottom: 32,
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   loadingContainer: {
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: verticalScale(80),
   },
   thumbnailContainer: {
     position: 'absolute',
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   previewImage: {
-    borderRadius: 20,
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -399,12 +400,12 @@ const styles = StyleSheet.create({
   },
   timestampContainer: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    width: 137,
-    height: 32,
+    bottom: verticalScale(16),
+    right: scale(16),
+    width: scale(137),
+    height: verticalScale(32),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 10,
+    borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -412,14 +413,14 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   certificationButtonContainer: {
-    gap: 10,
-    paddingTop: 20,
+    gap: scale(10),
+    paddingTop: verticalScale(20),
   },
   retakeButton: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   certifyButton: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   hiddenViewShot: {
     position: 'absolute',
