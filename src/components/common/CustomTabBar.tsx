@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { colors, typography } from '../../design/tokens';
 import { HomeTabParamList } from '../../navigation/types';

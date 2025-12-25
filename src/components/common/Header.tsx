@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
