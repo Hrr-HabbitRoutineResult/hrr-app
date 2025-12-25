@@ -22,7 +22,7 @@ const PROVIDER_CONFIG = {
   apple: {
     backgroundColor: '#000000',
     textColor: colors.white,
-    text: '애플 로그인',
+    text: 'Apple로 로그인',
     Icon: AppleIcon,
   },
   naver: {

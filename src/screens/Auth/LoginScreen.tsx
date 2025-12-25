@@ -3,6 +3,7 @@ import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/common/Text';
@@ -35,7 +36,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
       {/* 소셜 로그인 버튼들 */}
       <View style={styles.buttonContainer}>
-        <SocialLoginButton provider="apple" onPress={onAppleLogin} />
+        {Platform.OS === 'ios' && (
+          <SocialLoginButton provider="apple" onPress={onAppleLogin} />
+        )}
         <SocialLoginButton provider="naver" onPress={onNaverLogin} />
         <SocialLoginButton provider="kakao" onPress={onKakaoLogin} />
       </View>
