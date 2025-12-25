@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { Button } from '../common/Button';

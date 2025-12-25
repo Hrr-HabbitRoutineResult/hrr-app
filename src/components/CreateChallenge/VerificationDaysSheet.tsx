@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';

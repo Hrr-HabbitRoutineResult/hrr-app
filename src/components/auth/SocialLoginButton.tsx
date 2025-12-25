@@ -4,7 +4,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 import AppleIcon from '../../../assets/icons/social/apple.svg';
@@ -69,7 +69,8 @@ export const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    width: scale(350),
+    width: '100%',
+    maxWidth: scale(350),
     height: verticalScale(54),
     borderRadius: scale(8),
     paddingTop: verticalScale(18),

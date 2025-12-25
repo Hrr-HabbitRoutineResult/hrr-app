@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { scale, verticalScale } from 'react-native-size-matters';
+import { scale, verticalScale } from '../../utils/scaling';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
