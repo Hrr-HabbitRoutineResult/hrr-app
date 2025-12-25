@@ -1,4 +1,4 @@
-import { scale, moderateScale } from 'react-native-size-matters';
+import { scale, moderateScale } from '../utils/scaling';
 
 export const colors = {
   // Primary
