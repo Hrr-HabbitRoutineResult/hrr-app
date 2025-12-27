@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         width: '100%',            // 기본적으로 부모 컨테이너 너비를 따름
         height: verticalScale(48),               // 고정 높이
         borderRadius: scale(10),         // 모서리
-        paddingVertical: verticalScale(14),      // 위아래 여백
+        // paddingVertical: verticalScale(14),      // 위아래 여백
         // paddingHorizontal: scale(10),    // 좌우 여백
         justifyContent: 'center', // 세로 중앙 정렬
         alignItems: 'center',     // 가로 중앙 정렬
