@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -49,6 +50,37 @@ export const CreateChallengeQ2 = () => {
   const [challengeRules, setChallengeRules] = useState(data.challengeRules);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(data.thumbnailImageUri);
   const [isUploading, setIsUploading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const scrollRef = useRef<ScrollView>(null);
+  const rulesInputY = useRef<number>(0);
+
+  // 키보드 높이를 감지하여 ScrollView 하단에 동적 패딩 추가
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardHeight(0)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  // 챌린지 규칙 입력창 포커스 시 화면 상단으로 자동 스크롤
+  const handleRulesFocus = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: rulesInputY.current - verticalScale(40),
+        animated: true,
+      });
+    }, 300);
+  };
 
   // 바텀시트 상태들
   const [showMethodSheet, setShowMethodSheet] = useState(false);
@@ -91,7 +123,7 @@ export const CreateChallengeQ2 = () => {
     }
   };
 
-  // MIME type 결정 헬퍼 함수
+  // MIME type 결정
   const getMimeType = (extension: string): string => {
     const mimeTypes: Record<string, string> = {
       jpg: 'image/jpeg',
@@ -264,9 +296,14 @@ export const CreateChallengeQ2 = () => {
       <ProgressBar currentStep={2} totalSteps={4} />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight : verticalScale(40) }
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* 카메라 이미지 박스 */}
         <TouchableOpacity
@@ -326,7 +363,7 @@ export const CreateChallengeQ2 = () => {
         ]}>
           {/* 인증수단 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[styles.selectionRow, styles.selectionRowDivider]}
             onPress={() => setShowMethodSheet(true)}
             activeOpacity={0.7}
           >
@@ -344,11 +381,9 @@ export const CreateChallengeQ2 = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
-
           {/* 인증요일 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[styles.selectionRow, styles.selectionRowDivider]}
             onPress={() => setShowDaysSheet(true)}
             activeOpacity={0.7}
           >
@@ -366,11 +401,12 @@ export const CreateChallengeQ2 = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
-
           {/* 인증시간대 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[
+              styles.selectionRow,
+              !isTimeExpanded && styles.selectionRowDivider,
+            ]}
             onPress={() => {
               if (startTime && endTime) {
                 setIsTimeExpanded(!isTimeExpanded);
@@ -419,10 +455,9 @@ export const CreateChallengeQ2 = () => {
                   미설정 시 24시간으로 자동 설정돼요
                 </Text>
               </View>
+              <View style={styles.divider} />
             </>
           )}
-
-          <View style={styles.divider} />
 
           {/* 정원 */}
           <View style={styles.selectionRow}>
@@ -458,7 +493,12 @@ export const CreateChallengeQ2 = () => {
         </View>
 
         {/* 챌린지 규칙 입력 박스 */}
-        <View style={styles.rulesContainer}>
+        <View
+          style={styles.rulesContainer}
+          onLayout={(e) => {
+            rulesInputY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <TextInput
             style={styles.rulesInput}
             placeholder="챌린지 규칙을 설명해 주세요 (진행 방식 등)"
@@ -473,6 +513,7 @@ export const CreateChallengeQ2 = () => {
             multiline
             textAlignVertical="top"
             maxLength={200}
+            onFocus={handleRulesFocus}
           />
         </View>
 
@@ -625,11 +666,15 @@ const styles = StyleSheet.create({
     height: verticalScale(320),
   },
   selectionRow: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: verticalScale(54),
     paddingHorizontal: scale(16),
+  },
+  selectionRowDivider: {
+    borderBottomWidth: verticalScale(1),
+    borderBottomColor: colors.line,
   },
   selectionLeft: {
     flexDirection: 'row',
@@ -650,21 +695,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: scale(12),
     paddingHorizontal: scale(16),
-    paddingTop: verticalScale(12),
-    paddingBottom: verticalScale(16),
+    paddingBottom: verticalScale(18),
   },
   timeBox: {
     flex: 1,
     height: verticalScale(46),
     borderRadius: scale(6),
-    borderWidth: scale(1),
-    borderColor: colors.line,
+    backgroundColor: colors.line,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: scale(20),
   },
   timeNoticeContainer: {
     paddingHorizontal: scale(16),
-    paddingBottom: verticalScale(4),
+    paddingBottom: verticalScale(18),
   },
   timeNotice: {
     lineHeight: verticalScale(12),
