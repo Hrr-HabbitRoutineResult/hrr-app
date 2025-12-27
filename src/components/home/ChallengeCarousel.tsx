@@ -74,7 +74,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
           />
           <View style={styles.overlay}>
             <View style={styles.challengeInfo}>
-              {item.todayEligible ? (
+              {item.verified ? (
                 <CheckboxChecked width={12} height={10} />
               ) : (
                 <CheckboxUnchecked width={12} height={10} />

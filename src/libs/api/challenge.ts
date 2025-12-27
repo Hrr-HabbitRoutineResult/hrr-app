@@ -13,7 +13,7 @@ export interface Challenge {
   id: number;
   thumbnail: string;
   title: string;
-  todayEligible?: boolean;
+  verified?: boolean;
 }
 
 /**
