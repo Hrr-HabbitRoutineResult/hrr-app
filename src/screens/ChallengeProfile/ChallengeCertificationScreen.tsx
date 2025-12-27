@@ -14,7 +14,16 @@ import { Text } from '../../components/common/Text';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { getMyVerifications, MyVerificationInfo } from '../../libs/api/challenge';
+import {
+  getMyVerifications,
+  MyVerificationInfo,
+  getVerificationStat,
+  VerificationStat,
+  getChallengeRounds,
+  RoundItem,
+  getVerificationFeed,
+  VerificationFeedItem,
+} from '../../libs/api/challenge';
 
 type ChallengeCertificationScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertification'>;
 type ChallengeCertificationScreenNavigationProp = StackNavigationProp<
@@ -29,11 +38,18 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'my' | 'challenger'>('my');
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
-  const [selectedRound, setSelectedRound] = useState(6);
+  const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
   // 마이 탭 데이터
   const [myData, setMyData] = useState<MyVerificationInfo | null>(null);
   const [isMyLoading, setIsMyLoading] = useState(true);
+
+  // 챌린저 탭 데이터
+  const [statData, setStatData] = useState<VerificationStat | null>(null);
+  const [rounds, setRounds] = useState<RoundItem[]>([]);
+  const [challengerFeed, setChallengerFeed] = useState<VerificationFeedItem[]>([]);
+  const [isChallengerLoading, setIsChallengerLoading] = useState(true);
+  const [isFeedLoading, setIsFeedLoading] = useState(false);
 
   const tabs: TabItem[] = [
     { key: 'my', label: '마이' },
@@ -47,6 +63,20 @@ export const ChallengeCertificationScreen: React.FC = () => {
     }
   }, [activeTab]);
 
+  // 챌린저 탭 데이터 로딩
+  useEffect(() => {
+    if (activeTab === 'challenger') {
+      fetchChallengerData();
+    }
+  }, [activeTab]);
+
+  // 선택된 라운드 변경 시 피드 로딩
+  useEffect(() => {
+    if (activeTab === 'challenger' && selectedRound !== null) {
+      fetchChallengerFeed(selectedRound);
+    }
+  }, [selectedRound, activeTab]);
+
   const fetchMyVerifications = async () => {
     try {
       setIsMyLoading(true);
@@ -59,35 +89,77 @@ export const ChallengeCertificationScreen: React.FC = () => {
     }
   };
 
+  const fetchChallengerData = async () => {
+    try {
+      setIsChallengerLoading(true);
+
+      // 통계 정보 조회
+      const stat = await getVerificationStat(challengeId);
+      setStatData(stat);
+
+      // 라운드 목록 조회
+      const roundsList = await getChallengeRounds(challengeId);
+      setRounds(roundsList);
+
+      // 현재 라운드를 기본 선택
+      const currentRound = roundsList.find(r => r.isCurrentRound);
+      if (currentRound) {
+        setSelectedRound(currentRound.roundNumber);
+      } else if (roundsList.length > 0) {
+        setSelectedRound(roundsList[0].roundNumber);
+      }
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '챌린저 정보를 불러오는데 실패했습니다.');
+    } finally {
+      setIsChallengerLoading(false);
+    }
+  };
+
+  const fetchChallengerFeed = async (roundNumber: number) => {
+    try {
+      setIsFeedLoading(true);
+      const feedData = await getVerificationFeed(challengeId, {
+        roundNumber,
+        page: 1,
+        size: 100,
+      });
+      setChallengerFeed(feedData.content);
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '인증 피드를 불러오는데 실패했습니다.');
+      setChallengerFeed([]);
+    } finally {
+      setIsFeedLoading(false);
+    }
+  };
+
   // 인증 타입 판별 (마이 탭)
   const myCertificationType = myData?.verifications?.content?.length && myData.verifications.content.length > 0
     ? myData.verifications.content[0].type === 'TEXT' ? 'text' : 'image'
     : 'image';
 
-  // TODO: API 연동 후 실제 데이터로 교체
-  // 참여한 라운드 목록 (챌린저 탭에서 사용)
-  const participatedRounds = [6, 3, 4, 5];
+  // 인증 타입 판별 (챌린저 탭)
+  const challengerCertificationType = challengerFeed.length > 0
+    ? challengerFeed[0].type === 'TEXT' ? 'text' : 'image'
+    : 'image';
 
-  // 라운드 목록 (맨 앞 라운드=현재 진행 중인 라운드)
-  const rounds = [6, 1, 2, 3, 4, 5];
-  const firstRound = rounds[0]; // 기본값(맨 앞 라운드)
-
-  const isParticipated = (round: number) => participatedRounds.includes(round);
-  const isFirstRound = (round: number, index: number) => index === 0;
+  // TODO: 참여한 라운드 정보를 알 수 있는 API 필요
+  const isParticipated = (round: number) => true; // 임시로 모든 라운드 참여 가능
+  const isFirstRound = (round: RoundItem) => round.isCurrentRound;
 
   const handleRoundPress = (round: number) => {
-    // 이미 선택된 라운드를 다시 클릭하면 기본값(맨 앞 라운드)로 이동
-    if (selectedRound === round) {
-      setSelectedRound(firstRound);
+    // 이미 선택된 라운드를 다시 클릭하면 현재 라운드로 이동
+    const currentRound = rounds.find(r => r.isCurrentRound);
+    if (selectedRound === round && currentRound) {
+      setSelectedRound(currentRound.roundNumber);
     } else {
       setSelectedRound(round);
     }
   };
 
-  // TODO: API 연동 후 실제 데이터로 교체
-  const completedCount = 23;
-  const totalCount = 30;
-  const progressPercentage = (completedCount / totalCount) * 100;
+  // 통계 계산
+  const completedCount = statData?.certifiedCount || 0;
+  const totalCount = statData?.totalParticipantCount || 0;
+  const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   // 원형 그래프 계산
   const size = 240; // 원형 그래프 크기(240x240)
@@ -146,7 +218,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
               {/* 진행 중 버튼 */}
               <View style={styles.buttonContainer}>
-                <Button variant="black" size="medium" onPress={() => {}}>
+                <Button variant="black" size="medium" onPress={() => { }}>
                   {`${myData.currentRoundSequence}R째 진행 중`}
                 </Button>
               </View>
@@ -206,150 +278,206 @@ export const ChallengeCertificationScreen: React.FC = () => {
             </ScrollView>
           ) : null
         ) : (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-            {/* 원형 그래프 영역 */}
-            <View style={styles.progressSection}>
-              <View style={styles.circularProgressContainer}>
-                <Svg width={size} height={size} style={styles.circularProgressSvg}>
-                  {/* 배경 원 */}
-                  <Circle
-                    cx={center}
-                    cy={center}
-                    r={radius}
-                    stroke={colors.background}
-                    strokeWidth={10}
-                    fill="none"
-                  />
-                  {/* 진행 원 */}
-                  <Circle
-                    cx={center}
-                    cy={center}
-                    r={radius}
-                    stroke={colors.primary.main}
-                    strokeWidth={10}
-                    fill="none"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    transform={`rotate(-90 ${center} ${center})`}
-                  />
-                </Svg>
-                <View style={styles.progressTextContainer}>
-                  <Text variant="header1" color={colors.text.primary}>
-                    {completedCount} / {totalCount}
-                  </Text>
-                </View>
-              </View>
-
-              {/* 통계 정보 */}
-              <View style={styles.statsContainer}>
-                <View style={styles.statRow}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>
-                    총인원
-                  </Text>
-                  <Text variant="xsMd" color={colors.text.primary}>
-                    {totalCount}명
-                  </Text>
-                </View>
-                <View style={styles.statRow}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>
-                    인증완료
-                  </Text>
-                  <Text variant="xsMd" color={colors.text.primary}>
-                    {completedCount}명
-                  </Text>
-                </View>
-                <View style={styles.statRow}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>
-                    미인증
-                  </Text>
-                  <Text variant="xsMd" color={colors.text.primary}>
-                    {totalCount - completedCount}명
-                  </Text>
-                </View>
-              </View>
+          isChallengerLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary.main} />
             </View>
+          ) : statData ? (
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+              {/* 원형 그래프 영역 */}
+              <View style={styles.progressSection}>
+                <View style={styles.circularProgressContainer}>
+                  <Svg width={size} height={size} style={styles.circularProgressSvg}>
+                    {/* 배경 원 */}
+                    <Circle
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      stroke={colors.background}
+                      strokeWidth={10}
+                      fill="none"
+                    />
+                    {/* 진행 원 */}
+                    <Circle
+                      cx={center}
+                      cy={center}
+                      r={radius}
+                      stroke={colors.primary.main}
+                      strokeWidth={10}
+                      fill="none"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      transform={`rotate(-90 ${center} ${center})`}
+                    />
+                  </Svg>
+                  <View style={styles.progressTextContainer}>
+                    <Text variant="header1" color={colors.text.primary}>
+                      {completedCount} / {totalCount}
+                    </Text>
+                  </View>
+                </View>
 
-            {/* 구분선 */}
-            <View style={styles.sectionDivider} />
+                {/* 통계 정보 */}
+                <View style={styles.statsContainer}>
+                  <View style={styles.statRow}>
+                    <Text variant="xsReg" color={colors.text.tertiary}>
+                      총인원
+                    </Text>
+                    <Text variant="xsMd" color={colors.text.primary}>
+                      {totalCount}명
+                    </Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text variant="xsReg" color={colors.text.tertiary}>
+                      인증완료
+                    </Text>
+                    <Text variant="xsMd" color={colors.text.primary}>
+                      {completedCount}명
+                    </Text>
+                  </View>
+                  <View style={styles.statRow}>
+                    <Text variant="xsReg" color={colors.text.tertiary}>
+                      미인증
+                    </Text>
+                    <Text variant="xsMd" color={colors.text.primary}>
+                      {totalCount - completedCount}명
+                    </Text>
+                  </View>
+                </View>
+              </View>
 
-            {/* 라운드 캐러셀 */}
-            <View style={styles.roundCarouselContainer}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[
-                  styles.roundCarouselContent,
-                  roundCarouselScrollX > 0 && styles.roundCarouselContentScrolled,
-                ]}
-                onScroll={(e) => setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)}
-                scrollEventThrottle={16}
-              >
-                {rounds.map((round, index) => {
-                  const participated = isParticipated(round);
-                  const isFirst = isFirstRound(round, index);
-                  const isSelected = selectedRound === round;
+              {/* 구분선 */}
+              <View style={styles.sectionDivider} />
 
-                  // 참여하지 않은 라운드는 클릭 불가
-                  if (!participated) {
-                    return (
-                      <View
-                        key={round}
-                        style={[styles.roundButton, styles.roundButtonNotParticipated]}
-                      >
-                        <Text variant="smReg" color={colors.button}>
-                          {round}R
-                        </Text>
-                      </View>
-                    );
-                  }
+              {/* 라운드 캐러셀 */}
+              <View style={styles.roundCarouselContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={[
+                    styles.roundCarouselContent,
+                    roundCarouselScrollX > 0 && styles.roundCarouselContentScrolled,
+                  ]}
+                  onScroll={(e) => setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)}
+                  scrollEventThrottle={16}
+                >
+                  {rounds.map((round) => {
+                    const participated = isParticipated(round.roundNumber);
+                    const isFirst = isFirstRound(round);
+                    const isSelected = selectedRound === round.roundNumber;
 
-                  // 맨 앞 라운드 (현재 진행 중인 라운드)
-                  if (isFirst) {
+                    // 참여하지 않은 라운드는 클릭 불가
+                    if (!participated) {
+                      return (
+                        <View
+                          key={round.roundNumber}
+                          style={[styles.roundButton, styles.roundButtonNotParticipated]}
+                        >
+                          <Text variant="smReg" color={colors.button}>
+                            {round.roundNumber}R
+                          </Text>
+                        </View>
+                      );
+                    }
+
+                    // 맨 앞 라운드 (현재 진행 중인 라운드)
+                    if (isFirst) {
+                      return (
+                        <TouchableOpacity
+                          key={round.roundNumber}
+                          style={[
+                            styles.roundButton,
+                            styles.roundButtonFirst,
+                          ]}
+                          onPress={() => handleRoundPress(round.roundNumber)}
+                          activeOpacity={0.7}
+                        >
+                          <Text variant="smReg" color={colors.primary.main}>
+                            {round.roundNumber}R
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }
+
+                    // 참여한 라운드 (선택 가능)
                     return (
                       <TouchableOpacity
-                        key={round}
+                        key={round.roundNumber}
                         style={[
                           styles.roundButton,
-                          styles.roundButtonFirst,
+                          isSelected ? styles.roundButtonSelected : styles.roundButtonParticipated,
                         ]}
-                        onPress={() => handleRoundPress(round)}
+                        onPress={() => handleRoundPress(round.roundNumber)}
                         activeOpacity={0.7}
                       >
-                        <Text variant="smReg" color={colors.primary.main}>
-                          {round}R
+                        <Text
+                          variant={isSelected ? 'smMd' : 'smReg'}
+                          color={isSelected ? colors.white : colors.text.tertiary}
+                        >
+                          {round.roundNumber}R
                         </Text>
                       </TouchableOpacity>
                     );
-                  }
+                  })}
+                </ScrollView>
+              </View>
 
-                  // 참여한 라운드 (선택 가능)
-                  return (
-                    <TouchableOpacity
-                      key={round}
-                      style={[
-                        styles.roundButton,
-                        isSelected ? styles.roundButtonSelected : styles.roundButtonParticipated,
-                      ]}
-                      onPress={() => handleRoundPress(round)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        variant={isSelected ? 'smMd' : 'smReg'}
-                        color={isSelected ? colors.white : colors.text.tertiary}
-                      >
-                        {round}R
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
+              {/* 인증 목록 */}
+              {isFeedLoading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary.main} />
+                </View>
+              ) : challengerFeed.length > 0 ? (
+                challengerCertificationType === 'text' ? (
+                  // 글 인증(리스트 형태)
+                  <TextCertificationList
+                    items={challengerFeed.map(item => {
+                      const date = new Date(item.createdDate);
+                      const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 
-            {/* 인증 목록 - TODO: API 연동 필요 */}
-            <View style={styles.emptyContainer}>
-            </View>
-          </ScrollView>
+                      return {
+                        id: item.verificationId,
+                        title: item.title,
+                        description: item.content,
+                        date: formattedDate,
+                        thumbnail: item.imageUrl
+                          ? { uri: item.imageUrl }
+                          : require('../../../assets/images/mock-challenge-profile.png'),
+                      };
+                    })}
+                    onItemPress={(item) => {
+                      navigation.navigate('ChallengeCertificationDetail', {
+                        verificationId: item.id,
+                      });
+                    }}
+                  />
+                ) : (
+                  // 사진 인증(그리드 형태)
+                  <View style={styles.gridContainer}>
+                    <PhotoCertificationGrid
+                      items={challengerFeed.map(item => ({
+                        id: item.verificationId,
+                        thumbnail: { uri: item.imageUrl },
+                        isQuestion: item.isQuestion,
+                      }))}
+                      onItemPress={(item) => {
+                        navigation.navigate('ChallengeCertificationDetail', {
+                          verificationId: item.id,
+                        });
+                      }}
+                    />
+                  </View>
+                )
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    아직 인증 게시글이 없습니다.
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          ) : null
         )}
       </View>
     </SafeAreaView>
