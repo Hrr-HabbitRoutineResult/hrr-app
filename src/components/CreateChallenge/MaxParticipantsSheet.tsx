@@ -13,7 +13,7 @@ interface MaxParticipantsSheetProps {
   onConfirm: (count: number) => void;
 }
 
-const ITEM_HEIGHT = verticalScale(50);
+const ITEM_HEIGHT = Math.round(verticalScale(50));
 const VISIBLE_ITEMS = 5;
 const CONTAINER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
@@ -57,7 +57,7 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} height={350} scrollEnabled={false}>
       <Text variant="header4" color={colors.text.primary} style={styles.title}>
         정원을 선택해 주세요
       </Text>
@@ -71,6 +71,12 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
             decelerationRate="fast"
             onMomentumScrollEnd={handleScroll}
             contentContainerStyle={styles.scrollContent}
+            nestedScrollEnabled={true}
+            scrollEventThrottle={16}
+            bounces={true}
+            overScrollMode="never"
+            removeClippedSubviews={false}
+            disableIntervalMomentum={true}
           >
             {participants.map((count, index) => (
               <View key={index} style={styles.pickerItem}>
