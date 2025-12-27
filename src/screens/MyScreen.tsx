@@ -142,7 +142,13 @@ const MyScreen = () => {
       />
 
       <View style={styles.container}>
-        <ProfileCard user={mockUserProfile} badges={mockBadges} variant="me" />
+        <ProfileCard 
+          user={mockUserProfile} 
+          badges={mockBadges} 
+          variant="me" 
+          onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower' })}
+          onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following' })}
+        />
 
         <TabBar
           tabs={tabs}

@@ -24,6 +24,8 @@ interface ProfileCardProps {
   isBlocked?: boolean;
 
   badges?: React.ReactNode[]; // 추가: 뱃지 목록
+  onPressFollowers?: () => void;
+  onPressFollowing?: () => void;
 }
 
 const ProfileCard = ({
@@ -32,6 +34,8 @@ const ProfileCard = ({
   isFollowing = false,
   isBlocked = false,
   badges = [],
+  onPressFollowers,
+  onPressFollowing,
 }: ProfileCardProps) => {
   const { nickname, avatarUrl, followerCount, followingCount, isChallenger } = user;
 
@@ -112,6 +116,8 @@ const ProfileCard = ({
         followerCount={followerCount}
         followingCount={followingCount}
         profileTypeText={isChallenger ? '챌린저' : '챌린저'}
+        onPressFollowers={onPressFollowers}
+        onPressFollowing={onPressFollowing}
       />
 
       <BadgeRow badges={badges} />

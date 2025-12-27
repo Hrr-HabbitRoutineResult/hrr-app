@@ -1,6 +1,6 @@
 // src/components/profile/ProfileHeader.tsx
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, radius, spacing } from '../../design/tokens';
 import { Avatar } from './Avatar';
 import { Text } from '../common/Text';
@@ -12,6 +12,8 @@ interface ProfileHeaderProps {
   followerCount: number;
   followingCount: number;
   profileTypeText?: string; // 기본: "챌린저"
+  onPressFollowers?: () => void;
+  onPressFollowing?: () => void;
 }
 
 export const ProfileHeader = ({
@@ -20,6 +22,8 @@ export const ProfileHeader = ({
   followerCount,
   followingCount,
   profileTypeText = '챌린저',
+  onPressFollowers,
+  onPressFollowing,
 }: ProfileHeaderProps) => {
   return (
     <View style={styles.profileRow}>
@@ -39,7 +43,7 @@ export const ProfileHeader = ({
         </View>
 
         <View style={styles.followRow}>
-          <View style={styles.followerContainer}>
+          <TouchableOpacity onPress={onPressFollowers} style={styles.followerContainer}>
             <Text variant="xsReg" color={colors.text.secondary}>
               팔로워
             </Text>
@@ -50,9 +54,9 @@ export const ProfileHeader = ({
             >
               {followerCount}
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.followingContainer}>
+          <TouchableOpacity onPress={onPressFollowing} style={styles.followingContainer}>
             <Text variant="xsReg" color={colors.text.secondary}>
               팔로잉
             </Text>
@@ -63,7 +67,7 @@ export const ProfileHeader = ({
             >
               {followingCount}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

@@ -25,6 +25,7 @@ import { CreateChallengeProvider } from '../contexts/CreateChallengeContext';
 import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
 import ParticipatingChallengeScreen from '../screens/ParticipatingChallengeScreen';
 import CertificationHistoryScreen from '../screens/CertificationHistoryScreen';
+import FollowerListScreen from '../screens/FollowerListScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -85,6 +86,7 @@ const RootNavigator = () => (
         <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
         <Stack.Screen name="ParticipatingChallenge" component={ParticipatingChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CertificationHistory" component={CertificationHistoryScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="FollowerList" component={FollowerListScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>
