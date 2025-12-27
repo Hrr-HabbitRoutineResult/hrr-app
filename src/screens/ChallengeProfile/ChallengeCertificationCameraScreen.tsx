@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, Alert, Dimensions, Platform } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -289,6 +290,12 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                     right: scale(16),
                   }
                 ]}>
+                  <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="light"
+                    blurAmount={20}
+                    reducedTransparencyFallbackColor="black"
+                  />
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -324,6 +331,12 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                     right: scale(16),
                   }
                 ]}>
+                  <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="light"
+                    blurAmount={20}
+                    reducedTransparencyFallbackColor="black"
+                  />
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -409,10 +422,11 @@ const styles = StyleSheet.create({
     right: scale(16),
     width: scale(137),
     height: verticalScale(32),
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   timestampText: {
     color: colors.white,
