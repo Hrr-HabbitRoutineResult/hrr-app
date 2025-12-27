@@ -64,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 중앙: 제목 */}
       {title ? (
-        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
+        <Text variant="header2" color={colors.text.primary} style={styles.headerTitle}>
           {title}
         </Text>
       ) : (
@@ -87,8 +87,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
     backgroundColor: colors.white,
   },
   headerBorder: {
@@ -105,12 +103,12 @@ const styles = StyleSheet.create({
     width: 24,
   },
   headerTitle: {
-    flex: 1,
-    textAlign: 'center',
+    marginLeft: 0, 
   },
   rightContentContainer: {
     minWidth: 24,
     alignItems: 'flex-end',
+    marginLeft: 'auto', // Add this to push to the right
   },
   divider: {
     height: 1,

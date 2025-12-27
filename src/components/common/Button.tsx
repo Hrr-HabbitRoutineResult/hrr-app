@@ -11,10 +11,7 @@ import { colors } from '../../design/tokens';
 type ButtonVariant = 'black' | 'primary' | 'white' | 'gray' | 'outlinePrimary';
 type ButtonSize = 'small' | 'medium';
 
-// ✅ Text 컴포넌트의 variant 타입을 정확히 모르니,
-// 일단 string으로 열어두고(안전), 나중에 Text의 타입을 가져와도 됩니다.
-// 예: import type { TextVariant } from './Text';
-type ButtonTextVariant = string;
+type ButtonTextVariant = string; // As noted in the file, can be refined
 
 interface ButtonProps extends TouchableOpacityProps {
   variant?: ButtonVariant;
@@ -22,13 +19,7 @@ interface ButtonProps extends TouchableOpacityProps {
   disabled?: boolean;
   onPress: () => void;
   children: React.ReactNode;
-
-  // ✅ 추가: 버튼 내부 기본 텍스트 variant를 덮어쓰기
-  // 안 주면 기존처럼 'md'
   textVariant?: ButtonTextVariant;
-
-  // ✅ 추가(선택): 기본 텍스트 색상도 덮어쓰기
-  // 안 주면 기존 getTextColor() 사용
   textColor?: string;
 }
 
@@ -39,8 +30,8 @@ export const Button: React.FC<ButtonProps> = ({
   onPress,
   children,
   style,
-  textVariant = 'md', // ✅ 기본값: 기존 유지
-  textColor,          // ✅ 선택
+  textVariant = 'md',
+  textColor,
   ...rest
 }) => {
   const getVariantStyle = (): ViewStyle => {
@@ -94,12 +85,16 @@ export const Button: React.FC<ButtonProps> = ({
     return size === 'medium' ? 350 : 170;
   };
 
+  const getPaddingVertical = (): number => {
+    return size === 'small' ? 8 : 14; // Changed from 12 to 8 for small size
+  };
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
         getVariantStyle(),
-        { width: getWidth() },
+        { width: getWidth(), paddingVertical: getPaddingVertical() },
         style,
       ]}
       onPress={onPress}
@@ -122,7 +117,6 @@ const styles = StyleSheet.create({
   button: {
     height: 48,
     borderRadius: 10,
-    paddingVertical: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },

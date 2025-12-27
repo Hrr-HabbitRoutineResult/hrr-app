@@ -6,16 +6,23 @@ type SectionHeaderProps = {
   title: string;
   actionText?: string;
   onActionPress?: () => void;
+  rightContent?: React.ReactNode;
 };
 
-const SectionHeader = ({ title, actionText, onActionPress }: SectionHeaderProps) => {
+const SectionHeader = ({ title, actionText, onActionPress, rightContent }: SectionHeaderProps) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      {actionText && onActionPress && (
+      {rightContent ? (
+        <View style={styles.rightContentContainer}>
+          {rightContent}
+        </View>
+      ) : actionText && onActionPress ? (
         <TouchableOpacity onPress={onActionPress}>
           <Text style={styles.actionText}>{actionText}</Text>
         </TouchableOpacity>
+      ) : (
+        <View style={styles.rightContentPlaceholder} />
       )}
     </View>
   );
@@ -36,6 +43,14 @@ const styles = StyleSheet.create({
   actionText: {
     ...typography.smMd,
     color: colors.text.secondary,
+  },
+  rightContentContainer: {
+    minWidth: 24,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  rightContentPlaceholder: {
+    minWidth: 24,
   },
 });
 

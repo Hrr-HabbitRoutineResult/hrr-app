@@ -59,7 +59,7 @@ const ProfileCard = ({
             style={styles.singleButton}
             onPress={() => {}}
           >
-            <Text variant="smMd" color={colors.primary.main}>
+            <Text variant="sm" color={colors.primary.main}>
               차단됨
             </Text>
           </Button>
@@ -85,7 +85,7 @@ const ProfileCard = ({
             style={styles.buttonStyle}
             onPress={() => {}}
           >
-            <Text variant="smMd" color={colors.primary.main}>
+            <Text variant="sm" color={colors.primary.main}>
               팔로잉
             </Text>
           </Button>
@@ -96,7 +96,7 @@ const ProfileCard = ({
     return (
       <View style={styles.buttonRow}>
         <Button variant="primary" size="small" style={styles.singleButton} onPress={() => {}}>
-          <Text variant="smMd" color={colors.white}>
+          <Text variant="sm" color={colors.white}>
             팔로우
           </Text>
         </Button>
@@ -126,16 +126,8 @@ export default ProfileCard;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
-    borderRadius: radius.lg,
     padding: spacing.md,
     marginHorizontal: spacing.md,
-    width: 380,
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 2,
   },
 
   buttonRow: {
