@@ -18,8 +18,10 @@ import { LoginScreen } from './LoginScreen';
 import { TermsAgreementScreen } from './TermsAgreementScreen';
 import { NicknameSetupScreen } from './NicknameSetupScreen';
 import { OnboardingScreen } from '../Onboarding/OnboardingScreen';
+import { SocialLoginResponse } from '../../libs/api/auth';
 import { loginWithKakao, handleKakaoLogin as handleKakaoLoginWithToken } from '../../libs/auth/kakao';
 import { loginWithApple, handleAppleLogin as handleAppleLoginWithAuth } from '../../libs/auth/apple';
+import { loginWithNaver, handleNaverLogin as handleNaverLoginWithToken } from '../../libs/auth/naver';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
 import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
@@ -83,8 +85,8 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     currentStepRef.current = currentOnboardingStep;
   }, [currentOnboardingStep]);
 
-  // 공통 로그인 처리 (카카오/애플)
-  const processLogin = useCallback(async (response: any) => {
+  // 소셜 로그인 공통 처리 (카카오/네이버/애플)
+  const processLogin = useCallback(async (response: SocialLoginResponse) => {
     if (response.isSuccess) {
       // 서버에서 받은 토큰/사용자 정보를 AsyncStorage에 저장
       await AsyncStorage.setItem('accessToken', response.result.accessToken);
@@ -139,6 +141,21 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
       await processLogin(response);
     } catch (error) {
       Alert.alert('오류', '애플 로그인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [processLogin]);
+
+  // 네이버 로그인 처리
+  const processNaverLogin = useCallback(async (naverAccessToken: string, naverRefreshToken: string) => {
+    try {
+      setIsLoading(true);
+
+      // 백엔드 로그인 API 호출
+      const response = await handleNaverLoginWithToken(naverAccessToken, naverRefreshToken);
+      await processLogin(response);
+    } catch (error) {
+      Alert.alert('오류', '네이버 로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -226,10 +243,31 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     }
   };
 
-  const handleNaverLogin = () => {
-    // TODO: 네이버 로그인 구현
-    // 현재는 약관 동의 화면으로 바로 이동
-    setStep('terms');
+  const handleNaverLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      // 네이버 SDK 로그인 호출
+      const naverTokens = await loginWithNaver();
+
+      if (naverTokens) {
+        // 네이버 로그인 성공 -> 백엔드 로그인 처리
+        await processNaverLogin(naverTokens.accessToken, naverTokens.refreshToken);
+      } else {
+        // 사용자가 로그인 취소 또는 실패
+        setIsLoading(false);
+      }
+    } catch (error) {
+      // 실제 에러가 난 경우에만 알러트창 표시 (취소는 제외)
+      if (error instanceof Error) {
+        if (!error.message.includes('cancel') && !error.message.includes('취소') && !error.message.includes('Cancel')) {
+          Alert.alert('오류', `네이버 로그인 중 오류가 발생했습니다.\n${error.message}`);
+        }
+      } else {
+        Alert.alert('오류', '네이버 로그인 중 오류가 발생했습니다.');
+      }
+      setIsLoading(false);
+    }
   };
 
   // 카카오 로그인 버튼 클릭 핸들러

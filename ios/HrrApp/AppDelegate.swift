@@ -1,10 +1,11 @@
+import KakaoSDKAuth
+import KakaoSDKCommon
+import NaverThirdPartyLogin
 import RNBootSplash
 import React
 import ReactAppDependencyProvider
 import React_RCTAppDelegate
 import UIKit
-import KakaoSDKCommon
-import KakaoSDKAuth
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,14 +22,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     if let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String {
       KakaoSDK.initSDK(appKey: kakaoAppKey)
       #if DEBUG
-      print("[AppDelegate] 카카오 SDK 초기화 완료")
+        print("[AppDelegate] 카카오 SDK 초기화 완료")
       #endif
     } else {
       #if DEBUG
-      print("[AppDelegate] KAKAO_APP_KEY를 찾을 수 없습니다!")
+        print("[AppDelegate] KAKAO_APP_KEY를 찾을 수 없습니다!")
       #endif
     }
-    
+
     let delegate = ReactNativeDelegate()
     let factory = RCTReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
@@ -46,7 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     return true
   }
-  
+
   // Deep link 처리 (앱이 실행 중일 때)
   func application(
     _ app: UIApplication,
@@ -59,11 +60,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
       }
     }
-    
+
+    // 네이버 로그인 핸들링 추가
+    if url.scheme?.hasPrefix("com.umc.hrrapp") == true {
+      NaverThirdPartyLoginConnection.getSharedInstance().receiveAccessToken(url)
+      return true
+    }
+
     // React Native Linking 모듈이 처리하도록 함
-    return true
+    return RCTLinkingManager.application(app, open: url, options: options)
   }
-  
+
   // Universal Link 처리
   func application(
     _ application: UIApplication,
@@ -71,7 +78,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
   ) -> Bool {
     if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-       let url = userActivity.webpageURL {
+      let url = userActivity.webpageURL
+    {
       // React Native Linking 모듈이 자동으로 처리
       return true
     }

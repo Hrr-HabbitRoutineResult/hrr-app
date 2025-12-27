@@ -43,6 +43,27 @@ export const kakaoLoginByToken = async (
 };
 
 /**
+ * 네이버 액세스 토큰 및 리프레시 토큰을 서버에 전달해 로그인 처리
+ */
+export const naverLoginByToken = async (
+  naverAccessToken: string,
+  naverRefreshToken: string
+): Promise<SocialLoginResponse> => {
+  try {
+    const response = await apiClient.post<SocialLoginResponse>(
+      `/api/v1/auth/login/naver`,
+      {
+        accessToken: naverAccessToken,
+        refreshToken: naverRefreshToken,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
  * 애플 로그인 요청 바디
  */
 export interface AppleLoginRequest {

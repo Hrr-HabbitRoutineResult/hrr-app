@@ -8,3 +8,7 @@
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
 # Add any project specific keep options here:
+
+# Naver Login
+-keep public class com.navercorp.nid.** { *; }
+-keep public class com.nhn.android.naverlogin.** { *; }

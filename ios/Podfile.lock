@@ -27,6 +27,7 @@ PODS:
     - KakaoSDKCommon/Common (= 2.22.0)
   - KakaoSDKUser (2.22.0):
     - KakaoSDKAuth (= 2.22.0)
+  - naveridlogin-sdk-ios (4.2.3)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2631,6 +2632,35 @@ PODS:
     - Yoga
   - RNInAppBrowser (3.7.0):
     - React-Core
+  - RNNaverLogin (4.2.3):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - naveridlogin-sdk-ios (= 4.2.3)
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNScreens (4.18.0):
     - boost
     - DoubleConversion
@@ -2837,6 +2867,7 @@ DEPENDENCIES:
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
+  - "RNNaverLogin (from `../node_modules/@react-native-seoul/naver-login`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - SocketRocket (~> 0.7.1)
@@ -2848,6 +2879,7 @@ SPEC REPOS:
     - KakaoSDKAuth
     - KakaoSDKCommon
     - KakaoSDKUser
+    - naveridlogin-sdk-ios
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -3022,6 +3054,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNInAppBrowser:
     :path: "../node_modules/react-native-inappbrowser-reborn"
+  RNNaverLogin:
+    :path: "../node_modules/@react-native-seoul/naver-login"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
@@ -3043,6 +3077,7 @@ SPEC CHECKSUMS:
   KakaoSDKAuth: 569b377eda622d93d4575240b8031cd658163eef
   KakaoSDKCommon: d57127c339fc79e73aa8b236a4c77211c29924f1
   KakaoSDKUser: 043bcd7e91454ebf3bf64f150c430e6f65f0a08d
+  naveridlogin-sdk-ios: d9d46d02119d303023d7000cd5963864d5bb89e5
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: 22bf66112da540a7d40e536366ddd8557934fca1
   RCTRequired: a0ed4dc41b35f79fbb6d8ba320e06882a8c792cf
@@ -3119,6 +3154,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: 243cc82889368422dab234d73dec63d6cdb1e70f
   RNGestureHandler: e1cf8ef3f11045536eed6bd4f132b003ef5f9a5f
   RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
+  RNNaverLogin: c58cb33714064238acffda37278771be62ff507b
   RNScreens: d821082c6dd1cb397cc0c98b026eeafaa68be479
   RNSVG: 005860704c95493cd23a417dfbeb76dcd8bb7042
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
@@ -3126,4 +3162,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 6282d7bccb9bc3ee04ccd80bae3ca35294a0f6d3
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
