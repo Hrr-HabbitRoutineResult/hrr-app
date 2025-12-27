@@ -242,9 +242,14 @@ export interface ChallengeJoinResponse {
  */
 export const joinChallenge = async (challengeId: number, password?: string): Promise<void> => {
   try {
+    // Request Body 구성
+    const requestBody = password === undefined
+      ? { password: null }  // Public: password를 null로 전송
+      : { password };
+
     const response = await apiClient.post<ChallengeJoinResponse>(
       `/api/v1/challenges/${challengeId}/join`,
-      { password: password || null }
+      requestBody
     );
 
     if (response.data.isSuccess) {
@@ -253,6 +258,16 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
 
     throw new Error(response.data.message || '챌린지 참가에 실패했습니다.');
   } catch (error: any) {
+    if (error.response) {
+      // 서버에서 응답을 받았지만 에러 상태 코드인 경우
+      if (error.response.data && error.response.data.message) {
+        // 에러 메시지가 있으면 더 의미있는 에러로 변경
+        const detailedError: any = new Error(error.response.data.message);
+        detailedError.response = error.response;
+        throw detailedError;
+      }
+    }
+
     throw error;
   }
 };
