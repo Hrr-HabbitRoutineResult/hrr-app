@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Svg, { Circle } from 'react-native-svg';
 import { Header } from '../../components/common/Header';
@@ -14,6 +14,7 @@ import { Text } from '../../components/common/Text';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
+import { getMyVerifications, MyVerificationInfo } from '../../libs/api/challenge';
 
 type ChallengeCertificationScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertification'>;
 type ChallengeCertificationScreenNavigationProp = StackNavigationProp<
@@ -21,126 +22,47 @@ type ChallengeCertificationScreenNavigationProp = StackNavigationProp<
   'ChallengeCertification'
 >;
 
-// TODO: API 연동 후 실제 데이터로 교체
-const mockCertifications: PhotoCertificationItem[] = [
-  {
-    id: 1,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 2,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 3,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 4,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 5,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 6,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 7,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 8,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 9,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 10,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 11,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 12,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 13,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-  {
-    id: 14,
-    thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-  },
-];
-
 export const ChallengeCertificationScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationScreenRouteProp>();
+  const { challengeId } = route.params;
+
   const [activeTab, setActiveTab] = useState<'my' | 'challenger'>('my');
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [selectedRound, setSelectedRound] = useState(6);
-  // TODO: API 연동 후 실제 인증 타입으로 변경
-  const [myCertificationType, setMyCertificationType] = useState<'image' | 'text'>('image');
-  const [challengerCertificationType, setChallengerCertificationType] = useState<'image' | 'text'>('image');
+
+  // 마이 탭 데이터
+  const [myData, setMyData] = useState<MyVerificationInfo | null>(null);
+  const [isMyLoading, setIsMyLoading] = useState(true);
 
   const tabs: TabItem[] = [
     { key: 'my', label: '마이' },
     { key: 'challenger', label: '챌린저' },
   ];
 
-  // TODO: API 연동 후 실제 데이터로 교체
-  const mockTextCertifications: TextCertificationItem[] = [
-    {
-      id: 1,
-      title: '해피뉴이어! 올해 마지막 인증 올립니다',
-      description: '여기엔 상세내용이 들어가유~',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 2,
-      title: '인증 제목 2',
-      description: '상세 내용 2',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 3,
-      title: '인증 제목 3',
-      description: '상세 내용 3',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 4,
-      title: '인증 제목 4',
-      description: '상세 내용 4',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 5,
-      title: '인증 제목 5',
-      description: '상세 내용 5',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 6,
-      title: '인증 제목 6',
-      description: '상세 내용 6',
-      date: '2025.12.02',
-      thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-    },
-  ];
+  // 마이 탭 데이터 로딩
+  useEffect(() => {
+    if (activeTab === 'my') {
+      fetchMyVerifications();
+    }
+  }, [activeTab]);
+
+  const fetchMyVerifications = async () => {
+    try {
+      setIsMyLoading(true);
+      const data = await getMyVerifications(challengeId, { page: 1, size: 100 });
+      setMyData(data);
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '내 인증 현황을 불러오는데 실패했습니다.');
+    } finally {
+      setIsMyLoading(false);
+    }
+  };
+
+  // 인증 타입 판별 (마이 탭)
+  const myCertificationType = myData?.verifications?.content?.length && myData.verifications.content.length > 0
+    ? myData.verifications.content[0].type === 'TEXT' ? 'text' : 'image'
+    : 'image';
 
   // TODO: API 연동 후 실제 데이터로 교체
   // 참여한 라운드 목록 (챌린저 탭에서 사용)
@@ -184,80 +106,105 @@ export const ChallengeCertificationScreen: React.FC = () => {
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={(key) => {
-            const newTab = key as 'my' | 'challenger';
-            // TODO: API 연동 후 제거 (탭 클릭 시 인증 타입 전환)
-            if (key === 'my' && activeTab === 'my') {
-              setMyCertificationType((prev) => (prev === 'image' ? 'text' : 'image'));
-            } else if (key === 'challenger' && activeTab === 'challenger') {
-              setChallengerCertificationType((prev) => (prev === 'image' ? 'text' : 'image'));
-            } else {
-              setActiveTab(newTab);
-            }
-          }}
+          onTabChange={(key) => setActiveTab(key as 'my' | 'challenger')}
         />
 
         {activeTab === 'my' ? (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-            {/* 프로필 영역 */}
-            <View style={styles.profileSection}>
-              <DefaultProfileIcon width={100} height={100} />
-              <View style={styles.profileInfo}>
-                <Text variant="header2" color={colors.text.primary} style={styles.nickname}>
-                  해빗
-                </Text>
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <Text variant="xsReg" color={colors.text.tertiary}>
-                      인증
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.primary}>
-                      10회
-                    </Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text variant="xsReg" color={colors.text.tertiary}>
-                      경고
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.primary}>
-                      0회
-                    </Text>
+          isMyLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary.main} />
+            </View>
+          ) : myData ? (
+            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+              {/* 프로필 영역 */}
+              <View style={styles.profileSection}>
+                <DefaultProfileIcon width={100} height={100} />
+                <View style={styles.profileInfo}>
+                  <Text variant="header2" color={colors.text.primary} style={styles.nickname}>
+                    {myData.nickname}
+                  </Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text variant="xsReg" color={colors.text.tertiary}>
+                        인증
+                      </Text>
+                      <Text variant="xsMd" color={colors.text.primary}>
+                        {myData.totalVerificationCount}회
+                      </Text>
+                    </View>
+                    <View style={styles.statItem}>
+                      <Text variant="xsReg" color={colors.text.tertiary}>
+                        경고
+                      </Text>
+                      <Text variant="xsMd" color={colors.text.primary}>
+                        {myData.warningCount}회
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
 
-            {/* 진행 중 버튼 */}
-            <View style={styles.buttonContainer}>
-              <Button variant="black" size="medium" onPress={() => { }}>
-                1R째 진행 중
-              </Button>
-            </View>
-
-            {/* 구분선 */}
-            <View style={styles.sectionDivider} />
-
-            {/* 인증 목록 */}
-            {myCertificationType === 'image' ? (
-              // 사진 인증(그리드 형태)
-              <View style={styles.gridContainer}>
-                <PhotoCertificationGrid
-                  items={mockCertifications}
-                  onItemPress={(item) => {
-                    // TODO: 인증 상세 화면으로 이동
-                  }}
-                />
+              {/* 진행 중 버튼 */}
+              <View style={styles.buttonContainer}>
+                <Button variant="black" size="medium" onPress={() => {}}>
+                  {`${myData.currentRoundSequence}R째 진행 중`}
+                </Button>
               </View>
-            ) : (
-              // 글 인증(리스트 형태)
-              <TextCertificationList
-                items={mockTextCertifications}
-                onItemPress={(item) => {
-                  // TODO: 인증 상세 화면으로 이동
-                }}
-              />
-            )}
-          </ScrollView>
+
+              {/* 구분선 */}
+              <View style={styles.sectionDivider} />
+
+              {/* 인증 목록 */}
+              {myData.verifications.content.length > 0 ? (
+                myCertificationType === 'text' ? (
+                  // 글 인증(리스트 형태)
+                  <TextCertificationList
+                    items={myData.verifications.content.map(item => {
+                      const date = new Date(item.createdDate);
+                      const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+
+                      return {
+                        id: item.verificationId,
+                        title: item.title,
+                        description: item.content,
+                        date: formattedDate,
+                        thumbnail: item.imageUrl
+                          ? { uri: item.imageUrl }
+                          : require('../../../assets/images/mock-challenge-profile.png'),
+                      };
+                    })}
+                    onItemPress={(item) => {
+                      navigation.navigate('ChallengeCertificationDetail', {
+                        verificationId: item.id,
+                      });
+                    }}
+                  />
+                ) : (
+                  // 사진 인증(그리드 형태)
+                  <View style={styles.gridContainer}>
+                    <PhotoCertificationGrid
+                      items={myData.verifications.content.map(item => ({
+                        id: item.verificationId,
+                        thumbnail: { uri: item.imageUrl },
+                        isQuestion: item.isQuestion,
+                      }))}
+                      onItemPress={(item) => {
+                        navigation.navigate('ChallengeCertificationDetail', {
+                          verificationId: item.id,
+                        });
+                      }}
+                    />
+                  </View>
+                )
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    아직 인증 게시글이 없습니다.
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          ) : null
         ) : (
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
             {/* 원형 그래프 영역 */}
@@ -399,26 +346,9 @@ export const ChallengeCertificationScreen: React.FC = () => {
               </ScrollView>
             </View>
 
-            {/* 인증 목록 */}
-            {challengerCertificationType === 'image' ? (
-              // 사진 인증(그리드 형태)
-              <View style={styles.gridContainer}>
-                <PhotoCertificationGrid
-                  items={mockCertifications}
-                  onItemPress={(item) => {
-                    // TODO: 인증 상세 화면으로 이동
-                  }}
-                />
-              </View>
-            ) : (
-              // 글 인증(리스트 형태)
-              <TextCertificationList
-                items={mockTextCertifications}
-                onItemPress={(item) => {
-                  // TODO: 인증 상세 화면으로 이동
-                }}
-              />
-            )}
+            {/* 인증 목록 - TODO: API 연동 필요 */}
+            <View style={styles.emptyContainer}>
+            </View>
           </ScrollView>
         )}
       </View>
@@ -430,6 +360,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    paddingVertical: verticalScale(60),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollView: {
     flex: 1,

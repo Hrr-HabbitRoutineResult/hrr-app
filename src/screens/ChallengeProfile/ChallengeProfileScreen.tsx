@@ -710,8 +710,7 @@ export const ChallengeProfileScreen: React.FC = () => {
                 style={styles.sectionTitleRow}
                 activeOpacity={0.7}
                 onPress={() => {
-                  // TODO: 챌린지 인증현황 전체보기 화면으로 이동
-                  // navigation.navigate('ChallengeCertificationList', { challengeId });
+                  navigation.navigate('ChallengeCertification', { challengeId });
                 }}
               >
                 <Text
