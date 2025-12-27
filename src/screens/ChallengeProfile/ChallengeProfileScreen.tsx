@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
@@ -12,7 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Text } from '../../components/common/Text';
 import { TextField } from '../../components/common/TextField';
@@ -140,42 +140,45 @@ export const ChallengeProfileScreen: React.FC = () => {
     setDayStatuses(newDayStatuses);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
+  // 화면 포커스 시마다 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
 
-        // 먼저 챌린지 기본 정보 조회
-        const detailResult = await getChallengeDetail(challengeId);
-        setData(detailResult);
-        setIsLiked(detailResult.isLiked);
-        setIsParticipated(detailResult.isParticipant);
+          // 먼저 챌린지 기본 정보 조회
+          const detailResult = await getChallengeDetail(challengeId);
+          setData(detailResult);
+          setIsLiked(detailResult.isLiked);
+          setIsParticipated(detailResult.isParticipant);
 
-        // 참가한 경우에만 프로필 정보 조회
-        if (detailResult.isParticipant) {
-          try {
-            const profileResult = await getChallengeProfile(challengeId);
-            processProfileData(profileResult);
-          } catch (profileError: any) {
-            // 프로필 조회 실패 시 무시 (가입하지 않은 경우일 수 있음)
-            console.warn('프로필 정보 조회 실패:', profileError.message);
+          // 참가한 경우에만 프로필 정보 조회
+          if (detailResult.isParticipant) {
+            try {
+              const profileResult = await getChallengeProfile(challengeId);
+              processProfileData(profileResult);
+            } catch (profileError: any) {
+              // 프로필 조회 실패 시 무시
+              console.warn('프로필 정보 조회 실패:', profileError.message);
+              setProfile(null);
+            }
+          } else {
+            // 참가하지 않은 경우 프로필은 null
             setProfile(null);
           }
-        } else {
-          // 참가하지 않은 경우 프로필은 null
-          setProfile(null);
+        } catch (error: any) {
+          Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
+            { text: '확인', onPress: () => navigation.goBack() }
+          ]);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error: any) {
-        Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
-          { text: '확인', onPress: () => navigation.goBack() }
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      };
 
-    fetchData();
-  }, [challengeId, navigation]);
+      fetchData();
+    }, [challengeId, navigation])
+  );
 
   const handleBack = () => {
     navigation.goBack();
@@ -203,6 +206,12 @@ export const ChallengeProfileScreen: React.FC = () => {
   // 시간 포맷 함수 (HH:MM:SS -> HH:MM)
   const formatTime = (time: string) => {
     return time.substring(0, 5); // "06:00:00" -> "06:00"
+  };
+
+  // AM/PM 추출 함수
+  const getAmPm = (time: string): string => {
+    const hours = parseInt(time.split(':')[0], 10);
+    return hours < 12 ? 'AM' : 'PM';
   };
 
   // API 데이터 매핑
@@ -365,29 +374,51 @@ export const ChallengeProfileScreen: React.FC = () => {
     return currentTime >= startTime && currentTime <= endTime;
   };
 
+  // 챌린지가 시작되었는지 확인
+  const isChallengeStarted = (): boolean => {
+    if (!data) {
+      return false;
+    }
+
+    // startDate와 현재 날짜 비교
+    const now = new Date();
+    const startDate = new Date(data.startDate);
+
+    // 시작일이 현재보다 이전이거나 같으면 시작된 것
+    return startDate <= now;
+  };
+
   // 인증하기 버튼 활성화 여부 결정
   const isCertificationButtonDisabled = (): boolean => {
-    if (!profile) {
+    if (!profile || !data) {
       return true;
     }
 
+    const isStarted = isChallengeStarted();
     const isDayValid = isTodayVerificationDay();
     const isTimeValid = isNowVerificationTime();
 
-    return !isDayValid || !isTimeValid;
+    // 챌린지가 시작하지 않았거나, 요일이 맞지 않거나, 시간이 맞지 않으면 비활성화
+    return !isStarted || !isDayValid || !isTimeValid;
   };
 
   // 인증하기 버튼 클릭 핸들러
   const handleCertification = () => {
-    if (!profile) {
+    if (!profile || !data) {
       Alert.alert('오류', '챌린지 정보를 불러올 수 없습니다.');
       return;
     }
 
+    const isStarted = isChallengeStarted();
     const isDayValid = isTodayVerificationDay();
     const isTimeValid = isNowVerificationTime();
 
     // 비활성화 상태에서 클릭한 경우 알러트 표시
+    if (!isStarted) {
+      Alert.alert('알림', '라운드가 아직 시작되지 않았습니다.');
+      return;
+    }
+
     if (!isDayValid) {
       Alert.alert('알림', '오늘은 인증 가능한 요일이 아닙니다.');
       return;
@@ -784,25 +815,27 @@ export const ChallengeProfileScreen: React.FC = () => {
                 </View>
 
                 {/* 인증 시간대 */}
-                <View style={styles.timeRangeBox}>
-                  <View style={styles.timeRangeItem}>
-                    <Text variant="header2" color={colors.text.tertiary}>
-                      10:00
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
-                      AM
-                    </Text>
+                {profile && (
+                  <View style={styles.timeRangeBox}>
+                    <View style={styles.timeRangeItem}>
+                      <Text variant="header2" color={colors.text.tertiary}>
+                        {formatTime(profile.verifyStartTime)}
+                      </Text>
+                      <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
+                        {getAmPm(profile.verifyStartTime)}
+                      </Text>
+                    </View>
+                    <View style={styles.timeRangeDivider} />
+                    <View style={styles.timeRangeItem}>
+                      <Text variant="header2" color={colors.text.tertiary}>
+                        {formatTime(profile.verifyEndTime)}
+                      </Text>
+                      <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
+                        {getAmPm(profile.verifyEndTime)}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.timeRangeDivider} />
-                  <View style={styles.timeRangeItem}>
-                    <Text variant="header2" color={colors.text.tertiary}>
-                      06:00
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.tertiary} style={styles.timeRangePeriod}>
-                      PM
-                    </Text>
-                  </View>
-                </View>
+                )}
 
                 {/* 구분선 */}
                 <View style={[styles.sectionDivider, styles.sectionDividerAfterTimeRange]} />

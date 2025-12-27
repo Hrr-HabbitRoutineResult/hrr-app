@@ -41,9 +41,20 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
   // S3 URL에서 s3Key 추출
   const extractS3Key = (s3Url: string): string | null => {
     try {
-      const url = new URL(s3Url);
-      // pathname에서 첫 번째 슬래시 제거
-      return url.pathname.substring(1);
+      // URL에서 도메인 부분 제거하고 경로만 추출
+      const urlParts = s3Url.split('.amazonaws.com/');
+      if (urlParts.length < 2) {
+        console.error('S3 URL 형식이 올바르지 않습니다:', s3Url);
+        return null;
+      }
+      
+      let key = urlParts[1];
+      // 끝에 슬래시가 있으면 제거
+      if (key.endsWith('/')) {
+        key = key.slice(0, -1);
+      }
+      
+      return key;
     } catch (error) {
       console.error('S3 Key 추출 실패:', error);
       return null;
@@ -63,6 +74,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
 
     // S3 URL에서 s3Key 추출
     const s3Key = extractS3Key(imageUri);
+    
     if (!s3Key) {
       Alert.alert('오류', '이미지 정보를 가져올 수 없습니다.');
       return;
@@ -84,7 +96,9 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
       });
     } catch (error: any) {
       console.error('게시글 작성 실패:', error);
-      Alert.alert('오류', error.message || '게시글 작성에 실패했습니다.');
+      
+      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +157,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
               />
             ) : (
               <View style={[styles.thumbnailImage, styles.placeholderContainer]}>
-                <Text variant="sm" color={colors.text.tertiary}>
+                <Text variant="xsReg" color={colors.text.tertiary}>
                   {imageError ? '이미지를 불러올 수 없습니다' : '이미지 로딩 중...'}
                 </Text>
               </View>
