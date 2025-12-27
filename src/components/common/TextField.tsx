@@ -7,6 +7,7 @@ import {
     ViewStyle,
     TouchableOpacity,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors, typography } from '../../design/tokens';
 
@@ -155,14 +156,14 @@ export const TextField: React.FC<TextFieldProps> = ({
 
 const styles = StyleSheet.create({
     inputContainer: {
-        height: 44,               // 고정 높이
-        borderRadius: 10,         // 모서리 둥글게
+        height: verticalScale(44),               // 고정 높이
+        borderRadius: scale(10),         // 모서리 둥글게
         flexDirection: 'row',     // 요소 가로 배치
         alignItems: 'center',     // 세로 중앙 정렬
-        paddingHorizontal: 10,    // 좌우 여백
+        paddingHorizontal: scale(10),    // 좌우 여백
     },
     iconContainer: {
-        marginRight: 8,           // 아이콘 오른쪽 여백 (TextInput과의 간격)
+        marginRight: scale(8),           // 아이콘 오른쪽 여백 (TextInput과의 간격)
     },
     input: {
         flex: 1,                 // 남은 공간 차지하기
@@ -170,11 +171,11 @@ const styles = StyleSheet.create({
         padding: 0,               // 기본 padding 제거 (Android 대응)
     },
     messageContainer: {
-        minHeight: 26,            // 공간 확보
+        minHeight: verticalScale(26),            // 공간 확보
         justifyContent: 'flex-start',
     },
     messageText: {
-        marginTop: 8,             // 메시지 위 여백
-        marginLeft: 13,           // 메시지 왼쪽 여백
+        marginTop: verticalScale(8),             // 메시지 위 여백
+        marginLeft: scale(13),           // 메시지 왼쪽 여백
     },
 });

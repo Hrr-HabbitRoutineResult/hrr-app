@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 
@@ -94,23 +95,32 @@ export const OptionGroup: React.FC<OptionGroupProps> = ({
   );
 };
 
+// 3열 배치를 위한 반응형 너비 계산
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const H_PADDING = scale(24); // 양 옆 전체 패딩
+const GAP = scale(10); // 버튼 사이 간격
+const COLUMN_COUNT = 3; // 한 줄에 보여줄 버튼 개수
+
+// 전체 너비에서 패딩과 간격을 제외한 공간을 버튼 개수만큼 나누어 동적 너비 산출
+const BUTTON_WIDTH = (SCREEN_WIDTH - (H_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT;
+
 const styles = StyleSheet.create({
   group: {
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   title: {
-    marginBottom: 12,
-    lineHeight: 24,
+    marginBottom: verticalScale(12),
+    lineHeight: verticalScale(24),
   },
   optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: GAP,
   },
   button: {
-    width: 110,
-    height: 38,
-    borderRadius: 40,
+    width: BUTTON_WIDTH,
+    height: verticalScale(38),
+    borderRadius: scale(40),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -120,11 +130,11 @@ const styles = StyleSheet.create({
   },
   unselectedButton: {
     backgroundColor: colors.white,
-    borderWidth: 1.5,
+    borderWidth: scale(1.5),
     borderColor: colors.line,
   },
   buttonText: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
 });
 

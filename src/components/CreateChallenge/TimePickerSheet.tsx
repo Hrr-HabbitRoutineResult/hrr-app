@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
@@ -94,18 +95,18 @@ export const TimePickerSheet: React.FC<TimePickerSheetProps> = ({
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   pickerContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   picker: {
     width: '100%',
-    height: 200,
+    height: verticalScale(200),
   },
   button: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
 });
 

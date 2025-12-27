@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -261,24 +262,24 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(24),
   },
   title: {
-    marginBottom: 40,
+    marginBottom: verticalScale(40),
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: verticalScale(20),
   },
   observerModeCard: {
     backgroundColor: colors.white,
-    borderRadius: 10,
+    borderRadius: scale(10),
     padding: 20,
-    marginBottom: 20,
-    borderWidth: 1.5,
+    marginBottom: verticalScale(20),
+    borderWidth: scale(1.5),
     borderColor: 'transparent',
   },
   observerModeCardSelected: {
@@ -291,28 +292,28 @@ const styles = StyleSheet.create({
   },
   observerModeTextContainer: {
     flex: 1,
-    marginRight: 16,
+    marginRight: scale(16),
   },
   observerModeTitle: {
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   observerModeDescription: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
   },
   radioIconContainer: {
-    marginTop: 2,
+    marginTop: verticalScale(2),
   },
   passwordContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   passwordFieldContainer: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   passwordInputContainer: {
-    height: 60,
+    height: verticalScale(60),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
   },
 });

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../design/tokens';
 
 interface ProgressBarProps {
@@ -29,14 +30,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 6,
-    paddingHorizontal: 20,
-    marginTop: 12,
+    gap: scale(6),
+    paddingHorizontal: scale(20),
+    marginTop: verticalScale(12),
   },
   segment: {
     flex: 1,
-    height: 6,
-    borderRadius: 3,
+    height: verticalScale(6),
+    borderRadius: scale(3),
   },
   activeSegment: {
     backgroundColor: colors.primary.main,

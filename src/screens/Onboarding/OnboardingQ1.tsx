@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -133,34 +134,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   skipButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: verticalScale(4),
+    paddingHorizontal: scale(8),
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
     justifyContent: 'space-between',
   },
   q1TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 39,
-    marginBottom: 48,
+    paddingTop: verticalScale(39),
+    marginBottom: verticalScale(48),
   },
   q1Title: {
     textAlign: 'left',
-    lineHeight: 32,
-    marginBottom: 12,
+    lineHeight: verticalScale(32),
+    marginBottom: verticalScale(12),
   },
   q1Subtitle: {
     textAlign: 'left',
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
   },
   optionsContainer: {
     flex: 1,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   disabledButton: {

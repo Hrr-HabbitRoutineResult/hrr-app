@@ -93,6 +93,10 @@ android {
         
         // react-native-config 환경 변수 추가
         resValue "string", "API_BASE_URL", project.env.get("API_BASE_URL")
+        resValue "string", "naver_client_id", project.env.get("NAVER_CONSUMER_KEY")
+        resValue "string", "naver_client_secret", project.env.get("NAVER_CONSUMER_SECRET")
+        resValue "string", "naver_client_name", project.env.get("NAVER_APP_NAME")
+        resValue "string", "kakao_app_key", project.env.get("KAKAO_APP_KEY")
     }
     signingConfigs {
         debug {

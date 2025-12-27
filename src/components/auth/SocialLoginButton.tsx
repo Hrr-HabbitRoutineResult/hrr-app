@@ -4,6 +4,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 import AppleIcon from '../../../assets/icons/social/apple.svg';
@@ -21,7 +22,7 @@ const PROVIDER_CONFIG = {
   apple: {
     backgroundColor: '#000000',
     textColor: colors.white,
-    text: '애플 로그인',
+    text: 'Apple로 로그인',
     Icon: AppleIcon,
   },
   naver: {
@@ -68,14 +69,15 @@ export const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    width: 350,
-    height: 54,
-    borderRadius: 8,
-    paddingTop: 18,
-    paddingRight: 16,
-    paddingBottom: 18,
-    paddingLeft: 16,
-    marginBottom: 12,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(54),
+    borderRadius: scale(8),
+    paddingTop: verticalScale(18),
+    paddingRight: scale(16),
+    paddingBottom: verticalScale(18),
+    paddingLeft: scale(16),
+    marginBottom: verticalScale(12),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   iconContainer: {
-    marginLeft: 16,
+    marginLeft: scale(16),
     justifyContent: 'center',
     alignItems: 'center',
   },

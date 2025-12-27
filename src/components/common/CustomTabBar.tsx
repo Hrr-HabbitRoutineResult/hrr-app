@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { colors, typography } from '../../design/tokens';
 import { HomeTabParamList } from '../../navigation/types';
@@ -15,7 +16,7 @@ import MyIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_my_col
 import MyIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_my.svg';
 
 const screenWidth = Dimensions.get('window').width;
-const iconSize = 24;
+const iconSize = scale(24);
 
 /**
  * 탭 이름과 포커스 상태에 따라 아이콘 반환
@@ -52,10 +53,10 @@ const renderTabIcon = (routeName: keyof HomeTabParamList, focused: boolean) => {
 };
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-  const containerSize = 48;
-  const itemSpacing = 32;
-  const initialLeftMargin = 51;
-  const topMargin = 4;
+  const containerSize = scale(48);
+  const itemSpacing = scale(32);
+  const initialLeftMargin = scale(51);
+  const topMargin = verticalScale(4);
 
   const getLeftPosition = (index: number) => {
     return initialLeftMargin + index * (containerSize + itemSpacing);
@@ -134,31 +135,31 @@ const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
     backgroundColor: colors.white,
-    height: 84,
+    height: verticalScale(84),
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    borderTopWidth: 1,
+    borderTopWidth: scale(1),
     borderTopColor: colors.line,
   },
   tabItem: {
     position: 'absolute',
-    top: 4,
-    width: 48,
-    height: 48,
+    top: verticalScale(4),
+    width: scale(48),
+    height: verticalScale(48),
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconLabelContainer: {
-    width: 48,
-    height: 48,
+    width: scale(48),
+    height: verticalScale(48),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 4.5,
+    paddingVertical: verticalScale(4.5),
   },
   labelContainer: {
-    marginTop: 5,
+    marginTop: verticalScale(5),
   }
 });
 

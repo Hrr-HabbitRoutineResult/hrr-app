@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
@@ -47,7 +48,7 @@ const RandomMissionBanner = () => {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    height: 80,
+    height: verticalScale(80),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
   notCompletedContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingLeft: 21,
-    paddingVertical: 22,
+    paddingLeft: scale(21),
+    paddingVertical: verticalScale(22),
   },
   descriptionLine1: {
     ...typography.smMd,
     color: colors.text.primary,
-    marginBottom: 2,
+    marginBottom: verticalScale(2),
   },
   descriptionLine2: {
     ...typography.xxs,

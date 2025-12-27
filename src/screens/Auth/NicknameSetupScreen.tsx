@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -188,28 +189,29 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(40),
   },
   titleContainer: {
-    marginBottom: 28,
+    marginBottom: verticalScale(28),
   },
   title: {
-    lineHeight: 30,
+    lineHeight: verticalScale(30),
     includeFontPadding: false,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: verticalScale(16),
   },
   textFieldContainer: {
-    width: 350,
+    width: '100%',
+    maxWidth: scale(350),
   },
   textFieldInputContainer: {
-    height: 60,
+    height: verticalScale(60),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
 });

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -267,11 +268,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(24),
   },
   title: {
-    marginBottom: 46,
+    marginBottom: verticalScale(46),
   },
   calendarContainer: {
     width: '100%',
@@ -280,31 +281,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 0,
-    paddingLeft: 12,
+    marginBottom: verticalScale(0),
+    paddingLeft: scale(12),
   },
   monthControls: {
     flexDirection: 'row',
-    gap: 16,
+    gap: scale(16),
   },
   arrowButton: {
-    width: 44,
-    height: 44,
+    width: scale(44),
+    height: verticalScale(44),
     justifyContent: 'center',
     alignItems: 'center',
   },
   weekHeader: {
     flexDirection: 'row',
-    marginBottom: 14,
+    marginBottom: verticalScale(14),
   },
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   weekDayCell: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
     width: '14.28%',
-    height: 20,
+    height: verticalScale(20),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -313,14 +314,14 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   dayNumberContainer: {
-    width: 40,
-    height: 40,
+    width: scale(40),
+    height: verticalScale(40),
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: scale(20),
     zIndex: 2,
   },
   dayNumberSelected: {
@@ -329,30 +330,30 @@ const styles = StyleSheet.create({
   // 배경 막대
   rangeBarLeft: {
     position: 'absolute',
-    left: 0,
+    left: scale(0),
     width: '50%',
-    height: 40,
+    height: verticalScale(40),
     backgroundColor: colors.primary.lightest,
     zIndex: 1,
   },
   rangeBarRight: {
     position: 'absolute',
-    right: 0,
+    right: scale(0),
     width: '50%',
-    height: 40,
+    height: verticalScale(40),
     backgroundColor: colors.primary.lightest,
     zIndex: 1,
   },
   lightCircle: {
     position: 'absolute',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: scale(40),
+    height: verticalScale(40),
+    borderRadius: scale(20),
     backgroundColor: colors.primary.lightest,
     zIndex: 1,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
   },
 });

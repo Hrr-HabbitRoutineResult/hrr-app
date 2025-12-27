@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -434,57 +435,57 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 50,
+    paddingBottom: verticalScale(50),
   },
   gridContainer: {
-    paddingBottom: 0,
+    paddingBottom: verticalScale(0),
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    gap: 20,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(12),
+    gap: scale(20),
   },
   profileInfo: {
     flex: 1,
   },
   nickname: {
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 30,
+    gap: scale(30),
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: scale(4),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(24),
     alignItems: 'center',
   },
   sectionDivider: {
-    height: 8,
+    height: verticalScale(8),
     backgroundColor: colors.background,
   },
   // 챌린저 탭 - 원형 그래프 영역
   progressSection: {
-    height: 368,
+    height: verticalScale(368),
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: verticalScale(40),
   },
   circularProgressContainer: {
-    width: 240,
-    height: 240,
+    width: scale(240),
+    height: verticalScale(240),
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   circularProgressSvg: {
     position: 'absolute',
@@ -496,32 +497,32 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    gap: 16,
+    gap: scale(16),
     alignItems: 'center',
   },
   statRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: scale(8),
     alignItems: 'center',
   },
   // 라운드 캐러셀
   roundCarouselContainer: {
-    paddingTop: 20,
-    paddingBottom: 28,
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(28),
   },
   roundCarouselContent: {
-    gap: 10,
-    paddingHorizontal: 20,
+    gap: scale(10),
+    paddingHorizontal: scale(20),
   },
   roundCarouselContentScrolled: {
-    paddingLeft: 0,
+    paddingLeft: scale(0),
   },
   roundButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 10,
+    width: scale(60),
+    height: verticalScale(60),
+    borderRadius: scale(10),
     backgroundColor: colors.white,
-    borderWidth: 1.5,
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
@@ -538,7 +539,7 @@ const styles = StyleSheet.create({
   },
   roundButtonSelected: {
     backgroundColor: colors.primary.main,
-    borderWidth: 0,
+    borderWidth: scale(0),
   },
 });
 

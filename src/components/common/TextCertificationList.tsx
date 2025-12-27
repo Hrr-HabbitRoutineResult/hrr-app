@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
@@ -23,7 +24,7 @@ interface TextCertificationListProps {
 export const TextCertificationList: React.FC<TextCertificationListProps> = ({
   items,
   onItemPress,
-  containerPadding = 24,
+  containerPadding = scale(24),
 }) => {
   return (
     <View style={[styles.list, { paddingHorizontal: containerPadding }]}>
@@ -66,31 +67,31 @@ const styles = StyleSheet.create({
   },
   item: {
     flexDirection: 'row',
-    height: 104,
-    paddingVertical: 12,
-    gap: 12,
+    height: verticalScale(104),
+    paddingVertical: verticalScale(12),
+    gap: scale(12),
   },
   content: {
     flex: 1,
     justifyContent: 'space-between',
   },
   title: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
   description: {
-    lineHeight: 18,
-    marginTop: 5,
+    lineHeight: verticalScale(18),
+    marginTop: verticalScale(5),
   },
   date: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: scale(6),
     marginTop: 'auto',
   },
   thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
+    width: scale(80),
+    height: verticalScale(80),
+    borderRadius: scale(10),
     overflow: 'hidden',
     position: 'relative',
   },

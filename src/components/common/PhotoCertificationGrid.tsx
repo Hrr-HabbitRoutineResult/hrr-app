@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
 
 export interface PhotoCertificationItem {
@@ -22,7 +23,7 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
   containerPadding = 0,
 }) => {
   const screenWidth = Dimensions.get('window').width;
-  const itemWidth = (screenWidth - containerPadding * 2 - 6) / 3; // 화면 너비 - 컨테이너 패딩(좌우) - gap(3*2) / 3개
+  const itemWidth = (screenWidth - containerPadding * 2 - scale(6)) / 3; // 화면 너비 - 컨테이너 패딩(좌우) - gap(3*2) / 3개
 
   return (
     <View style={styles.grid}>
@@ -47,7 +48,7 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 3,
+    gap: scale(3),
   },
   gridItem: {
     overflow: 'hidden',
@@ -59,8 +60,8 @@ const styles = StyleSheet.create({
   },
   questionMarkContainer: {
     position: 'absolute',
-    top: 12,
-    left: 12,
+    top: verticalScale(12),
+    left: scale(12),
   },
 });
 

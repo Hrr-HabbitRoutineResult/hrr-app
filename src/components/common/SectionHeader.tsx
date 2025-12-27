@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { colors, typography, spacing } from '../../design/tokens';
 
 type SectionHeaderProps = {

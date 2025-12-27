@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -279,26 +280,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 100,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(100),
   },
   userSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
+    width: scale(40),
+    height: verticalScale(40),
+    borderRadius: scale(20),
+    marginRight: scale(12),
     overflow: 'hidden',
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: scale(40),
+    height: verticalScale(40),
+    borderRadius: scale(20),
   },
   userInfo: {
     flex: 1,
@@ -308,35 +309,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dot: {
-    width: 2,
-    height: 2,
-    borderRadius: 1,
+    width: scale(2),
+    height: verticalScale(2),
+    borderRadius: scale(1),
     backgroundColor: colors.text.primary,
-    marginHorizontal: 4,
+    marginHorizontal: scale(4),
   },
   timeSpacing: {
-    height: 4,
+    height: verticalScale(4),
   },
   questionTag: {
     alignSelf: 'flex-start',
     backgroundColor: colors.primary.main,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingHorizontal: scale(12),
+    paddingVertical: verticalScale(4),
+    borderRadius: scale(12),
+    marginBottom: verticalScale(12),
   },
   title: {
-    marginBottom: 6,
-    lineHeight: 20,
+    marginBottom: verticalScale(6),
+    lineHeight: verticalScale(20),
   },
   content: {
-    marginBottom: 16,
-    lineHeight: 18,
+    marginBottom: verticalScale(16),
+    lineHeight: verticalScale(18),
   },
   imageContainer: {
     width: '100%',
-    marginBottom: 8,
-    borderRadius: 10,
+    marginBottom: verticalScale(8),
+    borderRadius: scale(10),
     overflow: 'hidden',
   },
   image: {
@@ -345,8 +346,8 @@ const styles = StyleSheet.create({
   },
   engagementSection: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 8,
+    gap: scale(12),
+    marginBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: colors.background,
   },
@@ -355,27 +356,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconContainer: {
-    width: 40,
-    height: 40,
+    width: scale(40),
+    height: verticalScale(40),
     justifyContent: 'center',
     alignItems: 'center',
   },
   engagementCount: {
-    marginLeft: 0,
+    marginLeft: scale(0),
   },
   commentInputContainer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    bottom: verticalScale(0),
+    left: scale(0),
+    right: scale(0),
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.line,
   },
   textFieldContainer: {
-    marginTop: 16,
+    marginTop: verticalScale(16),
   },
   sendButton: {
     justifyContent: 'center',

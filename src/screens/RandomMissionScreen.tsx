@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -321,17 +322,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: scale(20),
   },
   mainTitle: {
-    marginTop: 28,
-    marginBottom: 32,
-    lineHeight: 30,
+    marginTop: verticalScale(28),
+    marginBottom: verticalScale(32),
+    lineHeight: verticalScale(30),
   },
   imageContainer: {
     width: '100%',
-    height: 400,
-    borderRadius: 20,
+    height: verticalScale(400),
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -353,8 +354,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   frameOverlay: {
-    paddingLeft: 30,
-    paddingTop: 32,
+    paddingLeft: scale(30),
+    paddingTop: verticalScale(32),
     position: 'absolute',
     top: 0,
     left: 0,
@@ -372,26 +373,26 @@ const styles = StyleSheet.create({
   },
   textOverlay: {
     position: 'absolute',
-    bottom: 70,
-    left: 10,
+    bottom: verticalScale(70),
+    left: scale(10),
     right: 0,
-    paddingLeft: 24,
-    paddingBottom: 28,
+    paddingLeft: scale(24),
+    paddingBottom: verticalScale(28),
     zIndex: 3,
   },
   missionTitle: {
-    marginBottom: 6,
+    marginBottom: verticalScale(6),
   },
   missionDescription: {
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   completeMessage: {
-    marginTop: 24,
+    marginTop: verticalScale(24),
     textAlign: 'center',
   },
   // 인증 화면 스타일
@@ -401,32 +402,34 @@ const styles = StyleSheet.create({
   },
   certificationContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(28),
     justifyContent: 'space-between',
-    paddingBottom: 32,
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   thumbnailContainer: {
-    width: 350,
-    height: 350,
-    borderRadius: 20,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(350),
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
-    marginTop: 80,
+    marginTop: verticalScale(80),
   },
   thumbnailImage: {
-    width: 350,
-    height: 350,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(350),
   },
   timestampContainer: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    width: 137,
-    height: 32,
+    bottom: verticalScale(16),
+    right: scale(16),
+    width: scale(137),
+    height: verticalScale(32),
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 10,
+    borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -434,8 +437,8 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   certificationButtonContainer: {
-    gap: 10,
-    paddingTop: 20,
+    gap: verticalScale(10),
+    paddingTop: verticalScale(20),
   },
   retakeButton: {
     marginBottom: 0,

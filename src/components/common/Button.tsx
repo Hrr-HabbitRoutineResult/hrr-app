@@ -5,6 +5,7 @@ import {
     ViewStyle,
     TouchableOpacityProps,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
@@ -88,9 +89,9 @@ export const Button: React.FC<ButtonProps> = ({
         }
     };
 
-    // size에 따른 width 결정 (medium: 350px, small: 170px)
-    const getWidth = (): number => {
-        return size === 'medium' ? 350 : 170;
+    // size에 따른 maxWidth 결정 (medium: 350px, small: 170px)
+    const getMaxWidth = (): number => {
+        return size === 'medium' ? scale(350) : scale(170);
     };
 
     // 렌더링
@@ -99,7 +100,7 @@ export const Button: React.FC<ButtonProps> = ({
             style={[
                 styles.button,         // 기본 스타일 적용 (높이, borderRadius 등)
                 getVariantStyle(),     // variant에 따른 버튼 색상
-                { width: getWidth() }, // 사이즈에 따른 width
+                { maxWidth: getMaxWidth() }, // 사이즈에 따른 maxWidth
                 style,                 // 사용자가 입력한 스타일 (우선 적용)
             ]}
             onPress={onPress}
@@ -116,10 +117,11 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
     button: {
-        height: 48,               // 고정 높이
-        borderRadius: 10,         // 모서리
-        paddingVertical: 14,      // 위아래 여백
-        // paddingHorizontal: 10,    // 좌우 여백
+        width: '100%',            // 기본적으로 부모 컨테이너 너비를 따름
+        height: verticalScale(48),               // 고정 높이
+        borderRadius: scale(10),         // 모서리
+        paddingVertical: verticalScale(14),      // 위아래 여백
+        // paddingHorizontal: scale(10),    // 좌우 여백
         justifyContent: 'center', // 세로 중앙 정렬
         alignItems: 'center',     // 가로 중앙 정렬
     },

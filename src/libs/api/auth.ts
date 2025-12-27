@@ -18,6 +18,7 @@ export interface SocialLoginResponse {
     userId: number;
     accessToken: string;
     refreshToken: string;
+    name: string;
     nickname: string;
     loginStatus: 'NEW' | 'EXISTING';
     nextStep: string;
@@ -34,6 +35,53 @@ export const kakaoLoginByToken = async (
     const response = await apiClient.post<SocialLoginResponse>(
       `/api/v1/auth/login/kakao`,
       { accessToken: kakaoAccessToken }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 네이버 액세스 토큰 및 리프레시 토큰을 서버에 전달해 로그인 처리
+ */
+export const naverLoginByToken = async (
+  naverAccessToken: string,
+  naverRefreshToken: string
+): Promise<SocialLoginResponse> => {
+  try {
+    const response = await apiClient.post<SocialLoginResponse>(
+      `/api/v1/auth/login/naver`,
+      {
+        accessToken: naverAccessToken,
+        refreshToken: naverRefreshToken,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 애플 로그인 요청 바디
+ */
+export interface AppleLoginRequest {
+  authorizationCode: string;
+  firstName: string;
+  lastName: string;
+}
+
+/**
+ * 애플 로그인 정보를 서버에 전달해 로그인 처리
+ */
+export const appleLogin = async (
+  appleLoginData: AppleLoginRequest
+): Promise<SocialLoginResponse> => {
+  try {
+    const response = await apiClient.post<SocialLoginResponse>(
+      `/api/v1/auth/login/apple`,
+      appleLoginData
     );
     return response.data;
   } catch (error: any) {
