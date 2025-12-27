@@ -21,7 +21,21 @@ import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { getChallengeDetail, getChallengeProfile, likeChallenge, unlikeChallenge, joinChallenge, ChallengeDetail, ChallengeProfile } from '../../libs/api/challenge';
+import {
+  getChallengeDetail,
+  getChallengeProfile,
+  likeChallenge,
+  unlikeChallenge,
+  joinChallenge,
+  getChallengeRounds,
+  getVerificationStat,
+  getVerificationFeed,
+  ChallengeDetail,
+  ChallengeProfile,
+  RoundItem,
+  VerificationStat,
+  VerificationFeedItem,
+} from '../../libs/api/challenge';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -36,26 +50,13 @@ import ChevronRightIcGreyIcon from '../../../assets/icons/chevron-right-ic-grey.
 import InfoCircleIcon from '../../../assets/icons/challenge-profile/info-circle.svg';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
 import { TextCertificationList } from '../../components/common/TextCertificationList';
+import { PhotoCertificationGrid } from '../../components/common/PhotoCertificationGrid';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   'ChallengeProfile'
 >;
-
-interface RankingItem {
-  rank: number;
-  nickname: string;
-  score: number;
-}
-
-interface CertificationItem {
-  id: number;
-  title: string;
-  description: string;
-  date: string;
-  thumbnail: any;
-}
 
 export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
@@ -73,9 +74,14 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
-  const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
-  const [certificationType, setCertificationType] = useState<'text' | 'image'>('image');
   const [isParticipated, setIsParticipated] = useState(false);
+  const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
+
+  const [rounds, setRounds] = useState<RoundItem[]>([]);
+  const [selectedRound, setSelectedRound] = useState<number | null>(null);
+  const [verificationStat, setVerificationStat] = useState<VerificationStat | null>(null);
+  const [verificationFeed, setVerificationFeed] = useState<VerificationFeedItem[]>([]);
+  const [isFeedLoading, setIsFeedLoading] = useState(false);
   const [dayStatuses, setDayStatuses] = useState<{
     [key: string]: 'none' | 'required' | 'completed';
   }>({
@@ -140,6 +146,42 @@ export const ChallengeProfileScreen: React.FC = () => {
     setDayStatuses(newDayStatuses);
   };
 
+  const fetchRoundsAndStats = async () => {
+    try {
+      const roundsResult = await getChallengeRounds(challengeId);
+      setRounds(roundsResult);
+
+      const currentRound = roundsResult.find(r => r.isCurrentRound);
+      if (currentRound) {
+        setSelectedRound(currentRound.roundNumber);
+      } else if (roundsResult.length > 0) {
+        setSelectedRound(roundsResult[0].roundNumber);
+      }
+
+      const statResult = await getVerificationStat(challengeId);
+      setVerificationStat(statResult);
+    } catch (error: any) {
+      console.error('[인증현황] 라운드/통계 조회 실패:', error.message);
+    }
+  };
+
+  const fetchVerificationFeed = async (roundNumber: number) => {
+    try {
+      setIsFeedLoading(true);
+      const feedResult = await getVerificationFeed(challengeId, {
+        roundNumber,
+        page: 1,
+        size: 10,
+      });
+      setVerificationFeed(feedResult.content);
+    } catch (error: any) {
+      console.error('[인증 피드] 조회 실패:', error.message);
+      setVerificationFeed([]);
+    } finally {
+      setIsFeedLoading(false);
+    }
+  };
+
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
@@ -153,19 +195,19 @@ export const ChallengeProfileScreen: React.FC = () => {
           setIsLiked(detailResult.isLiked);
           setIsParticipated(detailResult.isParticipant);
 
-          // 참가한 경우에만 프로필 정보 조회
-          if (detailResult.isParticipant) {
-            try {
-              const profileResult = await getChallengeProfile(challengeId);
-              processProfileData(profileResult);
-            } catch (profileError: any) {
-              // 프로필 조회 실패 시 무시
-              console.warn('프로필 정보 조회 실패:', profileError.message);
-              setProfile(null);
-            }
-          } else {
-            // 참가하지 않은 경우 프로필은 null
+          // 챌린지 프로필 정보 조회 (참가 여부와 관계없이)
+          try {
+            const profileResult = await getChallengeProfile(challengeId);
+            processProfileData(profileResult);
+          } catch (profileError: any) {
+            // 프로필 조회 실패 시 무시 (참가하지 않은 경우 서버에서 에러를 반환할 수 있음)
+            console.warn('프로필 정보 조회 실패:', profileError.message);
             setProfile(null);
+          }
+
+          // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
+          if (detailResult.isObserverMode || detailResult.isParticipant) {
+            await fetchRoundsAndStats();
           }
         } catch (error: any) {
           Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
@@ -179,6 +221,13 @@ export const ChallengeProfileScreen: React.FC = () => {
       fetchData();
     }, [challengeId, navigation])
   );
+
+  // 선택된 라운드 변경 시 피드 조회
+  useEffect(() => {
+    if (selectedRound !== null && (data?.isObserverMode || isParticipated)) {
+      fetchVerificationFeed(selectedRound);
+    }
+  }, [selectedRound]);
 
   const handleBack = () => {
     navigation.goBack();
@@ -214,7 +263,6 @@ export const ChallengeProfileScreen: React.FC = () => {
     return hours < 12 ? 'AM' : 'PM';
   };
 
-  // API 데이터 매핑
   const challengeData = {
     name: data.title,
     description: data.description,
@@ -230,55 +278,6 @@ export const ChallengeProfileScreen: React.FC = () => {
       timeRange: '',
     },
     rules: profile?.rule || '',
-    rankings: [
-      { rank: 1, nickname: '헤더', score: 156 },
-      { rank: 2, nickname: '헤더', score: 102 },
-      { rank: 3, nickname: '헤더', score: 89 },
-    ] as RankingItem[],
-    certifications: [
-      {
-        id: 1,
-        title: '해피뉴이어! 올해 마지막 인증 올립니다',
-        description: '여기엔 상세내용이 들어가유~',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-      {
-        id: 2,
-        title: '인증 제목 2',
-        description: '상세 내용 2',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-      {
-        id: 3,
-        title: '인증 제목 3',
-        description: '상세 내용 3',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-      {
-        id: 4,
-        title: '인증 제목 4',
-        description: '상세 내용 4',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-      {
-        id: 5,
-        title: '인증 제목 5',
-        description: '상세 내용 5',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-      {
-        id: 6,
-        title: '인증 제목 6',
-        description: '상세 내용 6',
-        date: '2025.12.02',
-        thumbnail: require('../../../assets/images/mock-challenge-profile.png'),
-      },
-    ],
   };
 
   const handleShare = () => {
@@ -626,10 +625,6 @@ export const ChallengeProfileScreen: React.FC = () => {
             activeTab={activeTab}
             onTabChange={(tabKey) => {
               setActiveTab(tabKey as 'profile' | 'certification');
-              if (tabKey === 'certification') {
-                // TODO: 개발 단계 - 인증 타입 전환 (API 연동 후 제거)
-                setCertificationType((prev) => (prev === 'text' ? 'image' : 'text'));
-              }
             }}
           />
         )}
@@ -650,130 +645,152 @@ export const ChallengeProfileScreen: React.FC = () => {
                 onScroll={(e) => setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)}
                 scrollEventThrottle={16}
               >
-                {[6, 1, 2, 3, 4, 5].map((round, index) => (
-                  <View
-                    key={round}
+                {rounds.map((round) => (
+                  <TouchableOpacity
+                    key={round.roundNumber}
                     style={[
                       styles.roundButton,
-                      index === 0 && styles.roundButtonSelected,
+                      selectedRound === round.roundNumber && styles.roundButtonSelected,
                     ]}
+                    onPress={() => setSelectedRound(round.roundNumber)}
+                    activeOpacity={0.7}
                   >
                     <Text
-                      variant={index === 0 ? 'smMd' : 'smReg'}
-                      color={index === 0 ? colors.white : colors.text.tertiary}
+                      variant={selectedRound === round.roundNumber ? 'smMd' : 'smReg'}
+                      color={selectedRound === round.roundNumber ? colors.white : colors.text.tertiary}
                     >
-                      {round}R
+                      {round.roundNumber}R
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
 
             {/* 참가자 요약 */}
-            <View style={styles.participantSummary}>
-              <View style={styles.summaryItem}>
-                <Text variant="xsReg" color={colors.text.secondary}>
-                  총 참가자 수
-                </Text>
-                <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
-                  {challengeData.maxParticipants}명
-                </Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <View style={styles.summaryItemHeaderContainer}>
-                  <View style={styles.summaryItemHeader}>
-                    <Text variant="xsReg" color={colors.text.secondary}>
-                      인증 완료 인원
-                    </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      style={styles.infoIconButton}
-                      onPress={() => setShowCertificationTooltip(!showCertificationTooltip)}
-                    >
-                      <InfoCircleIcon width={14} height={14} />
-                    </TouchableOpacity>
-                  </View>
-                  {showCertificationTooltip && (
-                    <View style={styles.tooltip}>
-                      <Text variant="xsReg" color={colors.text.secondary}>
-                        직전 인증 요일의 인증 완료 인원 기준입니다
-                      </Text>
-                    </View>
-                  )}
+            {verificationStat && (
+              <View style={styles.participantSummary}>
+                <View style={styles.summaryItem}>
+                  <Text variant="xsReg" color={colors.text.secondary}>
+                    총 참가자 수
+                  </Text>
+                  <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
+                    {verificationStat.totalParticipantCount}명
+                  </Text>
                 </View>
-                <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
-                  {challengeData.maxParticipants}명
-                </Text>
+                <View style={styles.summaryItem}>
+                  <View style={styles.summaryItemHeaderContainer}>
+                    <View style={styles.summaryItemHeader}>
+                      <Text variant="xsReg" color={colors.text.secondary}>
+                        인증 완료 인원
+                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={styles.infoIconButton}
+                        onPress={() => setShowCertificationTooltip(!showCertificationTooltip)}
+                      >
+                        <InfoCircleIcon width={14} height={14} />
+                      </TouchableOpacity>
+                    </View>
+                    {showCertificationTooltip && (
+                      <View style={styles.tooltip}>
+                        <Text variant="xsReg" color={colors.text.secondary}>
+                          직전 인증 요일의 인증 완료 인원 기준입니다
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text variant="xsMd" color={colors.text.primary} style={styles.summaryValue}>
+                    {verificationStat.certifiedCount}명
+                  </Text>
+                </View>
               </View>
+            )}
+
+            {/* 챌린지 인증현황 타이틀 */}
+            <View style={styles.section}>
+              <TouchableOpacity
+                style={styles.sectionTitleRow}
+                activeOpacity={0.7}
+                onPress={() => {
+                  // TODO: 챌린지 인증현황 전체보기 화면으로 이동
+                  // navigation.navigate('ChallengeCertificationList', { challengeId });
+                }}
+              >
+                <Text
+                  variant="header4"
+                  color={colors.text.primary}
+                  style={styles.sectionTitleNoMargin}
+                >
+                  챌린지 인증현황
+                </Text>
+                <View style={styles.sectionChevronButton}>
+                  <ChevronRightIcGreyIcon width={5} height={10} />
+                </View>
+              </TouchableOpacity>
             </View>
 
-            {/* 챌린지 인증현황 */}
-            <View style={certificationType === 'image' ? styles.sectionNoPadding : styles.section}>
-              {isParticipated ? (
-                <TouchableOpacity
-                  style={[
-                    styles.sectionTitleRow,
-                    certificationType === 'image' && styles.sectionTitleRowNoPadding,
-                  ]}
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    navigation.navigate('ChallengeCertification', { challengeId: route.params.challengeId });
-                  }}
-                >
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitleNoMargin}
-                  >
-                    챌린지 인증현황
-                  </Text>
-                  <View style={styles.sectionChevronButton}>
-                    <ChevronRightIcGreyIcon width={5} height={10} />
-                  </View>
-                </TouchableOpacity>
-              ) : (
-                <View
-                  style={[
-                    styles.sectionTitleRow,
-                    certificationType === 'image' && styles.sectionTitleRowNoPadding,
-                  ]}
-                >
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitleNoMargin}
-                  >
-                    챌린지 인증현황
-                  </Text>
+            {/* 인증 피드 내용 */}
+            <View style={styles.sectionNoPadding}>
+              {isFeedLoading ? (
+                <View style={styles.feedLoadingContainer}>
+                  <ActivityIndicator size="small" color={colors.primary.main} />
                 </View>
-              )}
-              {certificationType === 'text' ? (
-                // 글 인증(리스트 형태)
-                <TextCertificationList
-                  items={challengeData.certifications}
-                  containerPadding={0} // section에 이미 paddingHorizontal: 24가 있으므로 0으로 설정
-                  onItemPress={(item) => {
-                    // TODO: 인증 상세 화면으로 이동
-                  }}
-                />
-              ) : (
-                // 사진 인증(그리드 형태)
-                <View style={styles.certificationGrid}>
-                  {challengeData.certifications.map((cert) => (
-                    <View key={cert.id} style={styles.certificationGridItem}>
-                      <Image source={cert.thumbnail} style={styles.gridThumbnailImage} />
-                      <View
-                        style={[
-                          styles.gridThumbnailOverlay,
-                          isParticipated && styles.gridThumbnailOverlayTransparent,
-                        ]}
-                      >
-                        <View style={styles.gridQuestionMarkContainer}>
-                          <QuestionMarkCircleIcon width={24} height={24} />
-                        </View>
-                      </View>
+              ) : verificationFeed.length > 0 ? (
+                <>
+                  {/* 글 인증 리스트 */}
+                  {verificationFeed.filter(item => item.type === 'TEXT').length > 0 && (
+                    <View style={styles.textFeedSection}>
+                      <TextCertificationList
+                        items={verificationFeed
+                          .filter(item => item.type === 'TEXT')
+                          .map(item => {
+                            const date = new Date(item.createdDate);
+                            const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+
+                            return {
+                              id: item.verificationId,
+                              title: item.title,
+                              description: item.content,
+                              date: formattedDate,
+                              thumbnail: item.imageUrl
+                                ? { uri: item.imageUrl }
+                                : require('../../../assets/images/mock-challenge-profile.png'),
+                            };
+                          })}
+                        containerPadding={scale(24)}
+                        onItemPress={(item) => {
+                          navigation.navigate('ChallengeCertificationDetail', {
+                            verificationId: item.id,
+                          });
+                        }}
+                      />
                     </View>
-                  ))}
+                  )}
+
+                  {/* 사진 인증 그리드 */}
+                  {verificationFeed.filter(item => item.type !== 'TEXT').length > 0 && (
+                    <PhotoCertificationGrid
+                      items={verificationFeed
+                        .filter(item => item.type !== 'TEXT')
+                        .map(item => ({
+                          id: item.verificationId,
+                          thumbnail: { uri: item.imageUrl },
+                          isQuestion: item.isQuestion,
+                        }))}
+                      onItemPress={(item) => {
+                        navigation.navigate('ChallengeCertificationDetail', {
+                          verificationId: item.id,
+                        });
+                      }}
+                      showOverlay={!isParticipated}
+                    />
+                  )}
+                </>
+              ) : (
+                <View style={styles.emptyFeedContainerPadding}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    아직 인증 게시글이 없습니다.
+                  </Text>
                 </View>
               )}
             </View>
@@ -1247,7 +1264,7 @@ const styles = StyleSheet.create({
   },
   sectionNoPadding: {
     paddingHorizontal: scale(0),
-    marginTop: verticalScale(36),
+    marginTop: verticalScale(12),
   },
   sectionTitleNoPadding: {
     paddingHorizontal: scale(24),
@@ -1324,22 +1341,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 10,
   },
-  certificationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: scale(3),
-    marginTop: verticalScale(12),
-  },
-  certificationGridItem: {
-    width: (Dimensions.get('window').width - 6) / 3, // 화면 너비 - gap(3*2) / 3개
-    height: (Dimensions.get('window').width - 6) / 3,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  gridThumbnailImage: {
-    width: '100%',
-    height: '100%',
-  },
   gridThumbnailOverlay: {
     position: 'absolute',
     top: verticalScale(0),
@@ -1355,6 +1356,35 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: verticalScale(12),
     left: scale(12),
+  },
+  sectionHeaderOnly: {
+    paddingHorizontal: scale(24),
+    marginTop: verticalScale(36),
+  },
+  feedLoadingContainer: {
+    paddingVertical: verticalScale(40),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyFeedContainer: {
+    paddingVertical: verticalScale(40),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    marginTop: verticalScale(12),
+  },
+  emptyFeedContainerPadding: {
+    paddingVertical: verticalScale(40),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    marginHorizontal: scale(24),
+    marginTop: verticalScale(12),
+  },
+  textFeedSection: {
+    marginTop: verticalScale(12),
   },
   sectionTitleRow: {
     paddingVertical: verticalScale(10),
