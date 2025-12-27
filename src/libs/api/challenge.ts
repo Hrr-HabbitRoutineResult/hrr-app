@@ -826,3 +826,160 @@ export const getVerificationDetail = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 챌린지 라운드 및 인증 통계 관련
+ * ============================================
+ */
+
+/**
+ * 라운드 정보
+ */
+export interface RoundItem {
+  roundNumber: number;
+  isCurrentRound: boolean;
+}
+
+/**
+ * 라운드 목록 조회 응답
+ */
+export interface RoundsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: RoundItem[];
+}
+
+/**
+ * 챌린지 라운드 목록 조회
+ */
+export const getChallengeRounds = async (challengeId: number): Promise<RoundItem[]> => {
+  try {
+    const response = await apiClient.get<RoundsResponse>(
+      `/api/v1/challenges/${challengeId}/rounds`
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '라운드 정보를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 통계 정보
+ */
+export interface VerificationStat {
+  certifiedCount: number;
+  totalParticipantCount: number;
+  baseDate: string;
+}
+
+/**
+ * 인증 통계 조회 응답
+ */
+export interface VerificationStatResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationStat;
+}
+
+/**
+ * 챌린지 인증 통계 조회
+ */
+export const getVerificationStat = async (challengeId: number): Promise<VerificationStat> => {
+  try {
+    const response = await apiClient.get<VerificationStatResponse>(
+      `/api/v1/verifications/${challengeId}/stat`
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '인증 통계를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 피드 아이템
+ */
+export interface VerificationFeedItem {
+  verificationId: number;
+  type: 'TEXT' | 'CAMERA';
+  title: string;
+  content: string;
+  imageUrl: string;
+  hasLink: boolean;
+  isQuestion: boolean;
+  isResolved: boolean;
+  writerNickname: string;
+  writerProfileUrl: string;
+  writerId: number;
+  createdDate: string;
+}
+
+/**
+ * 인증 피드 조회 파라미터
+ */
+export interface GetVerificationFeedParams {
+  roundNumber: number;
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 인증 피드 조회 응답
+ */
+export interface VerificationFeedResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: VerificationFeedItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 챌린지 인증 피드 조회
+ */
+export const getVerificationFeed = async (
+  challengeId: number,
+  params: GetVerificationFeedParams
+): Promise<VerificationFeedResponse['result']> => {
+  try {
+    const response = await apiClient.get<VerificationFeedResponse>(
+      `/api/v1/verifications/${challengeId}/feed`,
+      {
+        params: {
+          roundNumber: params.roundNumber,
+          page: params.page || 1,
+          size: params.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '인증 피드를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
