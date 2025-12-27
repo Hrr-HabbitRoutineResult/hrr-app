@@ -36,7 +36,12 @@ const OnboardingScreenWrapper = () => {
   return (
     <OnboardingScreen
       onComplete={() => {
-        navigation.goBack();
+        // 뒤로 갈 화면이 있으면 goBack, 없으면(최초 회원가입 시) 홈으로 이동
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.replace('HomeTabs');
+        }
       }}
     />
   );
@@ -57,7 +62,11 @@ const HomeTabs = () => (
   </Tab.Navigator>
 );
 
-const RootNavigator = () => (
+/**
+ * RootNavigator
+ * @param showRecommendation 최초 회원가입 후 추천 온보딩 표시 여부
+ */
+const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: boolean }) => (
   <CreateChallengeProvider>
     <NavigationContainer
       onReady={() => {
@@ -65,7 +74,8 @@ const RootNavigator = () => (
         RNBootSplash.hide({ fade: true });
       }}
     >
-      <Stack.Navigator>
+      {/* showRecommendation이 true이면 온보딩을 첫 화면으로 설정 */}
+      <Stack.Navigator initialRouteName={showRecommendation ? 'Onboarding' : 'HomeTabs'}>
         <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />

@@ -27,17 +27,13 @@ import OnboardingStep4 from '../../../assets/images/onboarding-step-4.svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const H_PADDING = scale(24);
-// 이미지 크기: 390x844 기준 342x460이 원래 크기 (비율 = 342/460 = 0.7435)
 const ORIGINAL_RATIO = 342 / 460; // 원본 이미지 비율
-
-// 이미지를 제외한 나머지 고정 공간 계산
-// 위: 60 + 그림자여유: 20 + 인디케이터간격: 62 + 인디케이터: 10 + 텍스트간격: 24 + 텍스트: 60 + 버튼영역: 80 = 316px
 const SWIPE_THRESHOLD = scale(50); // 스와이프 감지 임계값
 
 export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname' | 'userOnboarding';
 
 interface AuthOnboardingScreenProps {
-  onOnboardingComplete?: () => void;
+  onOnboardingComplete?: (showRecommendation?: boolean) => void;
 }
 
 const ONBOARDING_TEXTS = [
@@ -61,7 +57,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
   const [step, setStep] = useState<AuthOnboardingStep>('onboarding');
 
   // 이미지 크기 및 레이아웃 공간 계산 (Safe Area 고려)
-  // 이미지를 제외한 나머지 고정 공간 계산 (단위: px)
+  // 이미지를 제외한 나머지 고정 공간 계산
   // 위: 40 + 그림자여유: 20 + 인디케이터간격: 62 + 인디케이터: 10 + 텍스트간격: 24 + 텍스트: 60 + 버튼영역: 80 = 296px
   const FIXED_SPACE = verticalScale(40 + 20 + 62 + 10 + 24 + 60 + 80);
 
@@ -216,8 +212,8 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
       // 실제 에러가 난 경우에만 알러트창 표시 (취소는 제외)
       if (error instanceof Error) {
         if (
-          !error.message.includes('cancel') && 
-          !error.message.includes('취소') && 
+          !error.message.includes('cancel') &&
+          !error.message.includes('취소') &&
           !error.message.includes('Cancel') &&
           !error.message.includes('1001')
         ) {
@@ -277,7 +273,10 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
   };
 
   const handleNicknameComplete = (nickname: string) => {
-    setStep('userOnboarding');
+    // 닉네임까지 설정이 완료되면 RootNavigator로 전환하여 네비게이션 컨텍스트 확보
+    if (onOnboardingComplete) {
+      onOnboardingComplete(true);
+    }
   };
 
   if (step === 'login') {
@@ -306,10 +305,6 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
         onComplete={handleNicknameComplete}
       />
     );
-  }
-
-  if (step === 'userOnboarding') {
-    return <OnboardingScreen onComplete={onOnboardingComplete} />;
   }
 
   return (
