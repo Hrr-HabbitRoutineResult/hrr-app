@@ -6,6 +6,7 @@ import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/ques
 export interface PhotoCertificationItem {
   id: number;      // 인증 아이템 고유 ID
   thumbnail: any;  // 썸네일 이미지
+  isQuestion?: boolean; // 질문 여부
 }
 
 interface PhotoCertificationGridProps {
@@ -23,10 +24,11 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
   containerPadding = 0,
 }) => {
   const screenWidth = Dimensions.get('window').width;
-  const itemWidth = (screenWidth - containerPadding * 2 - scale(6)) / 3; // 화면 너비 - 컨테이너 패딩(좌우) - gap(3*2) / 3개
+  // 그리드 아이템 너비 계산 (컨테이너 패딩 제외, gap 고려)
+  const itemWidth = (screenWidth - containerPadding * 2 - scale(6) - 0.1) / 3;
 
   return (
-    <View style={styles.grid}>
+    <View style={[styles.grid, { paddingHorizontal: containerPadding }]}>
       {items.map((item) => (
         <TouchableOpacity
           key={item.id}
@@ -35,9 +37,12 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
           activeOpacity={0.8}
         >
           <Image source={item.thumbnail} style={styles.gridImage} />
-          <View style={styles.questionMarkContainer}>
-            <QuestionMarkCircleIcon width={24} height={24} />
-          </View>
+          {/* 질문 아이콘 표시 (showOverlay가 true이고 item이 질문일 때만) */}
+          {showOverlay && item.isQuestion && (
+            <View style={styles.questionMarkContainer}>
+              <QuestionMarkCircleIcon width={24} height={24} />
+            </View>
+          )}
         </TouchableOpacity>
       ))}
     </View>
