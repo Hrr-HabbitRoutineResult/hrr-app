@@ -43,11 +43,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         setIsLoading(true);
         const verificationId = initialVerification?.verificationId || route.params.verificationId;
         
-        console.log('게시글 상세 조회 시작:', {
-          verificationId,
-          initialVerification: initialVerification ? '있음' : '없음',
-        });
-        
         if (!verificationId) {
           Alert.alert('오류', '게시글 정보를 불러올 수 없습니다.');
           navigation.goBack();
@@ -64,16 +59,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           result.photoUrl = result.photoUrl.slice(0, -1);
         }
         
-        console.log('게시글 상세 조회 성공:', {
-          verificationId: result.verificationId,
-          photoUrl: result.photoUrl,
-          title: result.title,
-          hasPhotoUrl: !!result.photoUrl,
-        });
-        
         setVerification(result);
       } catch (error: any) {
-        console.error('게시글 상세 조회 실패:', error);
         Alert.alert('오류', error.message || '게시글을 불러오는데 실패했습니다.');
         navigation.goBack();
       } finally {
@@ -180,11 +167,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               style={styles.image}
               resizeMode="cover"
               onLoad={() => {
-                console.log('이미지 로드 성공:', verification.photoUrl);
               }}
               onError={(error) => {
-                console.error('이미지 로드 실패:', error);
-                console.error('이미지 URL:', verification.photoUrl);
               }}
             />
           </View>

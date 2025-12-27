@@ -161,7 +161,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       const statResult = await getVerificationStat(challengeId);
       setVerificationStat(statResult);
     } catch (error: any) {
-      console.error('[인증현황] 라운드/통계 조회 실패:', error.message);
+      // 라운드/통계 조회 실패 시 무시
     }
   };
 
@@ -175,7 +175,6 @@ export const ChallengeProfileScreen: React.FC = () => {
       });
       setVerificationFeed(feedResult.content);
     } catch (error: any) {
-      console.error('[인증 피드] 조회 실패:', error.message);
       setVerificationFeed([]);
     } finally {
       setIsFeedLoading(false);
@@ -201,7 +200,6 @@ export const ChallengeProfileScreen: React.FC = () => {
             processProfileData(profileResult);
           } catch (profileError: any) {
             // 프로필 조회 실패 시 무시 (참가하지 않은 경우 서버에서 에러를 반환할 수 있음)
-            console.warn('프로필 정보 조회 실패:', profileError.message);
             setProfile(null);
           }
 
@@ -455,7 +453,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           const profileResult = await getChallengeProfile(challengeId);
           processProfileData(profileResult);
         } catch (profileError) {
-          console.warn('프로필 정보 조회 실패:', profileError);
+          // 프로필 조회 실패 시 무시
         }
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
@@ -471,7 +469,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           const profileResult = await getChallengeProfile(challengeId);
           processProfileData(profileResult);
         } catch (profileError) {
-          console.warn('프로필 정보 조회 실패:', profileError);
+          // 프로필 조회 실패 시 무시
         }
 
         Alert.alert('완료', '챌린지에 참가했습니다.');

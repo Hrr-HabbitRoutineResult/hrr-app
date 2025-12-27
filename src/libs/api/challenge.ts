@@ -279,8 +279,7 @@ export const trackChallengeClick = async (challengeId: number): Promise<void> =>
   try {
     await apiClient.post(`/api/v1/challenges/${challengeId}/click`);
   } catch (error: any) {
-    // 클릭 트래킹 실패는 조용히 무시 (사용자 경험에 영향 없음)
-    console.warn('챌린지 클릭 트래킹 실패:', error);
+    // 클릭 트래킹 실패 시 무시
   }
 };
 
