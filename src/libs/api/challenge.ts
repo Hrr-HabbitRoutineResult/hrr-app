@@ -982,3 +982,68 @@ export const getVerificationFeed = async (
     throw error;
   }
 };
+
+/**
+ * 내 인증 현황 조회 파라미터
+ */
+export interface GetMyVerificationsParams {
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 내 인증 현황 정보
+ */
+export interface MyVerificationInfo {
+  nickname: string;
+  totalVerificationCount: number;
+  warningCount: number;
+  currentRoundSequence: number;
+  verifications: {
+    content: VerificationFeedItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 내 인증 현황 조회 응답
+ */
+export interface MyVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: MyVerificationInfo;
+}
+
+/**
+ * 내 인증 현황 조회
+ */
+export const getMyVerifications = async (
+  challengeId: number,
+  params?: GetMyVerificationsParams
+): Promise<MyVerificationInfo> => {
+  try {
+    const response = await apiClient.get<MyVerificationResponse>(
+      `/api/v1/verifications/${challengeId}/me`,
+      {
+        params: {
+          page: params?.page || 1,
+          size: params?.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '내 인증 현황을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
