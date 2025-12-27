@@ -19,6 +19,7 @@ import { TermsAgreementScreen } from './TermsAgreementScreen';
 import { NicknameSetupScreen } from './NicknameSetupScreen';
 import { OnboardingScreen } from '../Onboarding/OnboardingScreen';
 import { loginWithKakao, handleKakaoLogin as handleKakaoLoginWithToken } from '../../libs/auth/kakao';
+import { loginWithApple, handleAppleLogin as handleAppleLoginWithAuth } from '../../libs/auth/apple';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
 import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
@@ -86,6 +87,37 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     currentStepRef.current = currentOnboardingStep;
   }, [currentOnboardingStep]);
 
+  // 공통 로그인 처리 (카카오/애플)
+  const processLogin = useCallback(async (response: any) => {
+    if (response.isSuccess) {
+      // 서버에서 받은 토큰/사용자 정보를 AsyncStorage에 저장
+      await AsyncStorage.setItem('accessToken', response.result.accessToken);
+      await AsyncStorage.setItem('refreshToken', response.result.refreshToken);
+      await AsyncStorage.setItem('userId', String(response.result.userId));
+
+      // nickname이 null이거나 undefined가 아닐 때만 저장
+      if (response.result.nickname != null && response.result.nickname !== undefined) {
+        await AsyncStorage.setItem('nickname', response.result.nickname);
+      } else {
+        // nickname이 null이면 로컬에 남아있을 수 있는 이전 nickname을 제거해 데이터 불일치 방지
+        await AsyncStorage.removeItem('nickname');
+      }
+
+      // 신규/기존 사용자 구분한 뒤 다음 단계 분기 처리
+      if (response.result.loginStatus === 'NEW') {
+        // 신규 사용자: 약관 동의 화면
+        setStep('terms');
+      } else {
+        // 기존 사용자: 온보딩 완료
+        if (onOnboardingComplete) {
+          onOnboardingComplete();
+        }
+      }
+    } else {
+      Alert.alert('로그인 실패', response.message || '로그인에 실패했습니다.');
+    }
+  }, [onOnboardingComplete]);
+
   // 카카오 로그인 처리
   const processKakaoLogin = useCallback(async (kakaoAccessToken: string) => {
     try {
@@ -93,40 +125,28 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
 
       // 백엔드 로그인 API 호출
       const response = await handleKakaoLoginWithToken(kakaoAccessToken);
-
-      if (response.isSuccess) {
-        // 서버에서 받은 토큰/사용자 정보를 AsyncStorage에 저장
-        await AsyncStorage.setItem('accessToken', response.result.accessToken);
-        await AsyncStorage.setItem('refreshToken', response.result.refreshToken);
-        await AsyncStorage.setItem('userId', String(response.result.userId));
-
-        // nickname이 null이거나 undefined가 아닐 때만 저장
-        if (response.result.nickname != null && response.result.nickname !== undefined) {
-          await AsyncStorage.setItem('nickname', response.result.nickname);
-        } else {
-          // nickname이 null이면 로컬에 남아있을 수 있는 이전 nickname을 제거해 데이터 불일치 방지
-          await AsyncStorage.removeItem('nickname');
-        }
-
-        // 신규/기존 사용자 구분한 뒤 다음 단계 분기 처리
-        if (response.result.loginStatus === 'NEW') {
-          // 신규 사용자: 약관 동의 화면
-          setStep('terms');
-        } else {
-          // 기존 사용자: 온보딩 완료
-          if (onOnboardingComplete) {
-            onOnboardingComplete();
-          }
-        }
-      } else {
-        Alert.alert('로그인 실패', response.message || '로그인에 실패했습니다.');
-      }
+      await processLogin(response);
     } catch (error) {
-      Alert.alert('오류', '로그인 중 오류가 발생했습니다.');
+      Alert.alert('오류', '카카오 로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
-  }, [onOnboardingComplete]);
+  }, [processLogin]);
+
+  // 애플 로그인 처리
+  const processAppleLogin = useCallback(async (appleAuthData: any) => {
+    try {
+      setIsLoading(true);
+
+      // 백엔드 로그인 API 호출
+      const response = await handleAppleLoginWithAuth(appleAuthData);
+      await processLogin(response);
+    } catch (error) {
+      Alert.alert('오류', '애플 로그인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [processLogin]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -177,10 +197,37 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     setCurrentOnboardingStep((prev) => (prev > 1 ? prev - 1 : prev));
   };
 
-  const handleAppleLogin = () => {
-    // TODO: 애플 로그인 구현
-    // 현재는 약관 동의 화면으로 바로 이동
-    setStep('terms');
+  // 애플 로그인 버튼 클릭 핸들러
+  const handleAppleLogin = async () => {
+    try {
+      setIsLoading(true);
+
+      // 애플 SDK 로그인 호출
+      const appleAuthData = await loginWithApple();
+
+      if (appleAuthData) {
+        // 애플 로그인 성공 -> 백엔드 로그인 처리
+        await processAppleLogin(appleAuthData);
+      } else {
+        // 사용자가 로그인 취소
+        setIsLoading(false);
+      }
+    } catch (error) {
+      // 실제 에러가 난 경우에만 알러트창 표시 (취소는 제외)
+      if (error instanceof Error) {
+        if (
+          !error.message.includes('cancel') && 
+          !error.message.includes('취소') && 
+          !error.message.includes('Cancel') &&
+          !error.message.includes('1001')
+        ) {
+          Alert.alert('오류', `애플 로그인 중 오류가 발생했습니다.\n${error.message}`);
+        }
+      } else {
+        Alert.alert('오류', '애플 로그인 중 오류가 발생했습니다.');
+      }
+      setIsLoading(false);
+    }
   };
 
   const handleNaverLogin = () => {

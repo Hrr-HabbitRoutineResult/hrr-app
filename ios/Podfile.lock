@@ -2515,6 +2515,8 @@ PODS:
     - React-perflogger (= 0.82.0)
     - React-utils (= 0.82.0)
     - SocketRocket
+  - RNAppleAuthentication (2.5.0):
+    - React-Core
   - RNBootSplash (6.3.11):
     - boost
     - DoubleConversion
@@ -2829,6 +2831,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
@@ -3007,6 +3010,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNAppleAuthentication:
+    :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -3108,6 +3113,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: c5c4f5280e4ae0f9f4a739c64c4260fe0b3edaf1
   ReactCodegen: 374f1c9242fbdd673b460d358b33860c0cc9d926
   ReactCommon: 25c7f94aee74ddd93a8287756a8ac0830a309544
+  RNAppleAuthentication: 9027af8aa92b4719ef1b6030a8e954d37079473a
   RNBootSplash: 98a34471966945e8dacd1da8f0c2f87cbc2e2df7
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
   RNDateTimePicker: 243cc82889368422dab234d73dec63d6cdb1e70f
@@ -3120,4 +3126,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 6282d7bccb9bc3ee04ccd80bae3ca35294a0f6d3
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

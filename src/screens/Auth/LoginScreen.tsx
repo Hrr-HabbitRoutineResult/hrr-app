@@ -12,9 +12,9 @@ import { colors } from '../../design/tokens';
 import LogoPrimarySvg from '../../../assets/images/logo-primary.svg';
 
 interface LoginScreenProps {
-  onAppleLogin: () => void;
+  onAppleLogin: () => void | Promise<void>;
   onNaverLogin: () => void;
-  onKakaoLogin: () => void;
+  onKakaoLogin: () => void | Promise<void>;
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
