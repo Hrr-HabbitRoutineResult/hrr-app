@@ -206,6 +206,11 @@ export const ChallengeProfileScreen: React.FC = () => {
           // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
           if (detailResult.isObserverMode || detailResult.isParticipant) {
             await fetchRoundsAndStats();
+
+            // 선택된 라운드가 있으면 피드도 새로고침
+            if (selectedRound !== null) {
+              await fetchVerificationFeed(selectedRound);
+            }
           }
         } catch (error: any) {
           Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
@@ -217,7 +222,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       };
 
       fetchData();
-    }, [challengeId, navigation])
+    }, [challengeId, navigation, selectedRound])
   );
 
   // 선택된 라운드 변경 시 피드 조회

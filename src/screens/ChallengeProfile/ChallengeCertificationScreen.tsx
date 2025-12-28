@@ -56,19 +56,16 @@ export const ChallengeCertificationScreen: React.FC = () => {
     { key: 'challenger', label: '챌린저' },
   ];
 
-  // 마이 탭 데이터 로딩
-  useEffect(() => {
-    if (activeTab === 'my') {
-      fetchMyVerifications();
-    }
-  }, [activeTab]);
-
-  // 챌린저 탭 데이터 로딩
-  useEffect(() => {
-    if (activeTab === 'challenger') {
-      fetchChallengerData();
-    }
-  }, [activeTab]);
+  // 화면이 포커스될 때마다 현재 활성화된 탭의 데이터 새로고침
+  useFocusEffect(
+    React.useCallback(() => {
+      if (activeTab === 'my') {
+        fetchMyVerifications();
+      } else if (activeTab === 'challenger') {
+        fetchChallengerData();
+      }
+    }, [activeTab])
+  );
 
   // 선택된 라운드 변경 시 피드 로딩
   useEffect(() => {
