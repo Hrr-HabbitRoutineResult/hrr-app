@@ -28,9 +28,9 @@ import { getPresignedUrl } from '../../libs/api/challenge';
 import CameraIcon from '../../../assets/icons/challenge-create/camera.svg';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-ic-grey.svg';
-import { VerificationMethodSheet } from '../../components/CreateChallenge/VerificationMethodSheet';
-import { VerificationDaysSheet } from '../../components/CreateChallenge/VerificationDaysSheet';
-import { TimePickerSheet } from '../../components/CreateChallenge/TimePickerSheet';
+import { VerificationMethodSheet } from '../../components/create-challenge/VerificationMethodSheet';
+import { VerificationDaysSheet } from '../../components/create-challenge/VerificationDaysSheet';
+import { TimePickerSheet } from '../../components/create-challenge/TimePickerSheet';
 
 type CreateChallengeQ2NavigationProp = StackNavigationProp<RootStackParamList>;
 
