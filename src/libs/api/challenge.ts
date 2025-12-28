@@ -1127,3 +1127,197 @@ export const deleteVerification = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 댓글 관련
+ * ============================================
+ */
+
+/**
+ * 댓글 아이템
+ */
+export interface CommentItem {
+  commentId: number;
+  parentId: number;
+  verificationId: number;
+  userId: number;
+  userName: string;
+  userProfileUrl: string;
+  depth: number;
+  content: string;
+  likesCount: number;
+  createdAt: string;
+  updatedAt: string;
+  anonymous: boolean;
+  adopted: boolean;
+}
+
+/**
+ * 댓글 목록 조회 파라미터
+ */
+export interface GetCommentsParams {
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 댓글 목록 조회 응답
+ */
+export interface GetCommentsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    adoptedParent: CommentItem | null;
+    adoptedChildren: CommentItem[];
+    comments: CommentItem[];
+    currentPage: number;
+    totalPages: number;
+    totalParentElements: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 댓글 목록 조회
+ */
+export const getComments = async (
+  verificationId: number,
+  params?: GetCommentsParams
+): Promise<GetCommentsResponse['result']> => {
+  try {
+    const response = await apiClient.get<GetCommentsResponse>(
+      `/api/v1/comments/${verificationId}`,
+      {
+        params: {
+          page: params?.page || 1,
+          size: params?.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 작성 요청
+ */
+export interface CreateCommentRequest {
+  parentId?: number;
+  anonymous: boolean;
+  content: string;
+}
+
+/**
+ * 댓글 작성 응답
+ */
+export interface CreateCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: CommentItem;
+}
+
+/**
+ * 댓글 작성
+ */
+export const createComment = async (
+  verificationId: number,
+  data: CreateCommentRequest
+): Promise<CommentItem> => {
+  try {
+    const response = await apiClient.post<CreateCommentResponse>(
+      `/api/v1/comments/${verificationId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글 작성에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 수정 요청
+ */
+export interface UpdateCommentRequest {
+  content: string;
+}
+
+/**
+ * 댓글 수정 응답
+ */
+export interface UpdateCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: CommentItem;
+}
+
+/**
+ * 댓글 수정
+ */
+export const updateComment = async (
+  commentId: number,
+  data: UpdateCommentRequest
+): Promise<CommentItem> => {
+  try {
+    const response = await apiClient.patch<UpdateCommentResponse>(
+      `/api/v1/comments/${commentId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글 수정에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 삭제 응답
+ */
+export interface DeleteCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: null;
+}
+
+/**
+ * 댓글 삭제
+ */
+export const deleteComment = async (commentId: number): Promise<void> => {
+  try {
+    const response = await apiClient.delete<DeleteCommentResponse>(
+      `/api/v1/comments/${commentId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '댓글 삭제에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};

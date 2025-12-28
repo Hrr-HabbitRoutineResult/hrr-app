@@ -28,7 +28,7 @@ interface TextFieldProps extends TextInputProps {
 }
 
 // 공통 TextField 컴포넌트
-export const TextField: React.FC<TextFieldProps> = ({
+export const TextField = React.forwardRef<TextInput, TextFieldProps>(({
     variant = 'default',
     error,
     message,
@@ -41,7 +41,7 @@ export const TextField: React.FC<TextFieldProps> = ({
     inputContainerStyle,
     style,
     ...rest
-}) => {
+}, ref) => {
     // 포커스 상태 관리 (테두리 색상 변경용)
     const [isFocused, setIsFocused] = useState(false);
 
@@ -116,6 +116,7 @@ export const TextField: React.FC<TextFieldProps> = ({
 
                 {/* TextInput */}
                 <TextInput
+                    ref={ref}
                     style={[styles.input, typography.smMd, style]}
                     placeholderTextColor={getPlaceholderColor()}
                     editable={!disabled}                        // 비활성화 상태에 따른 편집 가능 여부
@@ -152,7 +153,7 @@ export const TextField: React.FC<TextFieldProps> = ({
             </View>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     inputContainer: {
