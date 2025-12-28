@@ -313,7 +313,42 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    // 참가 확인 모달 표시 (버튼이 활성화된 경우에만)
+    const today = new Date();
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
+    const isFull = data.currentParticipantCount >= data.maxParticipantCount;
+    const isAfterEnd = today > endDate;
+    const hasStarted = today >= startDate;
+
+    // actionButtonStatus에 따라 처리
+    if (data.actionButtonStatus === 'WAITLIST') {
+      Alert.alert('알림', '인원이 마감된 챌린지입니다.');
+      return;
+    }
+
+    if (data.actionButtonStatus === 'DISABLED') {
+      let alertMessage = '현재 참가할 수 없는 챌린지입니다.';
+
+      if (isAfterEnd) {
+        alertMessage = '이미 종료된 챌린지입니다.';
+      } else if (isFull) {
+        alertMessage = '인원이 마감된 챌린지입니다.';
+      } else if (hasStarted && !isAfterEnd) {
+        alertMessage = '라운드 진행 중에는 참가할 수 없습니다.';
+      } else {
+        alertMessage = '참가할 수 없는 챌린지입니다.';
+      }
+
+      Alert.alert('알림', alertMessage);
+      return;
+    }
+
+    if (data.actionButtonStatus !== 'JOIN') {
+      Alert.alert('알림', '지금은 참가할 수 없습니다.');
+      return;
+    }
+
+    // 참가 가능한 경우 확인 모달 표시
     setShowParticipateModal(true);
     setIsPasswordMode(false);
     setPassword('');
@@ -996,9 +1031,8 @@ export const ChallengeProfileScreen: React.FC = () => {
           </Button>
         ) : (
           <Button
-            variant="primary"
+            variant={isParticipateButtonDisabled() ? 'gray' : 'primary'}
             size="medium"
-            disabled={isParticipateButtonDisabled()}
             onPress={handleParticipate}
           >
             참가하기
