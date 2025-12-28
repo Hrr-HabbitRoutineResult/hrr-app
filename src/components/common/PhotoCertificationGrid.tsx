@@ -2,11 +2,13 @@ import React from 'react';
 import { View, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
+import ResolvedCircleIcon from '../../../assets/icons/challenge-profile/resolved-circle.svg';
 
 export interface PhotoCertificationItem {
   id: number;      // 인증 아이템 고유 ID
   thumbnail: any;  // 썸네일 이미지
   isQuestion?: boolean; // 질문 여부
+  isResolved?: boolean; // 채택 답변 존재 여부
 }
 
 interface PhotoCertificationGridProps {
@@ -40,7 +42,11 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
           {/* 질문 아이콘 표시 (showOverlay가 true이고 item이 질문일 때만) */}
           {showOverlay && item.isQuestion && (
             <View style={styles.questionMarkContainer}>
-              <QuestionMarkCircleIcon width={24} height={24} />
+              {item.isResolved ? (
+                <ResolvedCircleIcon width={24} height={24} />
+              ) : (
+                <QuestionMarkCircleIcon width={24} height={24} />
+              )}
             </View>
           )}
         </TouchableOpacity>

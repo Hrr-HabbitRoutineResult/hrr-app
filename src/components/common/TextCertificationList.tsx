@@ -5,6 +5,7 @@ import { Text } from './Text';
 import { colors } from '../../design/tokens';
 import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
+import ResolvedTextIcon from '../../../assets/icons/challenge-profile/resolved-text.svg';
 
 export interface TextCertificationItem {
   id: number;           // 인증 아이템 고유 ID
@@ -12,6 +13,8 @@ export interface TextCertificationItem {
   description: string;  // 인증 글 내용
   date: string;         // 인증 날짜
   thumbnail: any;       // 썸네일 이미지
+  isQuestion?: boolean; // 질문 여부
+  isResolved?: boolean; // 채택 답변 존재 여부
 }
 
 interface TextCertificationListProps {
@@ -51,9 +54,16 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
           </View>
           <View style={styles.thumbnail}>
             <Image source={item.thumbnail} style={styles.thumbnailImage} />
-            <View style={styles.thumbnailOverlay}>
-              <QuestionMarkTextIcon width={30} height={36} />
-            </View>
+            {/* 질문이 포함된 글일 때만 오버레이와 아이콘 표시 */}
+            {item.isQuestion && (
+              <View style={styles.thumbnailOverlay}>
+                {item.isResolved ? (
+                  <ResolvedTextIcon width={30} height={36} />
+                ) : (
+                  <QuestionMarkTextIcon width={30} height={36} />
+                )}
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       ))}

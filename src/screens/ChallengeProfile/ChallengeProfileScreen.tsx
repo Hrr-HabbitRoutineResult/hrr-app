@@ -792,6 +792,8 @@ export const ChallengeProfileScreen: React.FC = () => {
                               thumbnail: item.imageUrl
                                 ? { uri: item.imageUrl }
                                 : require('../../../assets/images/mock-challenge-profile.png'),
+                              isQuestion: item.isQuestion,
+                              isResolved: item.isResolved,
                             };
                           })}
                         containerPadding={scale(24)}
@@ -813,6 +815,7 @@ export const ChallengeProfileScreen: React.FC = () => {
                           id: item.verificationId,
                           thumbnail: { uri: item.imageUrl },
                           isQuestion: item.isQuestion,
+                          isResolved: item.isResolved,
                         }))}
                       onItemPress={(item) => {
                         navigation.navigate('ChallengeCertificationDetail', {

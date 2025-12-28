@@ -241,6 +241,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                           ? { uri: item.imageUrl }
                           : require('../../../assets/images/mock-challenge-profile.png'),
                         isQuestion: item.isQuestion,
+                        isResolved: item.isResolved,
                       };
                     })}
                     onItemPress={(item) => {
@@ -257,6 +258,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                         id: item.verificationId,
                         thumbnail: { uri: item.imageUrl },
                         isQuestion: item.isQuestion,
+                        isResolved: item.isResolved,
                       }))}
                       onItemPress={(item) => {
                         navigation.navigate('ChallengeCertificationDetail', {
@@ -443,6 +445,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                           ? { uri: item.imageUrl }
                           : require('../../../assets/images/mock-challenge-profile.png'),
                         isQuestion: item.isQuestion,
+                        isResolved: item.isResolved,
                       };
                     })}
                     onItemPress={(item) => {
@@ -459,6 +462,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                         id: item.verificationId,
                         thumbnail: { uri: item.imageUrl },
                         isQuestion: item.isQuestion,
+                        isResolved: item.isResolved,
                       }))}
                       onItemPress={(item) => {
                         navigation.navigate('ChallengeCertificationDetail', {
