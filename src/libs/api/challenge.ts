@@ -729,12 +729,15 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   anonymous: boolean;
+  adopted: boolean;
 }
 
 /**
  * 게시글 상세 조회 응답 - 댓글 목록
  */
 export interface CommentsData {
+  adoptedParent: Comment | null;
+  adoptedChildren: Comment[];
   comments: Comment[];
   currentPage: number;
   totalPages: number;
@@ -792,6 +795,10 @@ export interface VerificationDetailResponse {
     canEdit: boolean;
     canDelete: boolean;
     canSelectComment: boolean;
+    canWriteComment: boolean;
+    adoptedCommentId: number;
+    showResolvedBadge: boolean;
+    commentCount: number;
     user: VerificationUser;
     roundInfo: RoundInfo;
     comments: CommentsData;
@@ -1347,6 +1354,83 @@ export const adoptComment = async (
 
     if (!response.data.isSuccess) {
       throw new Error(response.data.message || '댓글 채택에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 신고 관련
+ * ============================================
+ */
+
+/**
+ * 신고 사유 타입
+ */
+export type ReportReason =
+  | 'ABUSIVE_LANGUAGE'
+  | 'SEXUAL_OR_OBSCENE'
+  | 'SPAM_OR_SCAM'
+  | 'PERSONAL_INFO_REQUEST'
+  | 'ILLEGAL_CONTENT_SHARE'
+  | 'OTHER';
+
+/**
+ * 신고 요청
+ */
+export interface ReportRequest {
+  targetId: number;
+  reason: ReportReason;
+  description: string;
+}
+
+/**
+ * 신고 응답
+ */
+export interface ReportResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {};
+}
+
+/**
+ * 게시글 신고
+ */
+export const reportVerificationPost = async (
+  data: ReportRequest
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      '/api/v1/report/verification/post',
+      data
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '게시글 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 사용자 신고
+ */
+export const reportUser = async (
+  data: ReportRequest
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      '/api/v1/report/user',
+      data
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '사용자 신고에 실패했습니다.');
     }
   } catch (error: any) {
     throw error;

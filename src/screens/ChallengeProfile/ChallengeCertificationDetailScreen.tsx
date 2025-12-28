@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -22,7 +22,10 @@ import {
   deleteComment,
   adoptComment,
   CommentItem as CommentItemType,
-  GetCommentsResponse
+  GetCommentsResponse,
+  reportVerificationPost,
+  reportUser,
+  ReportReason
 } from '../../libs/api/challenge';
 import MoreIcon from '../../../assets/icons/more.svg';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
@@ -34,6 +37,8 @@ import LockIcon from '../../../assets/icons/lock.svg';
 import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
+import RadioCheckedIcon from '../../../assets/icons/radio-checked.svg';
+import RadioUncheckedIcon from '../../../assets/icons/radio-unchecked.svg';
 
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
@@ -68,6 +73,23 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [openMenuCommentId, setOpenMenuCommentId] = useState<number | null>(null);
   const [isAdoptBottomSheetVisible, setIsAdoptBottomSheetVisible] = useState(false);
   const [selectedCommentForAdopt, setSelectedCommentForAdopt] = useState<number | null>(null);
+
+  // 신고 관련 state
+  const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] = useState(false);
+  const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] = useState(false);
+  const [selectedReportReason, setSelectedReportReason] = useState<ReportReason | null>(null);
+  const [reportReasonDetail, setReportReasonDetail] = useState('');
+  const [isReportTextInputMode, setIsReportTextInputMode] = useState(false);
+
+  // 신고 사유 목록
+  const reportReasons: Array<{ label: string; value: ReportReason }> = [
+    { label: '욕설 및 비속어 사용', value: 'ABUSIVE_LANGUAGE' },
+    { label: '성희롱 및 음란 발언', value: 'SEXUAL_OR_OBSCENE' },
+    { label: '스팸 또는 도배', value: 'SPAM_OR_SCAM' },
+    { label: '개인정보 노출 요구', value: 'PERSONAL_INFO_REQUEST' },
+    { label: '불법 및 유해 콘텐츠 공유', value: 'ILLEGAL_CONTENT_SHARE' },
+    { label: '기타 (직접 입력)', value: 'OTHER' },
+  ];
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -214,6 +236,166 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         },
       ]
     );
+  };
+
+  // 게시글 신고하기
+  const handleReportPost = () => {
+    setIsActionSheetVisible(false);
+    setSelectedReportReason(null);
+    setReportReasonDetail('');
+    setIsReportTextInputMode(false);
+    setIsReportPostBottomSheetVisible(true);
+  };
+
+  // 사용자 신고하기
+  const handleReportUser = () => {
+    setIsActionSheetVisible(false);
+    setSelectedReportReason(null);
+    setReportReasonDetail('');
+    setIsReportTextInputMode(false);
+    setIsReportUserBottomSheetVisible(true);
+  };
+
+  // 게시글 신고 바텀시트 닫기
+  const handleCloseReportPostBottomSheet = () => {
+    // 텍스트 입력 모드에서 작성 중인 내용이 있으면 경고
+    if (isReportTextInputMode && reportReasonDetail.trim().length > 0) {
+      Alert.alert(
+        '작성 취소',
+        '작성 중이던 내용이 사라집니다.\n작성을 멈추시겠습니까?',
+        [
+          { text: '계속 작성', style: 'cancel' },
+          {
+            text: '작성 취소',
+            style: 'destructive',
+            onPress: () => {
+              setIsReportPostBottomSheetVisible(false);
+              setSelectedReportReason(null);
+              setReportReasonDetail('');
+              setIsReportTextInputMode(false);
+            }
+          }
+        ]
+      );
+    } else {
+      setIsReportPostBottomSheetVisible(false);
+      setSelectedReportReason(null);
+      setReportReasonDetail('');
+      setIsReportTextInputMode(false);
+    }
+  };
+
+  // 사용자 신고 바텀시트 닫기
+  const handleCloseReportUserBottomSheet = () => {
+    // 텍스트 입력 모드에서 작성 중인 내용이 있으면 경고
+    if (isReportTextInputMode && reportReasonDetail.trim().length > 0) {
+      Alert.alert(
+        '작성 취소',
+        '작성 중이던 내용이 사라집니다.\n작성을 멈추시겠습니까?',
+        [
+          { text: '계속 작성', style: 'cancel' },
+          {
+            text: '작성 취소',
+            style: 'destructive',
+            onPress: () => {
+              setIsReportUserBottomSheetVisible(false);
+              setSelectedReportReason(null);
+              setReportReasonDetail('');
+              setIsReportTextInputMode(false);
+            }
+          }
+        ]
+      );
+    } else {
+      setIsReportUserBottomSheetVisible(false);
+      setSelectedReportReason(null);
+      setReportReasonDetail('');
+      setIsReportTextInputMode(false);
+    }
+  };
+
+  // 신고 사유 선택
+  const handleSelectReportReason = (reason: ReportReason) => {
+    setSelectedReportReason(reason);
+  };
+
+  // 신고 버튼 활성화 여부
+  const isReportButtonEnabled = () => {
+    if (!selectedReportReason) return false;
+    // 기타 선택 시 텍스트 입력 모드일 때는 글자가 있어야 함
+    if (isReportTextInputMode) {
+      return reportReasonDetail.trim().length > 0;
+    }
+    // 그 외에는 선택만 하면 활성화
+    return true;
+  };
+
+  // 게시글 신고 제출
+  const handleSubmitReportPost = async () => {
+    if (!isReportButtonEnabled() || !verification) return;
+
+    // 기타 선택 + 아직 텍스트 입력 모드가 아니면 텍스트 입력 모드로 전환
+    if (selectedReportReason === 'OTHER' && !isReportTextInputMode) {
+      setIsReportTextInputMode(true);
+      return;
+    }
+
+    try {
+      // 요청 바디 구성 (OTHER가 아니면 description은 빈 문자열)
+      const requestBody = {
+        targetId: verification.verificationId,
+        reason: selectedReportReason!,
+        description: selectedReportReason === 'OTHER' ? reportReasonDetail : ''
+      };
+
+      await reportVerificationPost(requestBody);
+
+      // 신고 제출 성공
+      setIsReportPostBottomSheetVisible(false);
+      setSelectedReportReason(null);
+      setReportReasonDetail('');
+      setIsReportTextInputMode(false);
+
+      Alert.alert('신고 완료', '신고가 접수되었습니다.');
+    } catch (error: any) {
+      // 서버에서 오는 에러 메시지 사용
+      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      Alert.alert('신고 실패', errorMessage);
+    }
+  };
+
+  // 사용자 신고 제출
+  const handleSubmitReportUser = async () => {
+    if (!isReportButtonEnabled() || !verification) return;
+
+    // 기타 선택 + 아직 텍스트 입력 모드가 아니면 텍스트 입력 모드로 전환
+    if (selectedReportReason === 'OTHER' && !isReportTextInputMode) {
+      setIsReportTextInputMode(true);
+      return;
+    }
+
+    try {
+      // 요청 바디 구성 (OTHER가 아니면 description은 빈 문자열)
+      const requestBody = {
+        targetId: verification.user.userId,
+        reason: selectedReportReason!,
+        description: selectedReportReason === 'OTHER' ? reportReasonDetail : ''
+      };
+
+      await reportUser(requestBody);
+
+      // 신고 제출 성공
+      setIsReportUserBottomSheetVisible(false);
+      setSelectedReportReason(null);
+      setReportReasonDetail('');
+      setIsReportTextInputMode(false);
+
+      Alert.alert('신고 완료', '신고가 접수되었습니다.');
+    } catch (error: any) {
+      // 서버에서 오는 에러 메시지 사용
+      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      Alert.alert('신고 실패', errorMessage);
+    }
   };
 
   // 댓글 작성
@@ -408,6 +590,18 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   };
 
+  // TODO: 백엔드 API 변경 후 수정 필요
+  const getUserRoleText = (role: string): string => {
+    switch (role) {
+      case 'OWNER':
+        return '방장';
+      case 'CHALLENGER':
+        return '챌린저';
+      default:
+        return '챌린저';
+    }
+  };
+
   if (isLoading || !verification) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -463,7 +657,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                챌린저
+                {getUserRoleText(verification.user.role)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -709,7 +903,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </View>
       </KeyboardAvoidingView>
 
-      {/* 액션 시트 */}
+      {/* 게시글 더보기 액션 시트 */}
       <Modal
         visible={isActionSheetVisible}
         transparent={true}
@@ -718,30 +912,57 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       >
         <Pressable style={styles.actionSheetOverlay} onPress={handleCloseActionSheet}>
           <View style={styles.actionSheetContainer}>
-            {/* 수정/삭제 버튼 */}
-            <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity
-                style={styles.actionButton}
-                activeOpacity={0.9}
-                onPress={handleEdit}
-              >
-                <Text variant="md" color={colors.text.primary}>
-                  수정
-                </Text>
-              </TouchableOpacity>
+            {/* 내 게시글: 수정/삭제 버튼 */}
+            {verification?.isMine ? (
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  activeOpacity={0.9}
+                  onPress={handleEdit}
+                >
+                  <Text variant="md" color={colors.text.primary}>
+                    수정
+                  </Text>
+                </TouchableOpacity>
 
-              <View style={styles.actionDivider} />
+                <View style={styles.actionDivider} />
 
-              <TouchableOpacity
-                style={styles.actionButton}
-                activeOpacity={0.9}
-                onPress={handleDelete}
-              >
-                <Text variant="md" color={colors.primary.sub}>
-                  삭제
-                </Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  activeOpacity={0.9}
+                  onPress={handleDelete}
+                >
+                  <Text variant="md" color={colors.primary.sub}>
+                    삭제
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              /* 남의 게시글: 신고하기 버튼 */
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  activeOpacity={0.9}
+                  onPress={handleReportPost}
+                >
+                  <Text variant="md" color={colors.primary.sub}>
+                    게시글 신고하기
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={styles.actionDivider} />
+
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  activeOpacity={0.9}
+                  onPress={handleReportUser}
+                >
+                  <Text variant="md" color={colors.primary.sub}>
+                    사용자 신고하기
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* 취소 버튼 */}
             <TouchableOpacity
@@ -798,6 +1019,162 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             </Button>
           </View>
         </View>
+      </BottomSheet>
+
+      {/* 게시글 신고 바텀시트 */}
+      <BottomSheet
+        visible={isReportPostBottomSheetVisible}
+        height={560}
+        scrollEnabled={false}
+        onClose={handleCloseReportPostBottomSheet}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.adoptBottomSheetContent}>
+            <Text variant="header4" color={colors.text.tertiary} style={styles.adoptBottomSheetTitle}>
+              {isReportTextInputMode ? '신고할 문제를 작성해 주세요' : '게시글 신고 사유'}
+            </Text>
+            <View style={styles.adoptBottomSheetDivider} />
+
+            <View style={styles.reportBottomSheetBody}>
+              {isReportTextInputMode ? (
+                /* 기타 선택 시 텍스트 입력 필드 */
+                <>
+                  <View style={styles.reportDetailInputContainer}>
+                    <TextInput
+                      style={styles.reportDetailInput}
+                      placeholder="최대 200자까지 작성 가능합니다."
+                      placeholderTextColor={colors.icon.gray}
+                      value={reportReasonDetail}
+                      onChangeText={setReportReasonDetail}
+                      multiline
+                      textAlignVertical="top"
+                      maxLength={200}
+                      autoFocus
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                    />
+                  </View>
+                  <Text variant="xsReg" color={colors.text.tertiary} style={styles.reportDetailCharacterCount}>
+                    {reportReasonDetail.length}/200
+                  </Text>
+                </>
+              ) : (
+                /* 라디오 버튼 목록 */
+                reportReasons.map((reason, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.reportReasonItem}
+                    activeOpacity={0.7}
+                    onPress={() => handleSelectReportReason(reason.value)}
+                  >
+                    {selectedReportReason === reason.value ? (
+                      <RadioCheckedIcon width={24} height={24} />
+                    ) : (
+                      <RadioUncheckedIcon width={24} height={24} />
+                    )}
+                    <Text variant="md" color={colors.text.primary} style={styles.reportReasonText}>
+                      {reason.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+
+            <View style={styles.adoptBottomSheetDivider} />
+
+            <View style={styles.adoptBottomSheetFooter}>
+              <Button
+                variant="black"
+                onPress={handleSubmitReportPost}
+                disabled={!isReportButtonEnabled()}
+              >
+                신고하기
+              </Button>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </BottomSheet>
+
+      {/* 사용자 신고 바텀시트 */}
+      <BottomSheet
+        visible={isReportUserBottomSheetVisible}
+        height={560}
+        scrollEnabled={false}
+        onClose={handleCloseReportUserBottomSheet}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.adoptBottomSheetContent}>
+            <Text variant="header4" color={colors.text.tertiary} style={styles.adoptBottomSheetTitle}>
+              {isReportTextInputMode ? '신고할 문제를 작성해 주세요' : '사용자 신고 사유'}
+            </Text>
+            <View style={styles.adoptBottomSheetDivider} />
+
+            <View style={styles.reportBottomSheetBody}>
+              {isReportTextInputMode ? (
+                /* 기타 선택 시 텍스트 입력 필드 */
+                <>
+                  <View style={styles.reportDetailInputContainer}>
+                    <TextInput
+                      style={styles.reportDetailInput}
+                      placeholder="최대 200자까지 작성 가능합니다."
+                      placeholderTextColor={colors.icon.gray}
+                      value={reportReasonDetail}
+                      onChangeText={setReportReasonDetail}
+                      multiline
+                      textAlignVertical="top"
+                      maxLength={200}
+                      autoFocus
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                    />
+                  </View>
+                  <Text variant="xsReg" color={colors.text.tertiary} style={styles.reportDetailCharacterCount}>
+                    {reportReasonDetail.length}/200
+                  </Text>
+                </>
+              ) : (
+                /* 라디오 버튼 목록 */
+                reportReasons.map((reason, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.reportReasonItem}
+                    activeOpacity={0.7}
+                    onPress={() => handleSelectReportReason(reason.value)}
+                  >
+                    {selectedReportReason === reason.value ? (
+                      <RadioCheckedIcon width={24} height={24} />
+                    ) : (
+                      <RadioUncheckedIcon width={24} height={24} />
+                    )}
+                    <Text variant="md" color={colors.text.primary} style={styles.reportReasonText}>
+                      {reason.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+
+            <View style={styles.adoptBottomSheetDivider} />
+
+            <View style={styles.adoptBottomSheetFooter}>
+              <Button
+                variant="black"
+                onPress={handleSubmitReportUser}
+                disabled={!isReportButtonEnabled()}
+              >
+                신고하기
+              </Button>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </BottomSheet>
     </SafeAreaView>
   );
@@ -988,6 +1365,7 @@ const styles = StyleSheet.create({
   adoptBottomSheetDivider: {
     height: 1,
     backgroundColor: colors.line,
+    marginHorizontal: scale(20),
   },
   adoptBottomSheetBody: {
     flex: 1,
@@ -1006,5 +1384,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(24),
     paddingTop: verticalScale(12),
     alignItems: 'center',
+  },
+  reportBottomSheetBody: {
+    flex: 1,
+    paddingHorizontal: scale(32),
+    paddingTop: verticalScale(20),
+  },
+  reportReasonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: verticalScale(14.5),
+  },
+  reportReasonText: {
+    marginLeft: scale(13),
+  },
+  reportDetailInputContainer: {
+    height: verticalScale(208),
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(16),
+    paddingTop: verticalScale(18),
+    marginBottom: verticalScale(8),
+  },
+  reportDetailInput: {
+    flex: 1,
+    ...typography.smReg,
+    color: colors.text.secondary,
+    padding: 0,
+  },
+  reportDetailCharacterCount: {
+    textAlign: 'right',
+    paddingRight: scale(4),
+    marginBottom: verticalScale(12),
   },
 });
