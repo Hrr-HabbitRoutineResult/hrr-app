@@ -9,18 +9,25 @@ import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-uns
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import MoreIcon from '../../../assets/icons/more.svg';
 import LockIcon from '../../../assets/icons/lock.svg';
+import CommentIcon from '../../../assets/icons/comment.svg';
+import AdoptableIcon from '../../../assets/icons/adoptable.svg';
+import AdoptedIcon from '../../../assets/icons/adopted.svg';
 
 interface CommentItemProps {
   comment: CommentItemType;
   onLike?: (commentId: number) => void;
   onReply?: () => void;
   onDelete?: (commentId: number) => void;
+  onAdopt?: (commentId: number) => void;
   isLiked?: boolean;
   isMine?: boolean;
   currentUserNickname?: string;
   isMenuOpen?: boolean;
   onMenuToggle?: (commentId: number) => void;
   onLayout?: (commentId: number, y: number) => void;
+  isQuestion?: boolean;
+  isResolved?: boolean;
+  replyCount?: number;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -28,12 +35,16 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onLike,
   onReply,
   onDelete,
+  onAdopt,
   isLiked = false,
   isMine = false,
   currentUserNickname,
   isMenuOpen = false,
   onMenuToggle,
   onLayout,
+  isQuestion = false,
+  isResolved = false,
+  replyCount = 0,
 }) => {
 
   const formatDate = (dateString: string): string => {
@@ -160,9 +171,25 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               activeOpacity={0.7}
               onPress={onReply}
             >
-              <Text variant="xxs" color={colors.text.tertiary}>
-                답글
+              <CommentIcon width={12} height={12} />
+              <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
+                {replyCount}
               </Text>
+            </TouchableOpacity>
+          )}
+
+          {isQuestion && !isMine && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              activeOpacity={0.7}
+              onPress={() => onAdopt?.(comment.commentId)}
+              disabled={comment.adopted || isResolved}
+            >
+              {comment.adopted ? (
+                <AdoptedIcon width={52} height={20} />
+              ) : (
+                <AdoptableIcon width={52} height={20} />
+              )}
             </TouchableOpacity>
           )}
         </View>
@@ -260,7 +287,7 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(2),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
+    gap: scale(5),
     flex: 1,
   },
   lockIconContainer: {

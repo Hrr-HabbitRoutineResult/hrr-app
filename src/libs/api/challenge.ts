@@ -1321,3 +1321,34 @@ export const deleteComment = async (commentId: number): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * 댓글 채택 응답
+ */
+export interface AdoptCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: string;
+}
+
+/**
+ * 댓글 채택
+ */
+export const adoptComment = async (
+  verificationId: number,
+  commentId: number
+): Promise<void> => {
+  const url = `/api/v1/verifications/${verificationId}/comments/${commentId}/adopt`;
+
+  try {
+    const response = await apiClient.post<AdoptCommentResponse>(url);
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '댓글 채택에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};

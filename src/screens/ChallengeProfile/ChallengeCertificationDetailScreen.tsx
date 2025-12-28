@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Header } from '../../components/common/Header';
+import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
 import { TextField } from '../../components/common/TextField';
 import { CommentItem } from '../../components/challenge/CommentItem';
+import { BottomSheet } from '../../components/common/BottomSheet';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import {
@@ -18,6 +20,7 @@ import {
   getComments,
   createComment,
   deleteComment,
+  adoptComment,
   CommentItem as CommentItemType,
   GetCommentsResponse
 } from '../../libs/api/challenge';
@@ -63,6 +66,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [replyToComment, setReplyToComment] = useState<CommentItemType | null>(null);
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
   const [openMenuCommentId, setOpenMenuCommentId] = useState<number | null>(null);
+  const [isAdoptBottomSheetVisible, setIsAdoptBottomSheetVisible] = useState(false);
+  const [selectedCommentForAdopt, setSelectedCommentForAdopt] = useState<number | null>(null);
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -93,6 +98,28 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         size: 10,
       });
       setComments(commentsResult);
+
+      // 채택된 댓글이 있는 부모 댓글을 찾아서 기본적으로 펼쳐진 상태로 설정
+      const allComments = [
+        ...(commentsResult.adoptedParent ? [commentsResult.adoptedParent] : []),
+        ...commentsResult.adoptedChildren,
+        ...commentsResult.comments,
+      ];
+
+      const parentComments = allComments.filter(c => c.depth === 0);
+      const childComments = allComments.filter(c => c.depth > 0);
+
+      parentComments.forEach(parent => {
+        const children = childComments.filter(child => child.parentId === parent.commentId);
+        // 부모가 채택되었거나 자식 중에 채택된 댓글이 있으면 펼침
+        if (parent.adopted || children.some(child => child.adopted)) {
+          setExpandedComments(prev => {
+            const newSet = new Set(prev);
+            newSet.add(parent.commentId);
+            return newSet;
+          });
+        }
+      });
     } catch (error: any) {
       Alert.alert('오류', error.message || '게시글을 불러오는데 실패했습니다.');
       navigation.goBack();
@@ -269,8 +296,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setComments(commentsResult);
 
       // 답글이 0개가 된 부모 댓글은 자동으로 접기
-      const parentComments = commentsResult.comments.filter(c => c.depth === 0);
-      const childComments = commentsResult.comments.filter(c => c.depth > 0);
+      const allComments = [
+        ...(commentsResult.adoptedParent ? [commentsResult.adoptedParent] : []),
+        ...commentsResult.adoptedChildren,
+        ...commentsResult.comments,
+      ];
+
+      const parentComments = allComments.filter(c => c.depth === 0);
+      const childComments = allComments.filter(c => c.depth > 0);
 
       setExpandedComments(prev => {
         const newSet = new Set(prev);
@@ -286,6 +319,38 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       Alert.alert('성공', '댓글이 삭제되었습니다.');
     } catch (error: any) {
       Alert.alert('오류', error.message || '댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  // 댓글 채택 (바텀시트 열기)
+  const handleAdoptComment = (commentId: number) => {
+    setSelectedCommentForAdopt(commentId);
+    setIsAdoptBottomSheetVisible(true);
+  };
+
+  // 댓글 채택 확인
+  const confirmAdoptComment = async () => {
+    if (!verification || !selectedCommentForAdopt) return;
+
+    try {
+      await adoptComment(verification.verificationId, selectedCommentForAdopt);
+
+      // 바텀시트 닫기
+      setIsAdoptBottomSheetVisible(false);
+      setSelectedCommentForAdopt(null);
+
+      // 게시글 정보 다시 조회 (isResolved 업데이트)
+      await fetchVerificationDetail();
+
+      Alert.alert('성공', '댓글이 채택되었습니다.');
+    } catch (error: any) {
+      // 바텀시트 닫기
+      setIsAdoptBottomSheetVisible(false);
+      setSelectedCommentForAdopt(null);
+
+      const errorMessage = error.response?.data?.message || error.message || '댓글 채택에 실패했습니다.';
+
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -311,12 +376,25 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const getCommentTree = () => {
     if (!comments) return [];
 
-    const parentComments = comments.comments.filter(c => c.depth === 0);
-    const childComments = comments.comments.filter(c => c.depth > 0);
+    // 모든 댓글 합치기
+    const allComments = [
+      ...(comments.adoptedParent ? [comments.adoptedParent] : []),
+      ...comments.adoptedChildren,
+      ...comments.comments,
+    ];
 
-    return parentComments.map(parent => ({
+    const parentComments = allComments.filter(c => c.depth === 0);
+    const childComments = allComments.filter(c => c.depth > 0);
+
+    // 부모 댓글을 시간순으로 정렬
+    const sortedParents = parentComments.sort((a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    return sortedParents.map(parent => ({
       parent,
-      children: childComments.filter(child => child.parentId === parent.commentId),
+      children: childComments.filter(child => child.parentId === parent.commentId)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
     }));
   };
 
@@ -397,9 +475,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 질문 태그 */}
         {verification.isQuestion && (
-          <View style={styles.questionTag}>
+          <View style={[
+            styles.questionTag,
+            verification.isResolved && styles.resolvedTag
+          ]}>
             <Text variant="xsMd" color={colors.white}>
-              질문
+              {verification.isResolved ? '채택' : '질문'}
             </Text>
           </View>
         )}
@@ -472,7 +553,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </View>
 
         {/* 댓글 목록 */}
-        {comments && comments.comments.length > 0 && (
+        {comments && (comments.adoptedParent || comments.comments.length > 0) && (
           <View
             style={styles.commentsSection}
             onLayout={(event) => {
@@ -509,6 +590,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     }}
                     onReply={() => handleReplyToComment(parent)}
                     onDelete={handleDeleteComment}
+                    onAdopt={handleAdoptComment}
+                    isQuestion={verification?.isQuestion}
+                    isResolved={verification?.isResolved}
+                    replyCount={children.length}
                   />
 
                   {/* 답글 보기 버튼 (접힌 상태) */}
@@ -550,6 +635,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                               // TODO: 댓글 좋아요 처리
                             }}
                             onDelete={handleDeleteComment}
+                            onAdopt={handleAdoptComment}
+                            isQuestion={verification?.isQuestion}
+                            isResolved={verification?.isResolved}
                           />
                         );
                       })}
@@ -668,6 +756,49 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           </View>
         </Pressable>
       </Modal>
+
+      {/* 채택 확인 바텀시트 */}
+      <BottomSheet
+        visible={isAdoptBottomSheetVisible}
+        height={440}
+        scrollEnabled={false}
+        onClose={() => {
+          setIsAdoptBottomSheetVisible(false);
+          setSelectedCommentForAdopt(null);
+        }}
+      >
+        <View style={styles.adoptBottomSheetContent}>
+          <Text variant="header4" color={colors.text.tertiary} style={styles.adoptBottomSheetTitle}>
+            채택하기
+          </Text>
+          <View style={styles.adoptBottomSheetDivider} />
+
+          <View style={styles.adoptBottomSheetBody}>
+            <Text variant="header3" color={colors.text.primary} style={styles.adoptBottomSheetQuestion}>
+              해당 댓글을 채택하시겠어요?
+            </Text>
+
+            <Text variant="smReg" color={colors.text.tertiary} style={styles.adoptBottomSheetDescription}>
+              댓글 채택 시 상단의 질문 표시는 채택으로 변경됩니다
+            </Text>
+
+            <Text variant="smReg" color={colors.text.tertiary} style={styles.adoptBottomSheetDescription}>
+              댓글 채택이 완료되면 취소가 불가능합니다
+            </Text>
+          </View>
+
+          <View style={styles.adoptBottomSheetDivider} />
+
+          <View style={styles.adoptBottomSheetFooter}>
+            <Button
+              variant="black"
+              onPress={confirmAdoptComment}
+            >
+              채택하기
+            </Button>
+          </View>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 };
@@ -731,6 +862,9 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(4),
     borderRadius: scale(12),
     marginBottom: verticalScale(12),
+  },
+  resolvedTag: {
+    backgroundColor: colors.text.primary,
   },
   title: {
     marginBottom: verticalScale(6),
@@ -839,6 +973,38 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.line,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adoptBottomSheetContent: {
+    flex: 1,
+    marginHorizontal: scale(-20),
+    marginTop: verticalScale(-16),
+  },
+  adoptBottomSheetTitle: {
+    textAlign: 'center',
+    paddingTop: verticalScale(4),
+    paddingBottom: verticalScale(16),
+  },
+  adoptBottomSheetDivider: {
+    height: 1,
+    backgroundColor: colors.line,
+  },
+  adoptBottomSheetBody: {
+    flex: 1,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(32),
+  },
+  adoptBottomSheetQuestion: {
+    lineHeight: moderateScale(23),
+    marginBottom: verticalScale(20),
+  },
+  adoptBottomSheetDescription: {
+    lineHeight: moderateScale(20),
+    marginBottom: verticalScale(6),
+  },
+  adoptBottomSheetFooter: {
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(12),
     alignItems: 'center',
   },
 });
