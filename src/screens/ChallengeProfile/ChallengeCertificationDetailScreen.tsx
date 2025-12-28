@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -42,6 +42,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isCommentLocked, setIsCommentLocked] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -79,6 +81,29 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       fetchVerificationDetail();
     }, [fetchVerificationDetail])
   );
+
+  // 키보드 이벤트 리스너
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => {
+        setIsKeyboardVisible(true);
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setIsKeyboardVisible(false);
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const handleBack = () => {
     navigation.goBack();
@@ -182,7 +207,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isKeyboardVisible && {
+            paddingBottom: keyboardHeight + verticalScale(80), // 키보드 높이 + 댓글 입력창 높이
+          }
+        ]}
         showsVerticalScrollIndicator={false}
       >
         {/* 사용자 정보 */}
@@ -247,7 +277,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           </View>
         )}
 
-        {/* 좋아요, 댓글, 저장 */}
+        {/* 좋아요, 댓글, 스크랩 */}
         <View style={styles.engagementSection}>
           <TouchableOpacity
             style={styles.engagementItem}
@@ -285,34 +315,43 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* 댓글 입력 필드 */}
-      <View style={styles.commentInputContainer}>
-        <TextField
-          variant="default"
-          placeholder="댓글을 입력하세요"
-          leftIcon={
-            <TouchableOpacity
-              onPress={() => setIsCommentLocked(!isCommentLocked)}
-              activeOpacity={0.7}
-            >
-              {isCommentLocked ? (
-                <LockIcon width={10} height={12} />
-              ) : (
-                <UnlockIcon width={10} height={12} />
-              )}
-            </TouchableOpacity>
-          }
-          onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-          rightIcon={
-            <View style={styles.sendButton}>
-              <SendIcon width={30} height={30} />
-            </View>
-          }
-          onRightIconPress={() => {
-            // TODO: 댓글 전송 로직
-          }}
-          containerStyle={styles.textFieldContainer}
-        />
-      </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        style={styles.keyboardAvoidingView}
+      >
+        <View style={[
+          styles.commentInputContainer,
+          isKeyboardVisible && styles.commentInputContainerKeyboard
+        ]}>
+          <TextField
+            variant="default"
+            placeholder="댓글을 입력하세요"
+            leftIcon={
+              <TouchableOpacity
+                onPress={() => setIsCommentLocked(!isCommentLocked)}
+                activeOpacity={0.7}
+              >
+                {isCommentLocked ? (
+                  <LockIcon width={10} height={12} />
+                ) : (
+                  <UnlockIcon width={10} height={12} />
+                )}
+              </TouchableOpacity>
+            }
+            onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+            rightIcon={
+              <View style={styles.sendButton}>
+                <SendIcon width={30} height={30} />
+              </View>
+            }
+            onRightIconPress={() => {
+              // TODO: 댓글 전송 로직
+            }}
+            containerStyle={styles.textFieldContainer}
+          />
+        </View>
+      </KeyboardAvoidingView>
 
       {/* 액션 시트 */}
       <Modal
@@ -463,16 +502,21 @@ const styles = StyleSheet.create({
   engagementCount: {
     marginLeft: scale(0),
   },
-  commentInputContainer: {
+  keyboardAvoidingView: {
     position: 'absolute',
-    bottom: verticalScale(0),
-    left: scale(0),
-    right: scale(0),
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  commentInputContainer: {
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.line,
+  },
+  commentInputContainerKeyboard: {
+    paddingBottom: verticalScale(0),
   },
   textFieldContainer: {
     marginTop: verticalScale(16),
