@@ -784,7 +784,6 @@ export const ChallengeProfileScreen: React.FC = () => {
                           verificationId: item.id,
                         });
                       }}
-                      showOverlay={!isParticipated}
                     />
                   )}
                 </>

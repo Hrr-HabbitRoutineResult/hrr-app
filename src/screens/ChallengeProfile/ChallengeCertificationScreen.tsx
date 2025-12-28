@@ -240,6 +240,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                         thumbnail: item.imageUrl
                           ? { uri: item.imageUrl }
                           : require('../../../assets/images/mock-challenge-profile.png'),
+                        isQuestion: item.isQuestion,
                       };
                     })}
                     onItemPress={(item) => {
@@ -441,6 +442,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                         thumbnail: item.imageUrl
                           ? { uri: item.imageUrl }
                           : require('../../../assets/images/mock-challenge-profile.png'),
+                        isQuestion: item.isQuestion,
                       };
                     })}
                     onItemPress={(item) => {
