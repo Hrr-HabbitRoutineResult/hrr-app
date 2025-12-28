@@ -11,6 +11,7 @@ export type RootStackParamList = {
   ChallengeCertificationCamera: { challengeId: number };
   ChallengeCertificationPost: { challengeId: number; imageUri: string };
   ChallengeCertificationDetail: { verification?: VerificationDetail; verificationId?: number };
+  ChallengeCertificationEdit: { verification: VerificationDetailResponse['result'] };
   PopularChallenge: undefined;
   Search: undefined;
   CreateChallengeQ1: undefined;

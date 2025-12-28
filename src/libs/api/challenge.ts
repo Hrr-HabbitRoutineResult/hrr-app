@@ -1047,3 +1047,83 @@ export const getMyVerifications = async (
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 인증 수정/삭제 관련
+ * ============================================
+ */
+
+/**
+ * 인증 수정 요청 바디
+ */
+export interface UpdateVerificationRequest {
+  title?: string;
+  content?: string;
+  textUrl?: string;
+  photoUrl?: string;
+}
+
+/**
+ * 인증 수정 응답
+ */
+export interface UpdateVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationDetailResponse['result'];
+}
+
+/**
+ * 인증 삭제 응답
+ */
+export interface DeleteVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: null;
+}
+
+/**
+ * 인증 수정
+ */
+export const updateVerification = async (
+  verificationId: number,
+  data: UpdateVerificationRequest
+): Promise<UpdateVerificationResponse['result']> => {
+  try {
+    const response = await apiClient.patch<UpdateVerificationResponse>(
+      `/api/v1/verifications/${verificationId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '게시글 수정에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 삭제
+ */
+export const deleteVerification = async (
+  verificationId: number
+): Promise<void> => {
+  try {
+    const response = await apiClient.delete<DeleteVerificationResponse>(
+      `/api/v1/verifications/${verificationId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '게시글 삭제에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};

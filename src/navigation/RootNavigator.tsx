@@ -17,6 +17,7 @@ import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/Challe
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
 import { ChallengeCertificationPostScreen } from '../screens/ChallengeProfile/ChallengeCertificationPostScreen';
 import { ChallengeCertificationDetailScreen } from '../screens/ChallengeProfile/ChallengeCertificationDetailScreen';
+import { ChallengeCertificationEditScreen } from '../screens/ChallengeProfile/ChallengeCertificationEditScreen';
 import PopularChallengeScreen from '../screens/PopularChallengeScreen';
 import { CreateChallengeQ1 } from '../screens/CreateChallenge/CreateChallengeQ1';
 import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2';
@@ -86,6 +87,7 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationPost" component={ChallengeCertificationPostScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationDetail" component={ChallengeCertificationDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationEdit" component={ChallengeCertificationEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />
