@@ -24,6 +24,10 @@ export const Text: React.FC<TextProps> = ({
     return (
         <RNText
             style={[
+                {
+                    includeFontPadding: false,
+                    textAlignVertical: 'center',
+                },
                 typography[variant],  // 선택한 variant의 타이포그래피 스타일 적용
                 { color },            // 색상 적용
                 style,                // 추가로 전달받은 스타일 적용

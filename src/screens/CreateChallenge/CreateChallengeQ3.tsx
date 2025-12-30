@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -79,8 +79,14 @@ export const CreateChallengeQ3 = () => {
   const handleDateSelect = (day: number) => {
     const newSelectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
 
-    // 오늘 이전 날짜 선택 불가
+    // 오늘 날짜 선택 시 알러트 표시
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    if (newSelectedDate.getTime() === startOfToday.getTime()) {
+      Alert.alert('알림', '챌린지 시작 날짜는 내일 이후여야 합니다.');
+      return;
+    }
+
+    // 오늘 이전 날짜 선택 불가
     if (newSelectedDate < startOfToday) {
       return;
     }
@@ -115,7 +121,8 @@ export const CreateChallengeQ3 = () => {
 
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const isPast = date < startOfToday;
+    // 오늘 포함 이전 날짜는 모두 선택 불가 (내일부터 선택 가능)
+    const isPast = date <= startOfToday;
 
     // 선택된 날짜 (시작일)
     const isSelected = selectedDate &&
@@ -158,9 +165,8 @@ export const CreateChallengeQ3 = () => {
       <TouchableOpacity
         key={`day-${day}`}
         style={styles.dayCell}
-        onPress={() => !isPast && handleDateSelect(day)}
-        activeOpacity={isPast ? 1 : 0.7}
-        disabled={isPast}
+        onPress={() => handleDateSelect(day)}
+        activeOpacity={0.7}
       >
         {/* 배경 막대들 */}
         {showLeftBar && <View style={styles.rangeBarLeft} />}

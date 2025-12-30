@@ -45,7 +45,7 @@ export const VerificationMethodSheet: React.FC<VerificationMethodSheetProps> = (
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} height={360}>
       <Text variant="header4" color={colors.text.primary} style={styles.title}>
         인증 수단을 선택해 주세요
       </Text>

@@ -59,6 +59,7 @@ export const typography = {
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(22),
   },
   // hrr/Sm size (Md)
   smMd: {

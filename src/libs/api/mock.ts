@@ -6,7 +6,7 @@ const createChallenge = (id: number, overrides: Partial<Challenge>): Challenge =
   category: '운동',
   thumbnail: `https://picsum.photos/seed/${id}/200/200`,
   progress: Math.random(),
-  todayEligible: Math.random() > 0.5,
+  verified: Math.random() > 0.5,
   participants: Math.floor(Math.random() * 1000),
   cadence: '매일',
   ...overrides,

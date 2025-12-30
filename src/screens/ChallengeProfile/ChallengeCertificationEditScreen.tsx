@@ -2,63 +2,35 @@ import React, { useState } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { createPhotoVerification } from '../../libs/api/challenge';
-import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
-import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
+import { updateVerification } from '../../libs/api/challenge';
 
-type ChallengeCertificationPostScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationPost'>;
-type ChallengeCertificationPostScreenNavigationProp = StackNavigationProp<
+type ChallengeCertificationEditScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationEdit'>;
+type ChallengeCertificationEditScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  'ChallengeCertificationPost'
+  'ChallengeCertificationEdit'
 >;
 
-export const ChallengeCertificationPostScreen: React.FC = () => {
-  const navigation = useNavigation<ChallengeCertificationPostScreenNavigationProp>();
-  const route = useRoute<ChallengeCertificationPostScreenRouteProp>();
-  const { challengeId, imageUri } = route.params;
+export const ChallengeCertificationEditScreen: React.FC = () => {
+  const navigation = useNavigation<ChallengeCertificationEditScreenNavigationProp>();
+  const route = useRoute<ChallengeCertificationEditScreenRouteProp>();
+  const { verification } = route.params;
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isQuestionEnabled, setIsQuestionEnabled] = useState(false);
+  const [title, setTitle] = useState(verification.title || '');
+  const [content, setContent] = useState(verification.content || '');
   const [imageError, setImageError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 이미지 URI 받은 그대로 사용
-  React.useEffect(() => {
-  }, [imageUri]);
 
   const handleBack = () => {
     navigation.goBack();
   };
 
-  // S3 URL에서 s3Key 추출
-  const extractS3Key = (s3Url: string): string | null => {
-    try {
-      // URL에서 도메인 부분 제거하고 경로만 추출
-      const urlParts = s3Url.split('.amazonaws.com/');
-      if (urlParts.length < 2) {
-        return null;
-      }
-
-      let key = urlParts[1];
-      // 끝에 슬래시가 있으면 제거
-      if (key.endsWith('/')) {
-        key = key.slice(0, -1);
-      }
-
-      return key;
-    } catch (error) {
-      return null;
-    }
-  };
-
-  const handlePost = async () => {
+  const handleComplete = async () => {
     if (!title.trim()) {
       Alert.alert('알림', '제목을 입력해주세요.');
       return;
@@ -69,50 +41,25 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
       return;
     }
 
-    // S3 URL에서 s3Key 추출
-    const s3Key = extractS3Key(imageUri);
-
-    if (!s3Key) {
-      Alert.alert('오류', '이미지 정보를 가져올 수 없습니다.');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
 
-      const result = await createPhotoVerification(challengeId, {
+      const result = await updateVerification(verification.verificationId, {
         title: title.trim(),
         content: content.trim(),
-        s3Key,
-        isQuestion: isQuestionEnabled,
       });
 
-      // 게시글 상세 화면으로 이동
-      navigation.navigate('ChallengeCertificationDetail', {
-        verification: result,
-      });
-
-      // 다음 프레임에서 카메라와 글 작성 화면을 스택에서 제거
-      // 인증글 상세 화면에서 뒤로가기 시 글 작성>사진 촬영으로 돌아가는 것 방지
-      setTimeout(() => {
-        const state = navigation.getState();
-        const routes = state.routes.filter(
-          (route: any) =>
-            route.name !== 'ChallengeCertificationCamera' &&
-            route.name !== 'ChallengeCertificationPost'
-        );
-
-        navigation.dispatch(
-          CommonActions.reset({
-            ...state,
-            routes,
-            index: routes.length - 1,
-          })
-        );
-      }, 100);
+      Alert.alert('성공', '게시글이 수정되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => {
+            // 상세 화면으로 돌아가기
+            navigation.goBack();
+          },
+        },
+      ]);
     } catch (error: any) {
-
-      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      const errorMessage = error.response?.data?.message || error.message || '게시글 수정에 실패했습니다.';
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -125,23 +72,28 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
     }
   };
 
+  // photoUrl 정리
+  const imageUri = verification.photoUrl?.endsWith('/')
+    ? verification.photoUrl.slice(0, -1)
+    : verification.photoUrl;
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         onBack={handleBack}
-        title="새 게시글"
+        title="수정"
         showDivider={true}
         rightContent={
           <TouchableOpacity
-            onPress={handlePost}
+            onPress={handleComplete}
             activeOpacity={0.7}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <ActivityIndicator size="small" color={colors.text.primary} />
+              <ActivityIndicator size="small" color={colors.icon.gray} />
             ) : (
-              <Text variant="smMd" color={colors.text.primary}>
-                게시
+              <Text variant="smMd" color={colors.icon.gray}>
+                완료
               </Text>
             )}
           </TouchableOpacity>
@@ -163,8 +115,6 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
                 resizeMode="cover"
                 onError={(error) => {
                   setImageError(true);
-                }}
-                onLoad={() => {
                 }}
               />
             ) : (
@@ -206,28 +156,6 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
           {content.length}/200
         </Text>
-
-        {/* 질문 등록 토글 */}
-        <View style={styles.questionSection}>
-          <View style={styles.questionInfo}>
-            <Text variant="md" color={colors.text.primary}>
-              질문 등록
-            </Text>
-            <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
-              챌린저들에게 빠른 답변을 받을 수 있어요
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
-            activeOpacity={0.7}
-          >
-            {isQuestionEnabled ? (
-              <ToggleOnIcon width={48} height={28} />
-            ) : (
-              <ToggleOffIcon width={48} height={28} />
-            )}
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -302,18 +230,5 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingRight: scale(4),
   },
-  questionSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: verticalScale(8),
-  },
-  questionInfo: {
-    flex: 1,
-    marginRight: scale(16),
-  },
-  questionDescription: {
-    marginTop: verticalScale(4),
-    lineHeight: verticalScale(18),
-  },
 });
+

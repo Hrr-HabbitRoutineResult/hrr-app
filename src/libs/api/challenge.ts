@@ -13,7 +13,7 @@ export interface Challenge {
   id: number;
   thumbnail: string;
   title: string;
-  todayEligible?: boolean;
+  verified?: boolean;
 }
 
 /**
@@ -242,9 +242,14 @@ export interface ChallengeJoinResponse {
  */
 export const joinChallenge = async (challengeId: number, password?: string): Promise<void> => {
   try {
+    // Request Body 구성
+    const requestBody = password === undefined
+      ? { password: null }  // Public: password를 null로 전송
+      : { password };
+
     const response = await apiClient.post<ChallengeJoinResponse>(
       `/api/v1/challenges/${challengeId}/join`,
-      { password: password || null }
+      requestBody
     );
 
     if (response.data.isSuccess) {
@@ -253,6 +258,16 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
 
     throw new Error(response.data.message || '챌린지 참가에 실패했습니다.');
   } catch (error: any) {
+    if (error.response) {
+      // 서버에서 응답을 받았지만 에러 상태 코드인 경우
+      if (error.response.data && error.response.data.message) {
+        // 에러 메시지가 있으면 더 의미있는 에러로 변경
+        const detailedError: any = new Error(error.response.data.message);
+        detailedError.response = error.response;
+        throw detailedError;
+      }
+    }
+
     throw error;
   }
 };
@@ -264,8 +279,7 @@ export const trackChallengeClick = async (challengeId: number): Promise<void> =>
   try {
     await apiClient.post(`/api/v1/challenges/${challengeId}/click`);
   } catch (error: any) {
-    // 클릭 트래킹 실패는 조용히 무시 (사용자 경험에 영향 없음)
-    console.warn('챌린지 클릭 트래킹 실패:', error);
+    // 클릭 트래킹 실패 시 무시
   }
 };
 
@@ -715,12 +729,15 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   anonymous: boolean;
+  adopted: boolean;
 }
 
 /**
  * 게시글 상세 조회 응답 - 댓글 목록
  */
 export interface CommentsData {
+  adoptedParent: Comment | null;
+  adoptedChildren: Comment[];
   comments: Comment[];
   currentPage: number;
   totalPages: number;
@@ -778,6 +795,10 @@ export interface VerificationDetailResponse {
     canEdit: boolean;
     canDelete: boolean;
     canSelectComment: boolean;
+    canWriteComment: boolean;
+    adoptedCommentId: number;
+    showResolvedBadge: boolean;
+    commentCount: number;
     user: VerificationUser;
     roundInfo: RoundInfo;
     comments: CommentsData;
@@ -807,6 +828,610 @@ export const getVerificationDetail = async (
     }
 
     throw new Error(response.data.message || '게시글을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 챌린지 라운드 및 인증 통계 관련
+ * ============================================
+ */
+
+/**
+ * 라운드 정보
+ */
+export interface RoundItem {
+  roundNumber: number;
+  isCurrentRound: boolean;
+}
+
+/**
+ * 라운드 목록 조회 응답
+ */
+export interface RoundsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: RoundItem[];
+}
+
+/**
+ * 챌린지 라운드 목록 조회
+ */
+export const getChallengeRounds = async (challengeId: number): Promise<RoundItem[]> => {
+  try {
+    const response = await apiClient.get<RoundsResponse>(
+      `/api/v1/challenges/${challengeId}/rounds`
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '라운드 정보를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 통계 정보
+ */
+export interface VerificationStat {
+  certifiedCount: number;
+  totalParticipantCount: number;
+  baseDate: string;
+}
+
+/**
+ * 인증 통계 조회 응답
+ */
+export interface VerificationStatResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationStat;
+}
+
+/**
+ * 챌린지 인증 통계 조회
+ */
+export const getVerificationStat = async (challengeId: number): Promise<VerificationStat> => {
+  try {
+    const response = await apiClient.get<VerificationStatResponse>(
+      `/api/v1/verifications/${challengeId}/stat`
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '인증 통계를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 피드 아이템
+ */
+export interface VerificationFeedItem {
+  verificationId: number;
+  type: 'TEXT' | 'CAMERA';
+  title: string;
+  content: string;
+  imageUrl: string;
+  hasLink: boolean;
+  isQuestion: boolean;
+  isResolved: boolean;
+  writerNickname: string;
+  writerProfileUrl: string;
+  writerId: number;
+  createdDate: string;
+}
+
+/**
+ * 인증 피드 조회 파라미터
+ */
+export interface GetVerificationFeedParams {
+  roundNumber: number;
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 인증 피드 조회 응답
+ */
+export interface VerificationFeedResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: VerificationFeedItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 챌린지 인증 피드 조회
+ */
+export const getVerificationFeed = async (
+  challengeId: number,
+  params: GetVerificationFeedParams
+): Promise<VerificationFeedResponse['result']> => {
+  try {
+    const response = await apiClient.get<VerificationFeedResponse>(
+      `/api/v1/verifications/${challengeId}/feed`,
+      {
+        params: {
+          roundNumber: params.roundNumber,
+          page: params.page || 1,
+          size: params.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '인증 피드를 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 내 인증 현황 조회 파라미터
+ */
+export interface GetMyVerificationsParams {
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 내 인증 현황 정보
+ */
+export interface MyVerificationInfo {
+  nickname: string;
+  totalVerificationCount: number;
+  warningCount: number;
+  currentRoundSequence: number;
+  verifications: {
+    content: VerificationFeedItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 내 인증 현황 조회 응답
+ */
+export interface MyVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: MyVerificationInfo;
+}
+
+/**
+ * 내 인증 현황 조회
+ */
+export const getMyVerifications = async (
+  challengeId: number,
+  params?: GetMyVerificationsParams
+): Promise<MyVerificationInfo> => {
+  try {
+    const response = await apiClient.get<MyVerificationResponse>(
+      `/api/v1/verifications/${challengeId}/me`,
+      {
+        params: {
+          page: params?.page || 1,
+          size: params?.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '내 인증 현황을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 인증 수정/삭제 관련
+ * ============================================
+ */
+
+/**
+ * 인증 수정 요청 바디
+ */
+export interface UpdateVerificationRequest {
+  title?: string;
+  content?: string;
+  textUrl?: string;
+  photoUrl?: string;
+}
+
+/**
+ * 인증 수정 응답
+ */
+export interface UpdateVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationDetailResponse['result'];
+}
+
+/**
+ * 인증 삭제 응답
+ */
+export interface DeleteVerificationResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: null;
+}
+
+/**
+ * 인증 수정
+ */
+export const updateVerification = async (
+  verificationId: number,
+  data: UpdateVerificationRequest
+): Promise<UpdateVerificationResponse['result']> => {
+  try {
+    const response = await apiClient.patch<UpdateVerificationResponse>(
+      `/api/v1/verifications/${verificationId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '게시글 수정에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증 삭제
+ */
+export const deleteVerification = async (
+  verificationId: number
+): Promise<void> => {
+  try {
+    const response = await apiClient.delete<DeleteVerificationResponse>(
+      `/api/v1/verifications/${verificationId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '게시글 삭제에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 댓글 관련
+ * ============================================
+ */
+
+/**
+ * 댓글 아이템
+ */
+export interface CommentItem {
+  commentId: number;
+  parentId: number;
+  verificationId: number;
+  userId: number;
+  userName: string;
+  userProfileUrl: string;
+  depth: number;
+  content: string;
+  likesCount: number;
+  createdAt: string;
+  updatedAt: string;
+  anonymous: boolean;
+  adopted: boolean;
+}
+
+/**
+ * 댓글 목록 조회 파라미터
+ */
+export interface GetCommentsParams {
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 댓글 목록 조회 응답
+ */
+export interface GetCommentsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    adoptedParent: CommentItem | null;
+    adoptedChildren: CommentItem[];
+    comments: CommentItem[];
+    currentPage: number;
+    totalPages: number;
+    totalParentElements: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 댓글 목록 조회
+ */
+export const getComments = async (
+  verificationId: number,
+  params?: GetCommentsParams
+): Promise<GetCommentsResponse['result']> => {
+  try {
+    const response = await apiClient.get<GetCommentsResponse>(
+      `/api/v1/comments/${verificationId}`,
+      {
+        params: {
+          page: params?.page || 1,
+          size: params?.size || 10,
+        },
+      }
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 작성 요청
+ */
+export interface CreateCommentRequest {
+  parentId?: number;
+  anonymous: boolean;
+  content: string;
+}
+
+/**
+ * 댓글 작성 응답
+ */
+export interface CreateCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: CommentItem;
+}
+
+/**
+ * 댓글 작성
+ */
+export const createComment = async (
+  verificationId: number,
+  data: CreateCommentRequest
+): Promise<CommentItem> => {
+  try {
+    const response = await apiClient.post<CreateCommentResponse>(
+      `/api/v1/comments/${verificationId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글 작성에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 수정 요청
+ */
+export interface UpdateCommentRequest {
+  content: string;
+}
+
+/**
+ * 댓글 수정 응답
+ */
+export interface UpdateCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: CommentItem;
+}
+
+/**
+ * 댓글 수정
+ */
+export const updateComment = async (
+  commentId: number,
+  data: UpdateCommentRequest
+): Promise<CommentItem> => {
+  try {
+    const response = await apiClient.patch<UpdateCommentResponse>(
+      `/api/v1/comments/${commentId}`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '댓글 수정에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 삭제 응답
+ */
+export interface DeleteCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: null;
+}
+
+/**
+ * 댓글 삭제
+ */
+export const deleteComment = async (commentId: number): Promise<void> => {
+  try {
+    const response = await apiClient.delete<DeleteCommentResponse>(
+      `/api/v1/comments/${commentId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '댓글 삭제에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 채택 응답
+ */
+export interface AdoptCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: string;
+}
+
+/**
+ * 댓글 채택
+ */
+export const adoptComment = async (
+  verificationId: number,
+  commentId: number
+): Promise<void> => {
+  const url = `/api/v1/verifications/${verificationId}/comments/${commentId}/adopt`;
+
+  try {
+    const response = await apiClient.post<AdoptCommentResponse>(url);
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '댓글 채택에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * ============================================
+ * 신고 관련
+ * ============================================
+ */
+
+/**
+ * 신고 사유 타입
+ */
+export type ReportReason =
+  | 'ABUSIVE_LANGUAGE'
+  | 'SEXUAL_OR_OBSCENE'
+  | 'SPAM_OR_SCAM'
+  | 'PERSONAL_INFO_REQUEST'
+  | 'ILLEGAL_CONTENT_SHARE'
+  | 'OTHER';
+
+/**
+ * 신고 요청
+ */
+export interface ReportRequest {
+  targetId: number;
+  reason: ReportReason;
+  description: string;
+}
+
+/**
+ * 신고 응답
+ */
+export interface ReportResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {};
+}
+
+/**
+ * 게시글 신고
+ */
+export const reportVerificationPost = async (
+  data: ReportRequest
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      '/api/v1/report/verification/post',
+      data
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '게시글 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 사용자 신고
+ */
+export const reportUser = async (
+  data: ReportRequest
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      '/api/v1/report/user',
+      data
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '사용자 신고에 실패했습니다.');
+    }
   } catch (error: any) {
     throw error;
   }

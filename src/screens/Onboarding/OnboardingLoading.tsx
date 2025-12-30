@@ -112,7 +112,6 @@ export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
         onComplete();
       } catch (error) {
         // 일단은 에러 발생 시에도 다음 화면으로 이동
-        console.error('추천 챌린지 조회 실패:', error);
         onSetRecommendedChallenges([]);
         onComplete();
       }

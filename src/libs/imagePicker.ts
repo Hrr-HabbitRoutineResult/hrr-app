@@ -1,4 +1,9 @@
 import {
+  PermissionsAndroid,
+  Platform,
+  Alert,
+} from 'react-native';
+import {
   launchCamera,
   launchImageLibrary,
   ImagePickerResponse,
@@ -15,11 +20,38 @@ const commonOptions: CameraOptions & ImageLibraryOptions = {
   includeBase64: false,
 };
 
+const requestCameraPermission = async () => {
+  if (Platform.OS === 'android') {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: '카메라 권한 요청',
+          message: '앱에서 사진을 촬영하려면 카메라 권한이 필요합니다.',
+          buttonNeutral: '나중에',
+          buttonNegative: '취소',
+          buttonPositive: '확인',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export const openCamera = async (): Promise<Asset | null> => {
   try {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) {
+      Alert.alert('권한 오류', '카메라 권한이 거부되었습니다.');
+      return null;
+    }
+
     const response: ImagePickerResponse = await launchCamera({
       ...commonOptions,
-      saveToPhotos: true, // 촬영한 사진을 갤러리에 저장
+      saveToPhotos: true,
     });
 
     if (response.didCancel) {
@@ -27,6 +59,11 @@ export const openCamera = async (): Promise<Asset | null> => {
     }
 
     if (response.errorCode) {
+      if (response.errorCode === 'camera_unavailable') {
+        Alert.alert('오류', '카메라를 사용할 수 없는 기기입니다.');
+      } else {
+        Alert.alert('오류', `카메라를 실행할 수 없습니다: ${response.errorMessage}`);
+      }
       return null;
     }
 
@@ -52,6 +89,7 @@ export const openGallery = async (): Promise<Asset | null> => {
     }
 
     if (response.errorCode) {
+      Alert.alert('오류', `갤러리를 실행할 수 없습니다: ${response.errorMessage}`);
       return null;
     }
 

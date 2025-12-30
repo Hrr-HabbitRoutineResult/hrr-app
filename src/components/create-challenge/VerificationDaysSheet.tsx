@@ -55,7 +55,7 @@ export const VerificationDaysSheet: React.FC<VerificationDaysSheetProps> = ({
   const isAllSelected = tempSelectedDays.length === DAYS.length;
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} height={300}>
       <Text variant="header4" color={colors.text.primary} style={styles.title}>
         인증 요일을 선택해 주세요
       </Text>
@@ -90,9 +90,9 @@ export const VerificationDaysSheet: React.FC<VerificationDaysSheetProps> = ({
         activeOpacity={0.7}
       >
         {isAllSelected ? (
-          <CheckedIcon width={20} height={20} />
+          <CheckedIcon width={10} height={8} />
         ) : (
-          <UncheckedIcon width={20} height={20} />
+          <UncheckedIcon width={10} height={8} />
         )}
         <Text variant="smReg" color={colors.text.tertiary} style={styles.selectAllText}>
           전체 선택

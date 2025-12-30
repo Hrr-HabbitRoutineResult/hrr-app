@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
@@ -9,10 +9,13 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import RNBlobUtil from 'react-native-blob-util';
 import { openCamera, openGallery } from '../../libs/imagePicker';
 import { RootStackParamList } from '../../navigation/types';
 import { Text } from '../../components/common/Text';
@@ -25,9 +28,9 @@ import { getPresignedUrl } from '../../libs/api/challenge';
 import CameraIcon from '../../../assets/icons/challenge-create/camera.svg';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-ic-grey.svg';
-import { VerificationMethodSheet } from '../../components/CreateChallenge/VerificationMethodSheet';
-import { VerificationDaysSheet } from '../../components/CreateChallenge/VerificationDaysSheet';
-import { TimePickerSheet } from '../../components/CreateChallenge/TimePickerSheet';
+import { VerificationMethodSheet } from '../../components/create-challenge/VerificationMethodSheet';
+import { VerificationDaysSheet } from '../../components/create-challenge/VerificationDaysSheet';
+import { TimePickerSheet } from '../../components/create-challenge/TimePickerSheet';
 
 type CreateChallengeQ2NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -47,6 +50,37 @@ export const CreateChallengeQ2 = () => {
   const [challengeRules, setChallengeRules] = useState(data.challengeRules);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(data.thumbnailImageUri);
   const [isUploading, setIsUploading] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const scrollRef = useRef<ScrollView>(null);
+  const rulesInputY = useRef<number>(0);
+
+  // 키보드 높이를 감지하여 ScrollView 하단에 동적 패딩 추가
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardHeight(0)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  // 챌린지 규칙 입력창 포커스 시 화면 상단으로 자동 스크롤
+  const handleRulesFocus = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollTo({
+        y: rulesInputY.current - verticalScale(40),
+        animated: true,
+      });
+    }, 300);
+  };
 
   // 바텀시트 상태들
   const [showMethodSheet, setShowMethodSheet] = useState(false);
@@ -89,7 +123,7 @@ export const CreateChallengeQ2 = () => {
     }
   };
 
-  // MIME type 결정 헬퍼 함수
+  // MIME type 결정
   const getMimeType = (extension: string): string => {
     const mimeTypes: Record<string, string> = {
       jpg: 'image/jpeg',
@@ -101,44 +135,70 @@ export const CreateChallengeQ2 = () => {
     return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
   };
 
+  /**
+   * S3 presigned PUT 업로드
+   * - Android: fetch(file://)가 실패하므로 react-native-blob-util 사용
+   * - iOS: 기존 fetch 방식
+   */
   const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
     try {
       setIsUploading(true);
 
-      // 파일 확장자 추출
-      const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `image.${fileExtension}`;
+      // Android: URI에 file:// prefix가 없을 수 있어 보정
+      let normalizedUri = imageUri;
+      if (
+        Platform.OS === 'android' &&
+        !normalizedUri.startsWith('file://') &&
+        !normalizedUri.startsWith('content://')
+      ) {
+        normalizedUri = `file://${normalizedUri}`;
+      }
 
-      // 1. Presigned URL 요청
+      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `challenge-profile-${Date.now()}.${fileExtension}`;
+      const mimeType = getMimeType(fileExtension);
+
       const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
 
-      // 2. 이미지를 Blob으로 변환
-      const response = await fetch(imageUri);
-      if (!response.ok) {
-        throw new Error('이미지 로드 실패');
-      }
-      const blob = await response.blob();
-
-      // 3. S3 업로드 헤더 구성
-      const uploadHeaders: HeadersInit = {
-        'Content-Type': blob.type || getMimeType(fileExtension),
+      const uploadHeaders: Record<string, string> = {
+        'Content-Type': mimeType,
       };
 
-      // x-amz-acl이 서명에 포함된 경우 헤더 추가
-      const signedHeaders = new URL(presignedUrl).searchParams.get('X-Amz-SignedHeaders');
-      if (signedHeaders?.includes('x-amz-acl')) {
-        uploadHeaders['x-amz-acl'] = 'public-read';
+      // x-amz-acl 헤더 (서명에 포함되어 있으면 추가)
+      try {
+        const urlParts = presignedUrl.split('?');
+        if (urlParts.length > 1) {
+          const params = urlParts[1];
+          if (params.includes('X-Amz-SignedHeaders') && params.includes('x-amz-acl')) {
+            uploadHeaders['x-amz-acl'] = 'public-read';
+          }
+        }
+      } catch (e) {
+        // 파싱 실패 시에도 업로드 가능하므로 무시
       }
 
-      // 4. S3에 업로드
-      const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: blob,
-        headers: uploadHeaders,
-      });
+      const localPath = normalizedUri.startsWith('file://')
+        ? normalizedUri.replace(/^file:\/\//, '')
+        : normalizedUri;
 
-      if (!uploadResponse.ok) {
-        throw new Error(`업로드 실패 (${uploadResponse.status})`);
+      if (Platform.OS === 'android') {
+        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
+        const status = resp.info().status;
+        if (status !== 200 && status !== 204) {
+          throw new Error(`업로드 실패 (${status})`);
+        }
+      } else {
+        const response = await fetch(normalizedUri);
+        if (!response.ok) throw new Error('이미지 로드 실패');
+        const blob = await response.blob();
+        const uploadResponse = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: blob,
+          headers: uploadHeaders,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`업로드 실패 (${uploadResponse.status})`);
+        }
       }
 
       return s3Key;
@@ -236,9 +296,14 @@ export const CreateChallengeQ2 = () => {
       <ProgressBar currentStep={2} totalSteps={4} />
 
       <ScrollView
+        ref={scrollRef}
         style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: keyboardHeight > 0 ? keyboardHeight : verticalScale(40) }
+        ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* 카메라 이미지 박스 */}
         <TouchableOpacity
@@ -298,7 +363,7 @@ export const CreateChallengeQ2 = () => {
         ]}>
           {/* 인증수단 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[styles.selectionRow, styles.selectionRowDivider]}
             onPress={() => setShowMethodSheet(true)}
             activeOpacity={0.7}
           >
@@ -316,11 +381,9 @@ export const CreateChallengeQ2 = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
-
           {/* 인증요일 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[styles.selectionRow, styles.selectionRowDivider]}
             onPress={() => setShowDaysSheet(true)}
             activeOpacity={0.7}
           >
@@ -338,11 +401,12 @@ export const CreateChallengeQ2 = () => {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
-
           {/* 인증시간대 */}
           <TouchableOpacity
-            style={styles.selectionRow}
+            style={[
+              styles.selectionRow,
+              !isTimeExpanded && styles.selectionRowDivider,
+            ]}
             onPress={() => {
               if (startTime && endTime) {
                 setIsTimeExpanded(!isTimeExpanded);
@@ -391,10 +455,9 @@ export const CreateChallengeQ2 = () => {
                   미설정 시 24시간으로 자동 설정돼요
                 </Text>
               </View>
+              <View style={styles.divider} />
             </>
           )}
-
-          <View style={styles.divider} />
 
           {/* 정원 */}
           <View style={styles.selectionRow}>
@@ -430,7 +493,12 @@ export const CreateChallengeQ2 = () => {
         </View>
 
         {/* 챌린지 규칙 입력 박스 */}
-        <View style={styles.rulesContainer}>
+        <View
+          style={styles.rulesContainer}
+          onLayout={(e) => {
+            rulesInputY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <TextInput
             style={styles.rulesInput}
             placeholder="챌린지 규칙을 설명해 주세요 (진행 방식 등)"
@@ -445,6 +513,7 @@ export const CreateChallengeQ2 = () => {
             multiline
             textAlignVertical="top"
             maxLength={200}
+            onFocus={handleRulesFocus}
           />
         </View>
 
@@ -597,11 +666,15 @@ const styles = StyleSheet.create({
     height: verticalScale(320),
   },
   selectionRow: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: verticalScale(54),
     paddingHorizontal: scale(16),
+  },
+  selectionRowDivider: {
+    borderBottomWidth: verticalScale(1),
+    borderBottomColor: colors.line,
   },
   selectionLeft: {
     flexDirection: 'row',
@@ -622,21 +695,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: scale(12),
     paddingHorizontal: scale(16),
-    paddingTop: verticalScale(12),
-    paddingBottom: verticalScale(16),
+    paddingBottom: verticalScale(18),
   },
   timeBox: {
     flex: 1,
     height: verticalScale(46),
     borderRadius: scale(6),
-    borderWidth: scale(1),
-    borderColor: colors.line,
+    backgroundColor: colors.line,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: scale(20),
   },
   timeNoticeContainer: {
     paddingHorizontal: scale(16),
-    paddingBottom: verticalScale(4),
+    paddingBottom: verticalScale(18),
   },
   timeNotice: {
     lineHeight: verticalScale(12),

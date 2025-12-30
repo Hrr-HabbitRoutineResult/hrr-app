@@ -56,7 +56,7 @@ const HomeScreen = () => {
           id: item.challengeId,
           thumbnail: item.image,
           title: item.title,
-          todayEligible: item.currentRound > 0, // currentRound가 0보다 크면 오늘 인증 가능
+          verified: item.verified,
         }));
 
         setOngoingChallenges(transformedChallenges);

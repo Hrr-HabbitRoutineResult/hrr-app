@@ -74,7 +74,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
           />
           <View style={styles.overlay}>
             <View style={styles.challengeInfo}>
-              {item.todayEligible ? (
+              {item.verified ? (
                 <CheckboxChecked width={12} height={10} />
               ) : (
                 <CheckboxUnchecked width={12} height={10} />
@@ -91,14 +91,18 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   if (challenges.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <View style={styles.emptyCircle}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('ChallengeList', { category: 'all' })}
+          style={styles.emptyCircle}
+        >
           <View style={styles.contentWrapper}>
             <PlusIcon width={20} height={20} />
             <Text style={styles.emptyText}>
               새로운 챌린지에{'\n'}가입해 보세요
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }

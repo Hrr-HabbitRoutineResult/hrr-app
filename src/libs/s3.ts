@@ -58,7 +58,6 @@ export const extractS3Key = (s3Url: string): string | null => {
     }
     return s3Url.substring(pathStart + 5); // '.com/' 다음부터 반환
   } catch (error) {
-    console.error('S3 Key 추출 실패:', error);
     return null;
   }
 };
