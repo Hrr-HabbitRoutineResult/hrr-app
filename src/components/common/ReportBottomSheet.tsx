@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(14.5),
   },
   reasonText: {
+    flex: 1,
     marginLeft: scale(13),
   },
   inputContainer: {
