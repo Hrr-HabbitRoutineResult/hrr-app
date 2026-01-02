@@ -63,7 +63,7 @@ const mockParticipatingChallenges: ParticipatingChallengeItem[] = [
 ];
 
 const CARD_MARGIN = spacing.md; // Define margin for cards
-const CARD_PADDING = spacing.sm; // Define padding for cards inside container
+const CARD_PADDING = spacing.xs; // Define padding for cards inside container
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_WIDTH = (screenWidth - (CARD_MARGIN * 2) - CARD_PADDING) / 2; // Calculate width for 2 columns with spacing
 
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    marginBottom: spacing.xs,
   },
   card: {
     width: CARD_WIDTH,

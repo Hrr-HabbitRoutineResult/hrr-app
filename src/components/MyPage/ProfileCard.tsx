@@ -120,7 +120,7 @@ const ProfileCard = ({
         onPressFollowing={onPressFollowing}
       />
 
-      <BadgeRow badges={badges} />
+      {/* <BadgeRow badges={badges} /> */}
 
       {renderButtons()}
     </View>
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.white,
     padding: spacing.md,
-    marginHorizontal: spacing.md,
+    marginHorizontal: spacing.xs,
   },
 
   buttonRow: {

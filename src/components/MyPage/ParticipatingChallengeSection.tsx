@@ -77,7 +77,7 @@ const ParticipatingChallengeSection = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={{ width: spacing.sm }} />}
+        ItemSeparatorComponent={() => <View style={{ width: spacing.xs }} />}
       />
     </View>
   );
@@ -85,16 +85,17 @@ const ParticipatingChallengeSection = ({
 
 export default ParticipatingChallengeSection;
 
-const CARD_W = 170;
-const CARD_H = 110;
+const CARD_W = 171;
+const CARD_H = 148;
 
 const styles = StyleSheet.create({
   container: {
     marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
   },
 
   listContent: {
-    paddingHorizontal: spacing.md,
+    // paddingHorizontal is now handled by the main container
   },
 
   card: {

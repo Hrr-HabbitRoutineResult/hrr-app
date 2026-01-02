@@ -16,7 +16,7 @@ import { TabBar, TabItem } from '../components/common/TabBar';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import ParticipatingChallengeSection, { ParticipatingChallengeItem } from '../components/MyPage/ParticipatingChallengeSection';
 import ViewModeHeader from '../components/MyPage/ViewModeHeader';
-import PhotoCertificationGrid from '../components/MyPage/PhotoCertificationGrid'; // Added this line
+import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -37,11 +37,13 @@ const MyScreen = () => {
     isChallenger: true,
   };
 
+  /*
   const mockBadges = [
     { uri: 'https://i.pravatar.cc/40?img=1' },
     { uri: 'https://i.pravatar.cc/40?img=2' },
     { uri: 'https://i.pravatar.cc/40?img=3' },
   ];
+  */
 
   const mockChallengeItems: TextCertificationItem[] = [
     {
@@ -108,7 +110,7 @@ const MyScreen = () => {
             onPressTitle={() => navigation.navigate('CertificationHistory')}
           />
           {certificationViewMode === 'grid' ? (
-            <PhotoCertificationGrid items={mockChallengeItems} />
+            <PhotoCertificationGrid items={mockChallengeItems} showOverlay={false} />
           ) : (
             <TextCertificationList items={mockChallengeItems} />
           )}
@@ -116,12 +118,12 @@ const MyScreen = () => {
       );
     }
 
-    return (
-      <View style={styles.tabContentCentered}>
-        <Text style={styles.tabContentText}>뱃지 내용이 여기에 표시됩니다.</Text>
-        {/* 실제 뱃지 리스트 컴포넌트 추가 예정 */}
-      </View>
-    );
+    // return (
+    //   <View style={styles.tabContentCentered}>
+    //     <Text style={styles.tabContentText}>뱃지 내용이 여기에 표시됩니다.</Text>
+    //     {/* 실제 뱃지 리스트 컴포넌트 추가 예정 */}
+    //   </View>
+    // );
   };
 
   return (
@@ -130,9 +132,7 @@ const MyScreen = () => {
         title="마이"
         rightContent={
           <TouchableOpacity
-            onPress={() => {
-              // TODO: 햄버거 버튼 클릭 시 동작(예: 메뉴 열기)
-            }}
+            onPress={() => navigation.navigate('Settings')}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.iconButton}
           >
@@ -144,19 +144,19 @@ const MyScreen = () => {
       <View style={styles.container}>
         <ProfileCard 
           user={mockUserProfile} 
-          badges={mockBadges} 
+          badges={[]} 
           variant="me" 
           onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower' })}
           onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following' })}
         />
 
-        <TabBar
+        {/* <TabBar
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           scrollable={false}
           horizontalPadding={20}
-        />
+        /> */}
 
         {renderTabContent()}
       </View>

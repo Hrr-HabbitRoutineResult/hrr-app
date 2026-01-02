@@ -5,7 +5,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import SubpageHeader from '../components/common/SubpageHeader';
 import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
-import PhotoCertificationGrid from '../components/MyPage/PhotoCertificationGrid';
+import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { colors } from '../design/tokens';
 
@@ -71,7 +71,7 @@ const CertificationHistoryScreen = () => {
         onViewModeChange={(mode) => setCertificationViewMode(mode)}
       />
       {certificationViewMode === 'grid' ? (
-        <PhotoCertificationGrid items={mockChallengeItems} />
+        <PhotoCertificationGrid items={mockChallengeItems} showOverlay={false} />
       ) : (
         <TextCertificationList items={mockChallengeItems} />
       )}

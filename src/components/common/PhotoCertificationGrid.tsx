@@ -34,9 +34,11 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
           activeOpacity={0.8}
         >
           <Image source={item.thumbnail} style={styles.gridImage} />
-          <View style={styles.questionMarkContainer}>
-            <QuestionMarkCircleIcon width={24} height={24} />
-          </View>
+          {showOverlay && (
+            <View style={styles.questionMarkContainer}>
+              <QuestionMarkCircleIcon width={24} height={24} />
+            </View>
+          )}
         </TouchableOpacity>
       ))}
     </View>

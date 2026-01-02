@@ -19,6 +19,7 @@ export type RootStackParamList = {
   ParticipatingChallenge: undefined;
   CertificationHistory: undefined;
   FollowerList: { initialTab: 'follower' | 'following' };
+  Settings: undefined;
 };
 
 export type HomeTabParamList = {
