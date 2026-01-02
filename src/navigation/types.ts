@@ -23,6 +23,7 @@ export type RootStackParamList = {
   CertificationHistory: undefined;
   FollowerList: { initialTab: 'follower' | 'following' };
   Settings: undefined;
+  AccountSettings: undefined;
 };
 
 export type HomeTabParamList = {

@@ -29,6 +29,7 @@ import ParticipatingChallengeScreen from '../screens/ParticipatingChallengeScree
 import CertificationHistoryScreen from '../screens/CertificationHistoryScreen';
 import FollowerListScreen from '../screens/FollowerListScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -103,6 +104,7 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="CertificationHistory" component={CertificationHistoryScreen} options={{ headerShown: false }} />
         <Stack.Screen name="FollowerList" component={FollowerListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>

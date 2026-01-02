@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   sectionSeparator: {
-    height: spacing.md,
+    height: spacing.xxs,
     backgroundColor: colors.background,
   },
   tabContentText: {

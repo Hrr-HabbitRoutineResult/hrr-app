@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 import { View, Button as RNButton, Text as RNText } from 'react-native'; // Renamed Button to RNButton to avoid conflict
 import { action } from '@storybook/addon-actions';
-import { TimePickerSheet } from '../../CreateChallenge/TimePickerSheet';
+import { TimePickerSheet } from '../../create-challenge/TimePickerSheet';
 
 const meta: Meta<typeof TimePickerSheet> = {
   title: 'Components/CreateChallenge/TimePickerSheet',

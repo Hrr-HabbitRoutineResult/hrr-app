@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 import { View, Button as RNButton, Text as RNText } from 'react-native'; // Renamed Button to RNButton to avoid conflict
 import { action } from '@storybook/addon-actions';
-import { VerificationDaysSheet } from '../../CreateChallenge/VerificationDaysSheet';
+import { VerificationDaysSheet } from '../../create-challenge/VerificationDaysSheet';
 
 const meta: Meta<typeof VerificationDaysSheet> = {
   title: 'Components/CreateChallenge/VerificationDaysSheet',

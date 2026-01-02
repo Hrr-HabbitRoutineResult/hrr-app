@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 import { View, Button as RNButton, Text as RNText } from 'react-native'; // Renamed Button to RNButton to avoid conflict
 import { action } from '@storybook/addon-actions';
-import { VerificationMethodSheet } from '../../CreateChallenge/VerificationMethodSheet';
+import { VerificationMethodSheet } from '../../create-challenge/VerificationMethodSheet';
 
 const meta: Meta<typeof VerificationMethodSheet> = {
   title: 'Components/CreateChallenge/VerificationMethodSheet',

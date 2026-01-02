@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 import { View, Button as RNButton } from 'react-native'; // Renamed Button to RNButton to avoid conflict
 import { action } from '@storybook/addon-actions';
-import { MaxParticipantsSheet } from '../../CreateChallenge/MaxParticipantsSheet';
+import { MaxParticipantsSheet } from '../../create-challenge/MaxParticipantsSheet';
 
 const meta: Meta<typeof MaxParticipantsSheet> = {
   title: 'Components/CreateChallenge/MaxParticipantsSheet',

@@ -54,8 +54,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    ...typography.body1,
-    fontSize: 16,
+    ...typography.header4, // Changed from body1 to header4
+    // fontSize: 16, // Redundant
     color: colors.text.primary,
     flex: 1,
     textAlign: 'center',

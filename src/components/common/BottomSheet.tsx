@@ -16,6 +16,7 @@ interface BottomSheetProps {
   children: React.ReactNode;
   height?: number;
   scrollEnabled?: boolean;
+  footer?: React.ReactNode; // New prop for fixed footer content
 }
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -27,6 +28,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   height,
   scrollEnabled = true,
+  footer, // Destructure new prop
 }) => {
   const sheetHeight = height ? verticalScale(height) : DEFAULT_SHEET_HEIGHT;
 
@@ -60,6 +62,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               {children}
             </View>
           )}
+
+          {footer && <View>{footer}</View>} // Render footer if provided
         </View>
       </View>
     </Modal>
@@ -98,7 +102,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(32),
+    paddingTop: verticalScale(24), // Reduced from 32
     paddingBottom: verticalScale(40),
   },
 });
