@@ -225,8 +225,6 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
             )}
           </View>
 
-          <View style={styles.divider} />
-
           <View style={styles.footer}>
             <Button
               variant="black"
