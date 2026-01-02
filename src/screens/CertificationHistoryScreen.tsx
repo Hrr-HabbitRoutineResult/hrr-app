@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -7,7 +7,7 @@ import { Header } from '../components/common/Header';
 import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
-import { colors } from '../design/tokens';
+import { colors, spacing, typography } from '../design/tokens';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 
@@ -45,7 +45,11 @@ const CertificationHistoryScreen = () => {
         initialMode={certificationViewMode}
         onViewModeChange={(mode) => setCertificationViewMode(mode)}
       />
-      {certificationViewMode === 'grid' ? (
+      {certificationItems.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>인증 기록이 없습니다</Text>
+        </View>
+      ) : certificationViewMode === 'grid' ? (
         <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
       ) : (
         <TextCertificationList items={certificationItems} />
@@ -58,6 +62,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    ...typography.md,
+    color: colors.text.secondary,
   },
 });
 

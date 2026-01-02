@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, typography, spacing } from '../design/tokens'; // Ensure spacing is imported here
+import { colors, typography, spacing } from '../design/tokens';
 
 import SectionHeader from '../components/common/SectionHeader';
 import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
@@ -27,14 +27,17 @@ const MyScreen = () => {
     fetchMyOngoingChallenges,
     myVerificationHistory,
     fetchMyVerificationHistory,
+    userInfo,
+    fetchUserInfo,
   } = useUserStore();
   const [activeTab, setActiveTab] = useState<'challenge' | 'badge'>('challenge');
-  const [certificationViewMode, setCertificationViewMode] = useState('grid'); // Added this line
+  const [certificationViewMode, setCertificationViewMode] = useState('grid');
 
   useEffect(() => {
     fetchMyOngoingChallenges();
     fetchMyVerificationHistory();
-  }, [fetchMyOngoingChallenges, fetchMyVerificationHistory]);
+    fetchUserInfo();
+  }, [fetchMyOngoingChallenges, fetchMyVerificationHistory, fetchUserInfo]);
 
   const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => {
     return myOngoingChallenges.map((item) => ({
@@ -52,30 +55,33 @@ const MyScreen = () => {
       title: `[${item.challengeTitle}] ${item.title}`,
       description: item.content || '',
       date: format.date(item.verifiedAt),
-      thumbnail: { uri: item.photoUrl }, // PhotoCertificationGrid uses thumbnail directly
+      thumbnail: { uri: item.photoUrl },
     }));
   }, [myVerificationHistory]);
+
+  const userProfile = useMemo(() => {
+    if (!userInfo) {
+      return {
+        nickname: nickname || '게스트',
+        avatarUrl: '',
+        followerCount: 0,
+        followingCount: 0,
+        isChallenger: false,
+      };
+    }
+    return {
+      nickname: userInfo.nickname,
+      avatarUrl: userInfo.profileImage,
+      followerCount: userInfo.followerCount,
+      followingCount: userInfo.followingCount,
+      isChallenger: userInfo.level !== 'BRONZE',
+    };
+  }, [userInfo, nickname]);
 
   const tabs: TabItem[] = [
     { key: 'challenge', label: '챌린지' },
     { key: 'badge', label: '뱃지' },
   ];
-
-  const mockUserProfile = {
-    nickname: nickname || '게스트',
-    avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-    followerCount: 123,
-    followingCount: 45,
-    isChallenger: true,
-  };
-
-  /*
-  const mockBadges = [
-    { uri: 'https://i.pravatar.cc/40?img=1' },
-    { uri: 'https://i.pravatar.cc/40?img=2' },
-    { uri: 'https://i.pravatar.cc/40?img=3' },
-  ];
-  */
 
   const renderTabContent = () => {
     if (activeTab === 'challenge') {
@@ -87,14 +93,17 @@ const MyScreen = () => {
             onPressItem={(item) => console.log('Participating Challenge Item Pressed:', item.title)}
             onPressEmpty={() => navigation.navigate('ChallengeList')}
           />
-          <View style={styles.sectionSeparator} />
           <ViewModeHeader
             title="인증 기록"
             initialMode={certificationViewMode}
             onViewModeChange={(mode) => setCertificationViewMode(mode)}
             onPressTitle={() => navigation.navigate('CertificationHistory')}
           />
-          {certificationViewMode === 'grid' ? (
+          {certificationItems.length === 0 ? (
+            <View style={styles.emptyCertificationContainer}>
+              <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+            </View>
+          ) : certificationViewMode === 'grid' ? (
             <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
           ) : (
             <TextCertificationList items={certificationItems} />
@@ -102,13 +111,8 @@ const MyScreen = () => {
         </View>
       );
     }
-
-    // return (
-    //   <View style={styles.tabContentCentered}>
-    //     <Text style={styles.tabContentText}>뱃지 내용이 여기에 표시됩니다.</Text>
-    //     {/* 실제 뱃지 리스트 컴포넌트 추가 예정 */}
-    //   </View>
-    // );
+    // Badge tab content is currently disabled
+    return null;
   };
 
   return (
@@ -121,30 +125,31 @@ const MyScreen = () => {
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.iconButton}
           >
-            <SettingIcon/>
+            <SettingIcon />
           </TouchableOpacity>
         }
       />
-
-      <View style={styles.container}>
+      <ScrollView style={styles.container}>
         <ProfileCard
-          user={mockUserProfile}
+          user={userProfile}
           badges={[]}
           variant="me"
           onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower' })}
           onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following' })}
         />
 
-        {/* <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          scrollable={false}
-          horizontalPadding={20}
-        /> */}
+        {false && (
+          <TabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            scrollable={false}
+            horizontalPadding={20}
+          />
+        )}
 
         {renderTabContent()}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -185,5 +190,10 @@ const styles = StyleSheet.create({
   tabContentText: {
     ...typography.md,
     color: colors.text.secondary,
+  },
+  emptyCertificationContainer: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -165,3 +165,84 @@ export const getVerificationHistory = async (page: number = 0, size: number = 20
     throw error;
   }
 };
+
+/**
+ * 팔로워/팔로잉 아이템
+ */
+export interface FollowItem {
+  id: number;
+  nickname: string;
+  level: string;
+  profilePhoto: string;
+  isFollowing: boolean;
+}
+
+/**
+ * 팔로워/팔로잉 목록 응답
+ */
+export interface FollowListResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: FollowItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 내 팔로워 목록 조회
+ */
+export const getFollowers = async (page: number = 0, size: number = 20): Promise<FollowItem[]> => {
+  try {
+    const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followers', { params: { page, size } });
+    if (response.data.isSuccess) {
+      return response.data.result.content;
+    }
+    throw new Error(response.data.message || '팔로워 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 내 팔로잉 목록 조회
+ */
+export const getFollowings = async (page: number = 0, size: number = 20): Promise<FollowItem[]> => {
+  try {
+    const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followings', { params: { page, size } });
+    if (response.data.isSuccess) {
+      return response.data.result.content;
+    }
+    throw new Error(response.data.message || '팔로잉 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 사용자 팔로우
+ */
+export const followUser = async (userId: number): Promise<void> => {
+  try {
+    await apiClient.post(`/api/v1/user/${userId}/follow`);
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 사용자 언팔로우
+ */
+export const unfollowUser = async (userId: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/api/v1/follow/${userId}`);
+  } catch (error: any) {
+    throw error;
+  }
+};

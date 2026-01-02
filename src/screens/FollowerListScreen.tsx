@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, FlatList, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -7,6 +7,7 @@ import { Header } from '../components/common/Header';
 import { TabBar, TabItem } from '../components/common/TabBar';
 import PersonListItem from '../components/common/PersonListItem';
 import { colors } from '../design/tokens';
+import { useUserStore } from '../store/userSlice';
 
 type FollowerListScreenRouteProp = RouteProp<RootStackParamList, 'FollowerList'>;
 
@@ -16,22 +17,40 @@ const FollowerListScreen = () => {
     const initialTab = route.params?.initialTab || 'follower';
 
     const [activeTab, setActiveTab] = useState(initialTab);
+    const {
+      followers,
+      followings,
+      fetchFollowers,
+      fetchFollowings,
+      followUser,
+      unfollowUser,
+    } = useUserStore();
+
+    useEffect(() => {
+      // Fetch both lists on mount
+      fetchFollowers();
+      fetchFollowings();
+    }, [fetchFollowers, fetchFollowings]);
+
+    const handleFollowToggle = useCallback(async (userId: number, isFollowing: boolean) => {
+      try {
+        if (isFollowing) {
+          await unfollowUser(userId);
+        } else {
+          await followUser(userId);
+        }
+        // The store action will automatically re-fetch the lists
+      } catch (error) {
+        Alert.alert('오류', '작업에 실패했습니다.');
+      }
+    }, [unfollowUser, followUser]);
 
     const tabs: TabItem[] = [
         { key: 'follower', label: '팔로워' },
         { key: 'following', label: '팔로잉' },
     ];
 
-    const followers = [
-        { id: '1', nickname: '팔로워1', avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d', isFollowing: true, tier: '브론즈' },
-        { id: '2', nickname: '팔로워2', avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e', isFollowing: false, tier: '실버' },
-    ];
-
-    const following = [
-        { id: '3', nickname: '팔로잉1', avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704f', isFollowing: true, tier: '골드' },
-    ];
-
-    const data = activeTab === 'follower' ? followers : following;
+    const data = activeTab === 'follower' ? followers : followings;
 
     return (
         <View style={styles.container}>
@@ -39,8 +58,16 @@ const FollowerListScreen = () => {
             <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
             <FlatList
                 data={data}
-                renderItem={({ item }) => <PersonListItem {...item} />}
-                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <PersonListItem
+                    avatarUrl={item.profilePhoto}
+                    nickname={item.nickname}
+                    tier={item.level}
+                    isFollowing={item.isFollowing}
+                    onPressFollow={() => handleFollowToggle(item.id, item.isFollowing)}
+                  />
+                )}
+                keyExtractor={(item) => String(item.id)}
                 contentContainerStyle={styles.listContent}
             />
         </View>
