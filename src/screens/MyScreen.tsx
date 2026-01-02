@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../design/tokens'; // Ensure spacing is imported here
@@ -17,12 +17,44 @@ import { TextCertificationList, TextCertificationItem } from '../components/comm
 import ParticipatingChallengeSection, { ParticipatingChallengeItem } from '../components/MyPage/ParticipatingChallengeSection';
 import ViewModeHeader from '../components/MyPage/ViewModeHeader';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
+import { format } from '../libs/format';
 
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const nickname = useUserStore((state) => state.nickname);
+  const {
+    nickname,
+    myOngoingChallenges,
+    fetchMyOngoingChallenges,
+    myVerificationHistory,
+    fetchMyVerificationHistory,
+  } = useUserStore();
   const [activeTab, setActiveTab] = useState<'challenge' | 'badge'>('challenge');
   const [certificationViewMode, setCertificationViewMode] = useState('grid'); // Added this line
+
+  useEffect(() => {
+    fetchMyOngoingChallenges();
+    fetchMyVerificationHistory();
+  }, [fetchMyOngoingChallenges, fetchMyVerificationHistory]);
+
+  const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => {
+    return myOngoingChallenges.map((item) => ({
+      id: String(item.challengeId),
+      title: item.title,
+      subtitle: item.description,
+      imageUrl: item.image,
+      roundText: `${item.currentRound}R째 진행 중`,
+    }));
+  }, [myOngoingChallenges]);
+
+  const certificationItems: TextCertificationItem[] = useMemo(() => {
+    return myVerificationHistory.map((item) => ({
+      id: item.verificationId,
+      title: `[${item.challengeTitle}] ${item.title}`,
+      description: item.content || '',
+      date: format.date(item.verifiedAt),
+      thumbnail: { uri: item.photoUrl }, // PhotoCertificationGrid uses thumbnail directly
+    }));
+  }, [myVerificationHistory]);
 
   const tabs: TabItem[] = [
     { key: 'challenge', label: '챌린지' },
@@ -45,62 +77,15 @@ const MyScreen = () => {
   ];
   */
 
-  const mockChallengeItems: TextCertificationItem[] = [
-    {
-      id: 1,
-      title: '매일 아침 운동 인증',
-      description: '아침 7시 기상 후 헬스장 방문 인증 글입니다.',
-      date: '2024.01.15',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 2,
-      title: '하루 물 2L 마시기 챌린지',
-      description: '깨끗한 물 2리터 마시고 건강해지기!',
-      date: '2024.01.14',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 3,
-      title: '주 3회 독서 챌린지',
-      description: '꾸준히 독서하는 습관을 들여보아요.',
-      date: '2024.01.13',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-  ];
-
-  const mockParticipatingChallenges: ParticipatingChallengeItem[] = [
-    {
-      id: 'p1',
-      title: '매일 아침 운동',
-      subtitle: '7시 기상 후 헬스장 가기',
-      imageUrl: 'https://picsum.photos/id/237/200/300',
-      roundText: '6R째 진행 중',
-    },
-    {
-      id: 'p2',
-      title: '하루 물 2L 마시기',
-      subtitle: '꾸준한 수분 섭취로 건강 UP!',
-      imageUrl: 'https://picsum.photos/id/238/200/300',
-      roundText: '3R째 진행 중',
-    },
-    {
-      id: 'p3',
-      title: '주 3회 독서',
-      subtitle: '지적 성장 챌린지',
-      imageUrl: 'https://picsum.photos/id/239/200/300',
-      roundText: '1R째 진행 중',
-    },
-  ];
-
   const renderTabContent = () => {
     if (activeTab === 'challenge') {
       return (
         <View style={styles.tabContentListWrapper}>
           <ParticipatingChallengeSection
-            items={mockParticipatingChallenges}
+            items={participatingChallenges}
             onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
             onPressItem={(item) => console.log('Participating Challenge Item Pressed:', item.title)}
+            onPressEmpty={() => navigation.navigate('ChallengeList')}
           />
           <View style={styles.sectionSeparator} />
           <ViewModeHeader 
@@ -110,9 +95,9 @@ const MyScreen = () => {
             onPressTitle={() => navigation.navigate('CertificationHistory')}
           />
           {certificationViewMode === 'grid' ? (
-            <PhotoCertificationGrid items={mockChallengeItems} showOverlay={false} />
+            <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
           ) : (
-            <TextCertificationList items={mockChallengeItems} />
+            <TextCertificationList items={certificationItems} />
           )}
         </View>
       );

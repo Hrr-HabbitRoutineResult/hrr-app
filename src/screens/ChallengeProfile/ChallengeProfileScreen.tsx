@@ -21,6 +21,7 @@ import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { getChallengeDetail, getChallengeProfile, likeChallenge, unlikeChallenge, joinChallenge, ChallengeDetail, ChallengeProfile } from '../../libs/api/challenge';
+import { useUserStore } from '../../store/userSlice';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -60,6 +61,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
+  const { fetchMyOngoingChallenges } = useUserStore();
 
   const [data, setData] = useState<ChallengeDetail | null>(null);
   const [profile, setProfile] = useState<ChallengeProfile | null>(null);
@@ -313,6 +315,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       if (isPasswordMode) {
         // 비공개 챌린지 - 비밀번호와 함께 참가
         await joinChallenge(challengeId, password);
+        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsPasswordMode(false);
         setPassword('');
@@ -331,6 +334,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       } else {
         // 공개 챌린지 - 비밀번호 없이 참가
         await joinChallenge(challengeId);
+        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsParticipated(true);
 

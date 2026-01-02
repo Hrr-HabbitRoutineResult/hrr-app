@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -8,55 +8,30 @@ import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { colors } from '../design/tokens';
+import { useUserStore } from '../store/userSlice';
+import { format } from '../libs/format';
 
 const CertificationHistoryScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
+  const { myVerificationHistory, fetchMyVerificationHistory } = useUserStore();
 
-  const mockChallengeItems: TextCertificationItem[] = [
-    {
-      id: 1,
-      title: '매일 아침 운동 인증',
-      description: '아침 7시 기상 후 헬스장 방문 인증 글입니다.',
-      date: '2024.01.15',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 2,
-      title: '하루 물 2L 마시기 챌린지',
-      description: '깨끗한 물 2리터 마시고 건강해지기!',
-      date: '2024.01.14',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 3,
-      title: '주 3회 독서 챌린지',
-      description: '꾸준히 독서하는 습관을 들여보아요.',
-      date: '2024.01.13',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-        {
-      id: 4,
-      title: '매일 아침 운동 인증',
-      description: '아침 7시 기상 후 헬스장 방문 인증 글입니다.',
-      date: '2024.01.15',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 5,
-      title: '하루 물 2L 마시기 챌린지',
-      description: '깨끗한 물 2리터 마시고 건강해지기!',
-      date: '2024.01.14',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-    {
-      id: 6,
-      title: '주 3회 독서 챌린지',
-      description: '꾸준히 독서하는 습관을 들여보아요.',
-      date: '2024.01.13',
-      thumbnail: require('../../assets/images/mock-challenge-profile.png'),
-    },
-  ];
+  useEffect(() => {
+    // Data might already be fetched by MyScreen, but call it here as a fallback.
+    if (myVerificationHistory.length === 0) {
+      fetchMyVerificationHistory();
+    }
+  }, [fetchMyVerificationHistory, myVerificationHistory.length]);
+
+  const certificationItems: TextCertificationItem[] = useMemo(() => {
+    return myVerificationHistory.map((item) => ({
+      id: item.verificationId,
+      title: `[${item.challengeTitle}] ${item.title}`,
+      description: item.content || '',
+      date: format.date(item.verifiedAt),
+      thumbnail: { uri: item.photoUrl },
+    }));
+  }, [myVerificationHistory]);
 
   return (
     <View style={styles.container}>
@@ -71,9 +46,9 @@ const CertificationHistoryScreen = () => {
         onViewModeChange={(mode) => setCertificationViewMode(mode)}
       />
       {certificationViewMode === 'grid' ? (
-        <PhotoCertificationGrid items={mockChallengeItems} showOverlay={false} />
+        <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
       ) : (
-        <TextCertificationList items={mockChallengeItems} />
+        <TextCertificationList items={certificationItems} />
       )}
     </View>
   );

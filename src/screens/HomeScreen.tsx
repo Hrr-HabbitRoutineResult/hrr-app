@@ -6,7 +6,7 @@ import { colors, typography, spacing } from '../design/tokens';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import { getUserMe, getOngoingChallenges } from '../libs/api/user';
+import { getUserMe } from '../libs/api/user';
 import { Challenge, getDailyMissionCompleted } from '../libs/api/challenge';
 import { handleLogout } from '../libs/auth/logout';
 
@@ -19,10 +19,22 @@ import RandomMissionBanner from '../components/home/RandomMissionBanner';
 
 const HomeScreen = () => {
   const { dailyTop, isLoading, error, fetchDailyTop } = useChallengeStore();
-  const { setRandomMissionCompleted } = useUserStore();
+  const {
+    setRandomMissionCompleted,
+    myOngoingChallenges,
+    fetchMyOngoingChallenges,
+  } = useUserStore();
   const [nickname, setNickname] = useState('');
-  const [ongoingChallenges, setOngoingChallenges] = useState<Challenge[]>([]);
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const ongoingChallenges: Challenge[] = React.useMemo(() => {
+    return myOngoingChallenges.map((item) => ({
+      id: item.challengeId,
+      thumbnail: item.image,
+      title: item.title,
+      todayEligible: item.currentRound > 0,
+    }));
+  }, [myOngoingChallenges]);
 
   // const handleLogoutTest = async () => {
   //   try {
@@ -34,31 +46,13 @@ const HomeScreen = () => {
 
   useEffect(() => {
     fetchDailyTop();
+    fetchMyOngoingChallenges();
 
     // 사용자 정보 조회
     const fetchUserInfo = async () => {
       try {
         const userInfo = await getUserMe();
         setNickname(userInfo.nickname);
-      } catch (error) {
-        // 에러가 나도 화면은 정상 동작하도록 함
-      }
-    };
-
-    // 참여 중인 챌린지 조회
-    const fetchOngoingChallenges = async () => {
-      try {
-        const challenges = await getOngoingChallenges();
-
-        // API 응답을 Challenge 타입으로 변환
-        const transformedChallenges: Challenge[] = challenges.map((item) => ({
-          id: item.challengeId,
-          thumbnail: item.image,
-          title: item.title,
-          todayEligible: item.currentRound > 0, // currentRound가 0보다 크면 오늘 인증 가능
-        }));
-
-        setOngoingChallenges(transformedChallenges);
       } catch (error) {
         // 에러가 나도 화면은 정상 동작하도록 함
       }
@@ -75,9 +69,8 @@ const HomeScreen = () => {
     };
 
     fetchUserInfo();
-    fetchOngoingChallenges();
     fetchDailyMissionCompleted();
-  }, [fetchDailyTop, setRandomMissionCompleted]);
+  }, [fetchDailyTop, fetchMyOngoingChallenges, setRandomMissionCompleted]);
 
   return (
     <View style={styles.safeArea}>

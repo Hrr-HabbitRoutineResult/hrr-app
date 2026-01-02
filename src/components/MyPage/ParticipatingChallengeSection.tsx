@@ -11,6 +11,7 @@ import {
 import { colors, radius, spacing, typography } from '../../design/tokens';
 import { Text } from '../common/Text';
 import ComponentHeader from '../common/ComponentHeader';
+import PlusIcon from '../../../assets/icons/plus.svg';
 
 export type ParticipatingChallengeItem = {
   id: string;
@@ -25,6 +26,7 @@ type Props = {
   items: ParticipatingChallengeItem[];
   onPressHeader?: () => void;
   onPressItem?: (item: ParticipatingChallengeItem) => void;
+  onPressEmpty?: () => void; // Empty state card press handler
 };
 
 const ParticipatingChallengeSection = ({
@@ -32,6 +34,7 @@ const ParticipatingChallengeSection = ({
   items,
   onPressHeader,
   onPressItem,
+  onPressEmpty,
 }: Props) => {
   const renderItem = ({ item }: ListRenderItemInfo<ParticipatingChallengeItem>) => {
     return (
@@ -66,19 +69,34 @@ const ParticipatingChallengeSection = ({
     );
   };
 
+  const renderEmptyState = () => (
+    <TouchableOpacity style={styles.emptyCard} onPress={onPressEmpty} activeOpacity={0.8}>
+      <View style={styles.emptyContent}>
+        <PlusIcon width={24} height={24} fill={colors.text.secondary} />
+        <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
+          새로운 챌린지에 가입해보세요
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <ComponentHeader title={title} onPress={onPressHeader} />
 
-      <FlatList
-        data={items}
-        renderItem={renderItem}
-        keyExtractor={(it) => it.id}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={{ width: spacing.xs }} />}
-      />
+      {items.length > 0 ? (
+        <FlatList
+          data={items}
+          renderItem={renderItem}
+          keyExtractor={(it) => it.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ItemSeparatorComponent={() => <View style={{ width: spacing.xs }} />}
+        />
+      ) : (
+        renderEmptyState()
+      )}
     </View>
   );
 };
@@ -103,6 +121,24 @@ const styles = StyleSheet.create({
     height: CARD_H,
     borderRadius: radius.lg,
     overflow: 'hidden',
+  },
+
+  emptyCard: {
+    width: '100%',
+    height: CARD_H,
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  emptyContent: {
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+
+  emptyText: {
+    color: colors.text.secondary,
   },
 
   cardImage: {
@@ -146,3 +182,4 @@ const styles = StyleSheet.create({
     ...typography.xsReg,
   },
 });
+

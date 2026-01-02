@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ImageBackground, Dimensions, ListRenderItemInfo } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import SubpageHeader from '../components/common/SubpageHeader';
-import { Text } from '../components/common/Text'; // Added Text import
+import { Text } from '../components/common/Text';
 import { colors, spacing, typography } from '../design/tokens';
+import { useUserStore } from '../store/userSlice';
+import PlusIcon from '../../assets/icons/plus.svg';
 
-// Define ParticipatingChallengeItem type (copied from ParticipatingChallengeSection.tsx)
+// Define ParticipatingChallengeItem type
 export type ParticipatingChallengeItem = {
   id: string;
   title: string;
@@ -16,52 +18,6 @@ export type ParticipatingChallengeItem = {
   roundText: string;
 };
 
-// Define mock data (copied from MyScreen.tsx)
-const mockParticipatingChallenges: ParticipatingChallengeItem[] = [
-  {
-    id: 'p1',
-    title: '매일 아침 운동',
-    subtitle: '7시 기상 후 헬스장 가기',
-    imageUrl: 'https://picsum.photos/id/237/200/300',
-    roundText: '6R째 진행 중',
-  },
-  {
-    id: 'p2',
-    title: '하루 물 2L 마시기',
-    subtitle: '꾸준한 수분 섭취로 건강 UP!',
-    imageUrl: 'https://picsum.photos/id/238/200/300',
-    roundText: '3R째 진행 중',
-  },
-  {
-    id: 'p3',
-    title: '주 3회 독서',
-    subtitle: '지적 성장 챌린지',
-    imageUrl: 'https://picsum.photos/id/239/200/300',
-    roundText: '1R째 진행 중',
-  },
-  {
-    id: 'p4',
-    title: '매일 아침 운동 2',
-    subtitle: '7시 기상 후 헬스장 가기 2',
-    imageUrl: 'https://picsum.photos/id/240/200/300',
-    roundText: '6R째 진행 중',
-  },
-  {
-    id: 'p5',
-    title: '하루 물 2L 마시기 2',
-    subtitle: '꾸준한 수분 섭취로 건강 UP! 2',
-    imageUrl: 'https://picsum.photos/id/241/200/300',
-    roundText: '3R째 진행 중',
-  },
-  {
-    id: 'p6',
-    title: '주 3회 독서 2',
-    subtitle: '지적 성장 챌린지 2',
-    imageUrl: 'https://picsum.photos/id/242/200/300',
-    roundText: '1R째 진행 중',
-  },
-];
-
 const CARD_MARGIN = spacing.md; // Define margin for cards
 const CARD_PADDING = spacing.xs; // Define padding for cards inside container
 const { width: screenWidth } = Dimensions.get('window');
@@ -69,6 +25,25 @@ const CARD_WIDTH = (screenWidth - (CARD_MARGIN * 2) - CARD_PADDING) / 2; // Calc
 
 const ParticipatingChallengeScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { myOngoingChallenges, fetchMyOngoingChallenges } = useUserStore();
+
+  useEffect(() => {
+    // Data is already fetched by HomeScreen or MyScreen, but we can call it here as a fallback
+    // or if this screen can be accessed independently.
+    if (myOngoingChallenges.length === 0) {
+      fetchMyOngoingChallenges();
+    }
+  }, [fetchMyOngoingChallenges, myOngoingChallenges.length]);
+
+  const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => {
+    return myOngoingChallenges.map((item) => ({
+      id: String(item.challengeId),
+      title: item.title,
+      subtitle: item.description,
+      imageUrl: item.image,
+      roundText: `${item.currentRound}R째 진행 중`,
+    }));
+  }, [myOngoingChallenges]);
 
   const renderParticipatingChallengeItem = ({ item }: ListRenderItemInfo<ParticipatingChallengeItem>) => {
     return (
@@ -113,6 +88,17 @@ const ParticipatingChallengeScreen = () => {
     );
   };
 
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList')} activeOpacity={0.8}>
+        <PlusIcon width={24} height={24} fill={colors.text.secondary} />
+        <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
+          새로운 챌린지에 가입해보세요
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <SubpageHeader
@@ -120,14 +106,18 @@ const ParticipatingChallengeScreen = () => {
         onBackPress={() => navigation.goBack()}
         useSafeArea={true}
       />
-      <FlatList
-        data={mockParticipatingChallenges}
-        renderItem={renderParticipatingChallengeItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-        columnWrapperStyle={styles.columnWrapper}
-      />
+      {participatingChallenges.length > 0 ? (
+        <FlatList
+          data={participatingChallenges}
+          renderItem={renderParticipatingChallengeItem}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+          columnWrapperStyle={styles.columnWrapper}
+        />
+      ) : (
+        renderEmptyState()
+      )}
     </View>
   );
 };
@@ -152,6 +142,25 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     opacity: 1,
     top: 0.5,
+  },
+  emptyContainer: {
+    flex: 1,
+    // justifyContent: 'center', // Removed to align to top
+    alignItems: 'center',
+    paddingHorizontal: CARD_MARGIN,
+    paddingTop: spacing.lg, // Add some padding to the top
+  },
+  emptyCard: {
+    width: '100%',
+    height: 148,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  emptyText: {
+    color: colors.text.secondary,
   },
   cardImage: {
     flex: 1,
