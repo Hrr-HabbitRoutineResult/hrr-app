@@ -90,30 +90,10 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
-    // size에 따른 maxWidth 결정 (medium: 350px, small: 170px)
-    const getMaxWidth = (): number => {
-        return size === 'medium' ? scale(350) : scale(170);
-    };
+  const getWidth = (): number => {
+    return size === 'medium' ? scale(350) : scale(170);
+  };
 
-    // 렌더링
-    return (
-        <TouchableOpacity
-            style={[
-                styles.button,         // 기본 스타일 적용 (높이, borderRadius 등)
-                getVariantStyle(),     // variant에 따른 버튼 색상
-                { maxWidth: getMaxWidth() }, // 사이즈에 따른 maxWidth
-                style,                 // 사용자가 입력한 스타일 (우선 적용)
-            ]}
-            onPress={onPress}
-            disabled={disabled}        // true면 버튼 비활성화
-            activeOpacity={0.9}        // 터치 시 투명도
-            {...rest}                  // 나머지 Props 전달
-        >
-            <Text variant="md" color={getTextColor()}>
-                {children}
-            </Text>
-        </TouchableOpacity>
-    );
   const getPaddingVertical = (): number => {
     return size === 'small' ? 8 : 14; // Changed from 12 to 8 for small size
   };

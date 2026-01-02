@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
 
   singleButton: {
     flex: 1,
+    width: '100%',
     height: 40,
     borderRadius: radius.md,
   },

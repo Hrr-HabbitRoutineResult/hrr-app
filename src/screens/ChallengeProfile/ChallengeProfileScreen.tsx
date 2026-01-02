@@ -21,8 +21,6 @@ import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { getChallengeDetail, getChallengeProfile, likeChallenge, unlikeChallenge, joinChallenge, ChallengeDetail, ChallengeProfile } from '../../libs/api/challenge';
-import { useUserStore } from '../../store/userSlice';
 import {
   getChallengeDetail,
   getChallengeProfile,
@@ -38,6 +36,7 @@ import {
   VerificationStat,
   VerificationFeedItem,
 } from '../../libs/api/challenge';
+import { useUserStore } from '../../store/userSlice';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -80,7 +79,6 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [certificationType, setCertificationType] = useState<'text' | 'image'>('image');
   const [isParticipated, setIsParticipated] = useState(false);
-  const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
 
   const [rounds, setRounds] = useState<RoundItem[]>([]);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
@@ -486,6 +484,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       if (isPasswordMode) {
         // 비공개 챌린지 - 비밀번호와 함께 참가
         await joinChallenge(challengeId, password);
+        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsPasswordMode(false);
         setPassword('');
