@@ -3,7 +3,7 @@ import { View, StyleSheet, FlatList, TouchableOpacity, ImageBackground, Dimensio
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import SubpageHeader from '../components/common/SubpageHeader';
+import { Header } from '../components/common/Header';
 import { Text } from '../components/common/Text';
 import { colors, spacing, typography } from '../design/tokens';
 import { useUserStore } from '../store/userSlice';
@@ -101,9 +101,9 @@ const ParticipatingChallengeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <SubpageHeader
+      <Header
         title="참가중인 챌린지"
-        onBackPress={() => navigation.goBack()}
+        onBack={() => navigation.goBack()}
         useSafeArea={true}
       />
       {participatingChallenges.length > 0 ? (

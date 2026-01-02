@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import SubpageHeader from '../components/common/SubpageHeader';
+import { Header } from '../components/common/Header';
 import { colors, spacing } from '../design/tokens';
 import SettingSection from '../components/MyPage/SettingSection';
 import SettingItem from '../components/MyPage/SettingItem';
@@ -61,9 +61,9 @@ const AccountSettingsScreen = () => {
 
     return (
         <View style={styles.container}>
-            <SubpageHeader 
+            <Header 
                 title="계정 설정"
-                onBackPress={() => navigation.goBack()}
+                onBack={() => navigation.goBack()}
                 useSafeArea 
             />
             <View style={styles.content}>

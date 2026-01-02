@@ -3,7 +3,7 @@ import { View, StyleSheet, FlatList } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import SubpageHeader from '../components/common/SubpageHeader';
+import { Header } from '../components/common/Header';
 import { TabBar, TabItem } from '../components/common/TabBar';
 import PersonListItem from '../components/common/PersonListItem';
 import { colors } from '../design/tokens';
@@ -35,7 +35,7 @@ const FollowerListScreen = () => {
 
     return (
         <View style={styles.container}>
-            <SubpageHeader title="팔로우" onBackPress={() => navigation.goBack()} useSafeArea />
+            <Header title="팔로우" onBack={() => navigation.goBack()} useSafeArea />
             <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
             <FlatList
                 data={data}

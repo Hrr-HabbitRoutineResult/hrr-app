@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import SubpageHeader from '../components/common/SubpageHeader';
+import { Header } from '../components/common/Header';
 import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
@@ -35,9 +35,9 @@ const CertificationHistoryScreen = () => {
 
   return (
     <View style={styles.container}>
-      <SubpageHeader 
+      <Header 
         title="인증 기록"
-        onBackPress={() => navigation.goBack()}
+        onBack={() => navigation.goBack()}
         useSafeArea
       />
       <ViewModeHeader 
