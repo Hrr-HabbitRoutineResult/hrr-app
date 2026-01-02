@@ -50,7 +50,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           {scrollEnabled ? (
             <ScrollView
               style={styles.scrollView}
-              contentContainerStyle={styles.content}
+              contentContainerStyle={[styles.content, { flexGrow: 1 }]}
               showsVerticalScrollIndicator={false}
             >
               {children}

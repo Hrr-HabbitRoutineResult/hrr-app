@@ -45,6 +45,10 @@ type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   'ChallengeCertificationDetail'
 >;
 
+// 플랫폼별 키보드 오프셋
+const KEYBOARD_OFFSET_IOS = 0;
+const KEYBOARD_OFFSET_ANDROID = 15;
+
 export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationDetailScreenRouteProp>();
@@ -736,13 +740,16 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       {/* 댓글 입력 필드 */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? KEYBOARD_OFFSET_IOS : 0}
         style={styles.keyboardAvoidingView}
       >
         <View style={[
           styles.commentInputContainer,
-          isKeyboardVisible && styles.commentInputContainerKeyboard
+          isKeyboardVisible && styles.commentInputContainerKeyboard,
+          Platform.OS === 'android' && isKeyboardVisible && {
+            bottom: keyboardHeight + KEYBOARD_OFFSET_ANDROID,
+          }
         ]}>
           <TextField
             ref={commentInputRef}

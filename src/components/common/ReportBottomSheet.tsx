@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, TextInput, Platform, Keyboard, Alert, KeyboardAvoidingView } from 'react-native';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { BottomSheet } from './BottomSheet';
@@ -26,6 +26,41 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
   const [reportReasonDetail, setReportReasonDetail] = useState('');
   const [isTextInputMode, setIsTextInputMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bottomSheetHeight, setBottomSheetHeight] = useState(560);
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+
+  useEffect(() => {
+    // 텍스트 입력 모드가 아니거나 iOS인 경우 로직 미적용 (iOS는 고정 높이 유지)
+    if (!isTextInputMode || Platform.OS === 'ios') {
+      setBottomSheetHeight(560);
+      setIsKeyboardActive(false);
+      return;
+    }
+
+    const showEvent = 'keyboardDidShow';
+    const hideEvent = 'keyboardDidHide';
+
+    const keyboardShowListener = Keyboard.addListener(
+      showEvent,
+      (e) => {
+        // 안드로이드에서는 키보드 높이만큼 바텀시트 높이 줄이기
+        setBottomSheetHeight(560 - e.endCoordinates.height + 100);
+        setIsKeyboardActive(true);
+      }
+    );
+    const keyboardHideListener = Keyboard.addListener(
+      hideEvent,
+      () => {
+        setBottomSheetHeight(560);
+        setIsKeyboardActive(false);
+      }
+    );
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, [isTextInputMode]);
 
   // 신고 사유 목록
   const reportReasons: Array<{ label: string; value: ReportReason }> = [
@@ -45,7 +80,7 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
   // 신고 버튼 활성화 여부
   const isReportButtonEnabled = () => {
     if (!selectedReportReason) return false;
-    // 기타 선택 시 텍스트 입력 모드일 때는 글자가 있어야 함
+    // 기타 선택 시 텍스트 입력 모드일 때는 입력된 텍스트가 있어야 함
     if (isTextInputMode) {
       return reportReasonDetail.trim().length > 0;
     }
@@ -123,12 +158,12 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
   return (
     <BottomSheet
       visible={visible}
-      height={560}
-      scrollEnabled={false}
+      height={bottomSheetHeight}
+      scrollEnabled={isTextInputMode}
       onClose={handleClose}
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
         <View style={styles.content}>
@@ -141,7 +176,10 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
             {isTextInputMode ? (
               /* 기타 선택 시 텍스트 입력 필드 */
               <>
-                <View style={styles.inputContainer}>
+                <View style={[
+                  styles.inputContainer,
+                  !isKeyboardActive && { height: verticalScale(280) } // 키보드 없을 땐 입력창을 더 크게
+                ]}>
                   <TextInput
                     style={styles.input}
                     placeholder="최대 200자까지 작성 가능합니다."
@@ -155,6 +193,10 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
                     returnKeyType="done"
                     blurOnSubmit={true}
                     onSubmitEditing={() => Keyboard.dismiss()}
+                    onBlur={() => {
+                      setBottomSheetHeight(560);
+                      setIsKeyboardActive(false);
+                    }}
                   />
                 </View>
                 <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
@@ -227,6 +269,7 @@ const styles = StyleSheet.create({
     paddingVertical: verticalScale(14.5),
   },
   reasonText: {
+    flex: 1,
     marginLeft: scale(13),
   },
   inputContainer: {
