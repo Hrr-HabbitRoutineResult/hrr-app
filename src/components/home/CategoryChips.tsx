@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/types';
@@ -69,12 +70,12 @@ const styles = StyleSheet.create({
       height: 0,
     },
     shadowOpacity: 0.16,
-    shadowRadius: 8,
+    shadowRadius: scale(8),
     // Android 그림자
     elevation: 4,
   },
   textWrapper: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     ...typography.xxs,
     color: colors.text.primary,
     textAlign: 'center',
-    lineHeight: 12,
+    lineHeight: verticalScale(12),
   },
 });
 

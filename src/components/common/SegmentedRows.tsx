@@ -1,5 +1,6 @@
 import React, { memo } from 'react'
 import { View, StyleSheet, ViewStyle } from 'react-native'
+import { scale, verticalScale } from '../../utils/scaling'
 import { colors } from '../../design/tokens'
 
 export type SegmentedRowsProps = {
@@ -32,12 +33,12 @@ export type SegmentedRowsProps = {
  */
 export const SegmentedRows: React.FC<SegmentedRowsProps> = memo(
   ({
-    width = 350,
+    width = scale(350),
     rows = 1,
     cols = 1,
     activePerRow = [1],
-    gap = 10,
-    strokeWidth = 6,
+    gap = scale(10),
+    strokeWidth = verticalScale(6),
     inactiveColor = colors.line,
     activeColor = colors.primary?.main ?? '#FF6B61',
     style,

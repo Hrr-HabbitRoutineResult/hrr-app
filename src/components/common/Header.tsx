@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
@@ -31,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({
   // 플랫폼별 기본 상단 패딩
   // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
   // iOS: 기존 디자인 스펙 유지 (16)
-  const verticalPadding = Platform.OS === 'android' ? 24 : 16;
+  const verticalPadding = Platform.OS === 'android' ? verticalScale(24) : verticalScale(16);
 
   // 상단 safeAreaTop 적용 여부
   // useSafeArea가 true인 경우에만 안전 영역 높이를 계산하여 더해줌
@@ -64,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 중앙: 제목 */}
       {title ? (
-        <Text variant="header2" color={colors.text.primary} style={styles.headerTitle}>
+        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
           {title}
         </Text>
       ) : (
@@ -87,31 +88,33 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: scale(24),
     backgroundColor: colors.white,
   },
   headerBorder: {
-    borderBottomWidth: 1,
+    borderBottomWidth: scale(1),
     borderBottomColor: colors.line,
   },
   backButton: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
   },
   backButtonPlaceholder: {
-    width: 24,
+    width: scale(24),
   },
   headerTitle: {
-    marginLeft: 0, 
+    flex: 1,
+    textAlign: 'center',
   },
   rightContentContainer: {
-    minWidth: 24,
+    minWidth: scale(24),
     alignItems: 'flex-end',
-    marginLeft: 'auto', // Add this to push to the right
   },
   divider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
   },
 });

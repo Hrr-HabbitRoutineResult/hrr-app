@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { colors, typography } from '../../design/tokens';
 
 interface DaySelectorProps {
@@ -60,14 +61,14 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
+    gap: scale(8),
   },
   dayButton: {
-    width: 44,
-    height: 60,
-    borderRadius: 30,
+    width: scale(44),
+    height: verticalScale(60),
+    borderRadius: scale(30),
     backgroundColor: colors.white,
-    borderWidth: 1.5,
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',

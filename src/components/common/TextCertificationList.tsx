@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
+import ResolvedTextIcon from '../../../assets/icons/challenge-profile/resolved-text.svg';
 
 export interface TextCertificationItem {
   id: number;           // 인증 아이템 고유 ID
@@ -11,6 +13,8 @@ export interface TextCertificationItem {
   description: string;  // 인증 글 내용
   date: string;         // 인증 날짜
   thumbnail: any;       // 썸네일 이미지
+  isQuestion?: boolean; // 질문 여부
+  isResolved?: boolean; // 채택 답변 존재 여부
 }
 
 interface TextCertificationListProps {
@@ -23,7 +27,7 @@ interface TextCertificationListProps {
 export const TextCertificationList: React.FC<TextCertificationListProps> = ({
   items,
   onItemPress,
-  containerPadding = 24,
+  containerPadding = scale(24),
 }) => {
   return (
     <View style={[styles.list, { paddingHorizontal: containerPadding }]}>
@@ -50,9 +54,16 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
           </View>
           <View style={styles.thumbnail}>
             <Image source={item.thumbnail} style={styles.thumbnailImage} />
-            <View style={styles.thumbnailOverlay}>
-              <QuestionMarkTextIcon width={30} height={36} />
-            </View>
+            {/* 질문이 포함된 글일 때만 오버레이와 아이콘 표시 */}
+            {item.isQuestion && (
+              <View style={styles.thumbnailOverlay}>
+                {item.isResolved ? (
+                  <ResolvedTextIcon width={30} height={36} />
+                ) : (
+                  <QuestionMarkTextIcon width={30} height={36} />
+                )}
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       ))}
@@ -66,31 +77,31 @@ const styles = StyleSheet.create({
   },
   item: {
     flexDirection: 'row',
-    height: 104,
-    paddingVertical: 12,
-    gap: 12,
+    height: verticalScale(104),
+    paddingVertical: verticalScale(12),
+    gap: scale(12),
   },
   content: {
     flex: 1,
     justifyContent: 'space-between',
   },
   title: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
   description: {
-    lineHeight: 18,
-    marginTop: 5,
+    lineHeight: verticalScale(18),
+    marginTop: verticalScale(5),
   },
   date: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: scale(6),
     marginTop: 'auto',
   },
   thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
+    width: scale(80),
+    height: verticalScale(80),
+    borderRadius: scale(10),
     overflow: 'hidden',
     position: 'relative',
   },

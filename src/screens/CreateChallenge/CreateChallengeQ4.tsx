@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -31,6 +32,16 @@ export const CreateChallengeQ4 = () => {
   // 관찰자모드는 사용자 선택사항 (버튼 활성화에 영향 X)
   const isPasswordRequired = data.isPublic === false;
   const isCompleteEnabled = !isPasswordRequired || password.length === 4;
+  const isObserverModeDisabled = data.isPublic === false; // 비공개 챌린지는 관찰자모드 비활성화
+
+  // 관찰자모드 토글 핸들러
+  const handleObserverModeToggle = () => {
+    if (isObserverModeDisabled) {
+      Alert.alert('알림', '비공개 챌린지는 관찰자모드를 사용할 수 없습니다.');
+      return;
+    }
+    setIsObserverModeEnabled(!isObserverModeEnabled);
+  };
 
   // 시간 포맷 변환 (AM/PM HH:mm -> HH:mm:ss)
   const formatTimeTo24Hour = (time: { period: 'AM' | 'PM'; hour: string; minute: string }): string => {
@@ -59,7 +70,7 @@ export const CreateChallengeQ4 = () => {
     // 필수 데이터 검증
     const validationErrors: string[] = [];
 
-    if (!data.category || data.category === '') {
+    if (!data.category) {
       validationErrors.push('카테고리');
     }
     if (data.isPublic === null) {
@@ -71,7 +82,7 @@ export const CreateChallengeQ4 = () => {
     if (!data.oneLiner || data.oneLiner.trim() === '') {
       validationErrors.push('한줄소개');
     }
-    if (!data.verificationMethod || data.verificationMethod === '') {
+    if (!data.verificationMethod) {
       validationErrors.push('인증수단');
     }
     if (!data.verificationDays || data.verificationDays.length === 0) {
@@ -164,6 +175,13 @@ export const CreateChallengeQ4 = () => {
     updateData({ isObserverModeEnabled, password });
   }, [isObserverModeEnabled, password]);
 
+  // 비공개 챌린지로 진입 시 관찰자모드 강제 비활성화
+  useEffect(() => {
+    if (isObserverModeDisabled && isObserverModeEnabled) {
+      setIsObserverModeEnabled(false);
+    }
+  }, [isObserverModeDisabled]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -187,16 +205,25 @@ export const CreateChallengeQ4 = () => {
             style={[
               styles.observerModeCard,
               isObserverModeEnabled && styles.observerModeCardSelected,
+              isObserverModeDisabled && styles.observerModeCardDisabled,
             ]}
-            onPress={() => setIsObserverModeEnabled(!isObserverModeEnabled)}
+            onPress={handleObserverModeToggle}
             activeOpacity={0.7}
           >
             <View style={styles.observerModeContent}>
               <View style={styles.observerModeTextContainer}>
-                <Text variant="md" color={colors.text.primary} style={styles.observerModeTitle}>
+                <Text
+                  variant="md"
+                  color={isObserverModeDisabled ? colors.icon.gray : colors.text.primary}
+                  style={styles.observerModeTitle}
+                >
                   관찰자모드
                 </Text>
-                <Text variant="xxs" color={colors.text.tertiary} style={styles.observerModeDescription}>
+                <Text
+                  variant="xxs"
+                  color={isObserverModeDisabled ? colors.icon.gray : colors.text.tertiary}
+                  style={styles.observerModeDescription}
+                >
                   다른 챌린저들이 내 챌린지에 입장하기 전에{'\n'}활동 모습을 살펴볼 수 있는 기능이에요
                 </Text>
               </View>
@@ -243,11 +270,7 @@ export const CreateChallengeQ4 = () => {
           onPress={handleComplete}
           disabled={!isCompleteEnabled || isCreating}
         >
-          {isCreating ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            '완료'
-          )}
+          완료
         </Button>
       </View>
     </SafeAreaView>
@@ -261,28 +284,31 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(24),
   },
   title: {
-    marginBottom: 40,
+    marginBottom: verticalScale(40),
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: verticalScale(20),
   },
   observerModeCard: {
     backgroundColor: colors.white,
-    borderRadius: 10,
+    borderRadius: scale(10),
     padding: 20,
-    marginBottom: 20,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    marginBottom: verticalScale(20),
+    borderWidth: scale(1.5),
+    borderColor: colors.line,
   },
   observerModeCardSelected: {
     borderColor: colors.primary.main,
+  },
+  observerModeCardDisabled: {
+    opacity: 0.5,
   },
   observerModeContent: {
     flexDirection: 'row',
@@ -291,28 +317,28 @@ const styles = StyleSheet.create({
   },
   observerModeTextContainer: {
     flex: 1,
-    marginRight: 16,
+    marginRight: scale(16),
   },
   observerModeTitle: {
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   observerModeDescription: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
   },
   radioIconContainer: {
-    marginTop: 2,
+    marginTop: verticalScale(2),
   },
   passwordContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   passwordFieldContainer: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   passwordInputContainer: {
-    height: 60,
+    height: verticalScale(60),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
   },
 });

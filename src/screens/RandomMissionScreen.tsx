@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Image, Alert, ActivityIndicator, Platform } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
+import { scale, verticalScale } from '../utils/scaling';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
+import RNBlobUtil from 'react-native-blob-util';
 import { Header } from '../components/common/Header';
 import { Button } from '../components/common/Button';
 import { Text } from '../components/common/Text';
@@ -33,7 +36,7 @@ const RandomMissionScreen = () => {
         const data = await getDailyMission();
         setMissionData(data);
       } catch (error) {
-        console.error('랜덤 미션 조회 실패:', error);
+        // 네트워크/서버 오류가 나더라도 화면은 유지하고 로딩 상태만 해제
       } finally {
         setIsLoading(false);
       }
@@ -71,30 +74,36 @@ const RandomMissionScreen = () => {
     return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
   };
 
+  /**
+   * S3 presigned PUT 업로드
+   * - Android: `fetch(file://...)`가 실패하므로 react-native-blob-util 사용
+   * - iOS: 기존 fetch + blob 방식
+   */
   const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
     try {
       setIsUploading(true);
 
-      // 파일 확장자 추출
-      const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `image.${fileExtension}`;
+      // Android: URI에 file:// prefix가 없을 수 있어 보정
+      let normalizedUri = imageUri;
+      if (
+        Platform.OS === 'android' &&
+        !normalizedUri.startsWith('file://') &&
+        !normalizedUri.startsWith('content://')
+      ) {
+        normalizedUri = `file://${normalizedUri}`;
+      }
 
-      // 1. Presigned URL 요청
+      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `image.${fileExtension}`;
+      const mimeType = getMimeType(fileExtension);
+
       const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
 
-      // 2. 이미지를 Blob으로 변환
-      const response = await fetch(imageUri);
-      if (!response.ok) {
-        throw new Error('이미지 로드 실패');
-      }
-      const blob = await response.blob();
-
-      // 3. S3 업로드 헤더 구성
       const uploadHeaders: Record<string, string> = {
-        'Content-Type': blob.type || getMimeType(fileExtension),
+        'Content-Type': mimeType,
       };
 
-      // x-amz-acl이 서명에 포함된 경우 헤더 추가
+      // x-amz-acl 헤더 (서명에 포함되어 있으면 추가)
       try {
         const urlParts = presignedUrl.split('?');
         if (urlParts.length > 1) {
@@ -104,18 +113,31 @@ const RandomMissionScreen = () => {
           }
         }
       } catch (e) {
-        // URL 파싱 실패 시 무시
+        // 파싱 실패 시에도 업로드 가능하므로 무시
       }
 
-      // 4. S3에 업로드
-      const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: blob,
-        headers: uploadHeaders,
-      });
+      const localPath = normalizedUri.startsWith('file://')
+        ? normalizedUri.replace(/^file:\/\//, '')
+        : normalizedUri;
 
-      if (!uploadResponse.ok) {
-        throw new Error(`업로드 실패 (${uploadResponse.status})`);
+      if (Platform.OS === 'android') {
+        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
+        const status = resp.info().status;
+        if (status !== 200 && status !== 204) {
+          throw new Error(`업로드 실패 (${status})`);
+        }
+      } else {
+        const response = await fetch(normalizedUri);
+        if (!response.ok) throw new Error('이미지 로드 실패');
+        const blob = await response.blob();
+        const uploadResponse = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: blob,
+          headers: uploadHeaders,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`업로드 실패 (${uploadResponse.status})`);
+        }
       }
 
       return s3Key;
@@ -205,6 +227,12 @@ const RandomMissionScreen = () => {
             {/* 타임스탬프 오버레이 */}
             {imageTimestamp && (
               <View style={styles.timestampContainer}>
+                <BlurView
+                  style={StyleSheet.absoluteFill}
+                  blurType="light"
+                  blurAmount={20}
+                  reducedTransparencyFallbackColor="black"
+                />
                 <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                   {formatTimestamp(imageTimestamp)}
                 </Text>
@@ -321,17 +349,17 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: scale(20),
   },
   mainTitle: {
-    marginTop: 28,
-    marginBottom: 32,
-    lineHeight: 30,
+    marginTop: verticalScale(28),
+    marginBottom: verticalScale(32),
+    lineHeight: verticalScale(30),
   },
   imageContainer: {
     width: '100%',
-    height: 400,
-    borderRadius: 20,
+    height: verticalScale(400),
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -353,8 +381,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   frameOverlay: {
-    paddingLeft: 30,
-    paddingTop: 32,
+    paddingLeft: scale(30),
+    paddingTop: verticalScale(32),
     position: 'absolute',
     top: 0,
     left: 0,
@@ -372,26 +400,27 @@ const styles = StyleSheet.create({
   },
   textOverlay: {
     position: 'absolute',
-    bottom: 70,
-    left: 10,
+    bottom: verticalScale(70),
+    left: scale(10),
     right: 0,
-    paddingLeft: 24,
-    paddingBottom: 28,
+    paddingLeft: scale(24),
+    paddingBottom: verticalScale(28),
     zIndex: 3,
   },
   missionTitle: {
-    marginBottom: 6,
+    marginBottom: verticalScale(6),
   },
   missionDescription: {
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    width: '100%',
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   completeMessage: {
-    marginTop: 24,
+    marginTop: verticalScale(24),
     textAlign: 'center',
   },
   // 인증 화면 스타일
@@ -401,41 +430,46 @@ const styles = StyleSheet.create({
   },
   certificationContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(28),
     justifyContent: 'space-between',
-    paddingBottom: 32,
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   thumbnailContainer: {
-    width: 350,
-    height: 350,
-    borderRadius: 20,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(350),
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
-    marginTop: 80,
+    marginTop: verticalScale(80),
   },
   thumbnailImage: {
-    width: 350,
-    height: 350,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(350),
   },
   timestampContainer: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    width: 137,
-    height: 32,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 10,
+    bottom: verticalScale(16),
+    right: scale(16),
+    width: scale(137),
+    height: verticalScale(32),
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   timestampText: {
     color: colors.white,
   },
   certificationButtonContainer: {
-    gap: 10,
-    paddingTop: 20,
+    width: '100%',
+    maxWidth: scale(350),
+    gap: verticalScale(10),
+    paddingTop: verticalScale(20),
   },
   retakeButton: {
     marginBottom: 0,

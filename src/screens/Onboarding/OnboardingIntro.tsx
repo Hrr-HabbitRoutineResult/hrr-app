@@ -1,4 +1,5 @@
 import React from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -101,36 +102,36 @@ const styles = StyleSheet.create({
   },
   backgroundBlur1: {
     position: 'absolute',
-    top: 48,
-    left: 240,
+    top: verticalScale(48),
+    left: scale(240),
     zIndex: 0,
   },
   backgroundBlur2: {
     position: 'absolute',
-    top: 297,
+    top: verticalScale(297),
     left: -66,
     zIndex: 0,
   },
   backgroundBlur3: {
     position: 'absolute',
-    top: 477,
-    left: 302,
+    top: verticalScale(477),
+    left: scale(302),
     zIndex: 0,
   },
   header: {
-    paddingHorizontal: 40,
-    paddingTop: 15,
+    paddingHorizontal: scale(40),
+    paddingTop: verticalScale(15),
     zIndex: 1,
   },
   logoContainer: {
-    width: 28,
-    height: 28,
+    width: scale(28),
+    height: verticalScale(28),
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
     justifyContent: 'space-between',
     zIndex: 1,
   },
@@ -144,12 +145,12 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    lineHeight: 30,
+    lineHeight: verticalScale(30),
   },
   highlightContainer: {
     position: 'relative',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
   },
   highlightGraphic: {
     position: 'absolute',
@@ -158,14 +159,14 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
     marginBottom: 80
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-    gap: 10,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
+    gap: scale(10),
   },
 });

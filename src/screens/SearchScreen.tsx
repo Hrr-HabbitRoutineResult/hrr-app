@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,9 +31,9 @@ const SearchScreen = () => {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   // 검색 헤더 전용 패딩 
-  const topPadding = Platform.OS === 'android' ? 18 : 10;
-  const bottomPadding = 4;
-  const safeAreaTop = Platform.OS === 'android' ? Math.max(insets.top, 24) : insets.top;
+  const topPadding = Platform.OS === 'android' ? verticalScale(18) : verticalScale(10);
+  const bottomPadding = verticalScale(4);
+  const safeAreaTop = Platform.OS === 'android' ? Math.max(insets.top, verticalScale(24)) : insets.top;
 
   // AsyncStorage에서 최근 검색어 불러오기
   useEffect(() => {
@@ -303,27 +304,27 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
     backgroundColor: colors.white,
   },
   backButton: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: scale(12),
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.background,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    height: 44,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(10),
+    height: verticalScale(44),
   },
   searchIconContainer: {
-    marginRight: 8,
+    marginRight: scale(8),
   },
   searchInput: {
     flex: 1,
@@ -332,19 +333,19 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   clearButton: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: scale(8),
   },
   content: {
     flex: 1,
   },
   contentContainer: {
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingTop: verticalScale(24),
+    paddingHorizontal: scale(24),
+    paddingBottom: verticalScale(40),
   },
   resultsContainer: {
     gap: 0,
@@ -352,16 +353,16 @@ const styles = StyleSheet.create({
   recentSearchContainer: {
   },
   sectionTitle: {
-    marginBottom: 16,
+    marginBottom: verticalScale(16),
   },
   searchList: {
-    marginLeft: 4,
+    marginLeft: scale(4),
   },
   searchItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: verticalScale(10),
   },
   searchItemContent: {
     flex: 1,
@@ -370,31 +371,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deleteButton: {
-    width: 24,
-    height: 24,
+    width: scale(24),
+    height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: 150,
+    paddingTop: verticalScale(150),
   },
   createChallengeButton: {
-    height: 44,
+    height: verticalScale(44),
     backgroundColor: colors.text.primary,
-    borderRadius: 40,
-    paddingHorizontal: 36,
+    borderRadius: scale(40),
+    paddingHorizontal: scale(36),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 10,
+    marginTop: verticalScale(32),
+    marginBottom: verticalScale(10),
   },
   emptyText: {
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: 21,
-    marginTop: 16,
+    lineHeight: verticalScale(21),
+    marginTop: verticalScale(16),
   },
 });
 

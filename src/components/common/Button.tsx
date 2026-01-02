@@ -1,10 +1,11 @@
 import React from 'react';
 import {
-  TouchableOpacity,
-  StyleSheet,
-  ViewStyle,
-  TouchableOpacityProps,
+    TouchableOpacity,
+    StyleSheet,
+    ViewStyle,
+    TouchableOpacityProps,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
@@ -34,10 +35,14 @@ export const Button: React.FC<ButtonProps> = ({
   textColor,
   ...rest
 }) => {
-  const getVariantStyle = (): ViewStyle => {
-    if (disabled) {
-      return { backgroundColor: colors.line };
-    }
+    // variant에 따른 스타일 결정
+    const getVariantStyle = (): ViewStyle => {
+        // 버튼이 비활성화 상태일 경우 gray 스타일 적용
+        if (disabled) {
+            return {
+                backgroundColor: colors.line,
+            };
+        }
 
     switch (variant) {
       case 'black':
@@ -63,8 +68,12 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
-  const getTextColor = (): string => {
-    if (disabled) return colors.icon.gray;
+    // variant에 따른 텍스트 색상 결정
+    const getTextColor = (): string => {
+        // 버튼이 비활성화 상태일 경우
+        if (disabled) {
+            return colors.icon.gray;
+        }
 
     switch (variant) {
       case 'black':
@@ -81,10 +90,30 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
-  const getWidth = (): number => {
-    return size === 'medium' ? 350 : 170;
-  };
+    // size에 따른 maxWidth 결정 (medium: 350px, small: 170px)
+    const getMaxWidth = (): number => {
+        return size === 'medium' ? scale(350) : scale(170);
+    };
 
+    // 렌더링
+    return (
+        <TouchableOpacity
+            style={[
+                styles.button,         // 기본 스타일 적용 (높이, borderRadius 등)
+                getVariantStyle(),     // variant에 따른 버튼 색상
+                { maxWidth: getMaxWidth() }, // 사이즈에 따른 maxWidth
+                style,                 // 사용자가 입력한 스타일 (우선 적용)
+            ]}
+            onPress={onPress}
+            disabled={disabled}        // true면 버튼 비활성화
+            activeOpacity={0.9}        // 터치 시 투명도
+            {...rest}                  // 나머지 Props 전달
+        >
+            <Text variant="md" color={getTextColor()}>
+                {children}
+            </Text>
+        </TouchableOpacity>
+    );
   const getPaddingVertical = (): number => {
     return size === 'small' ? 8 : 14; // Changed from 12 to 8 for small size
   };
@@ -114,10 +143,13 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-  button: {
-    height: 48,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    button: {
+        width: '100%',            // 기본적으로 부모 컨테이너 너비를 따름
+        height: verticalScale(48),               // 고정 높이
+        borderRadius: scale(10),         // 모서리
+        // paddingVertical: verticalScale(14),      // 위아래 여백
+        // paddingHorizontal: scale(10),    // 좌우 여백
+        justifyContent: 'center', // 세로 중앙 정렬
+        alignItems: 'center',     // 가로 중앙 정렬
+    },
 });

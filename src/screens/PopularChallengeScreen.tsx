@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useChallengeStore } from '../store/challengeSlice';
@@ -96,8 +97,8 @@ const PopularChallengeScreen = () => {
                 trackChallengeClick(info.challengeId);
                 navigation.navigate('ChallengeProfile', { challengeId: info.challengeId });
               }}
-              marginBottom={isLast ? 0 : 6}
-              marginHorizontal={20}
+              marginBottom={isLast ? 0 : verticalScale(6)}
+              marginHorizontal={scale(20)}
             />
           );
         })}
@@ -115,22 +116,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingTop: verticalScale(16),
+    paddingBottom: verticalScale(40),
   },
   top10Container: {
     backgroundColor: colors.white,
-    height: 92,
-    marginHorizontal: 20,
-    borderRadius: 20,
-    padding: 24,
+    height: verticalScale(92),
+    marginHorizontal: scale(20),
+    borderRadius: scale(20),
+    padding: scale(24),
     justifyContent: 'flex-start',
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   top10Title: {
     ...typography.header1,
     color: colors.primary.sub,
-    paddingBottom: 4,
+    paddingBottom: verticalScale(4),
   },
   top10Subtitle: {
     ...typography.md,
@@ -138,14 +139,14 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: 212,
+    paddingTop: verticalScale(212),
   },
   emptyText: {
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: 21,
-    marginTop: 32,
+    lineHeight: verticalScale(21),
+    marginTop: verticalScale(32),
   },
 });
 

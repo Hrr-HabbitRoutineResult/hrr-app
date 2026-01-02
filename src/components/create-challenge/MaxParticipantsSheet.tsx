@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { Button } from '../common/Button';
@@ -12,7 +13,7 @@ interface MaxParticipantsSheetProps {
   onConfirm: (count: number) => void;
 }
 
-const ITEM_HEIGHT = 50;
+const ITEM_HEIGHT = Math.round(verticalScale(50));
 const VISIBLE_ITEMS = 5;
 const CONTAINER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
@@ -56,7 +57,7 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} height={350} scrollEnabled={false}>
       <Text variant="header4" color={colors.text.primary} style={styles.title}>
         정원을 선택해 주세요
       </Text>
@@ -70,6 +71,12 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
             decelerationRate="fast"
             onMomentumScrollEnd={handleScroll}
             contentContainerStyle={styles.scrollContent}
+            nestedScrollEnabled={true}
+            scrollEventThrottle={16}
+            bounces={true}
+            overScrollMode="never"
+            removeClippedSubviews={false}
+            disableIntervalMomentum={true}
           >
             {participants.map((count, index) => (
               <View key={index} style={styles.pickerItem}>
@@ -96,14 +103,14 @@ export const MaxParticipantsSheet: React.FC<MaxParticipantsSheetProps> = ({
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   pickerWrapper: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   pickerContainer: {
-    width: 150,
+    width: scale(150),
     height: CONTAINER_HEIGHT,
     position: 'relative',
   },
@@ -124,12 +131,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: ITEM_HEIGHT,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderTopWidth: scale(1),
+    borderBottomWidth: scale(1),
     borderColor: colors.line,
   },
   button: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
 });
 

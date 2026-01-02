@@ -88,8 +88,8 @@ const MyScreen = () => {
             onPressEmpty={() => navigation.navigate('ChallengeList')}
           />
           <View style={styles.sectionSeparator} />
-          <ViewModeHeader 
-            title="인증 기록" 
+          <ViewModeHeader
+            title="인증 기록"
             initialMode={certificationViewMode}
             onViewModeChange={(mode) => setCertificationViewMode(mode)}
             onPressTitle={() => navigation.navigate('CertificationHistory')}
@@ -127,10 +127,10 @@ const MyScreen = () => {
       />
 
       <View style={styles.container}>
-        <ProfileCard 
-          user={mockUserProfile} 
-          badges={[]} 
-          variant="me" 
+        <ProfileCard
+          user={mockUserProfile}
+          badges={[]}
+          variant="me"
           onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower' })}
           onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following' })}
         />

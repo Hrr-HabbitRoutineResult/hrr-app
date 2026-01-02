@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomSheet } from '../common/BottomSheet';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
@@ -54,7 +55,7 @@ export const VerificationDaysSheet: React.FC<VerificationDaysSheetProps> = ({
   const isAllSelected = tempSelectedDays.length === DAYS.length;
 
   return (
-    <BottomSheet visible={visible} onClose={onClose}>
+    <BottomSheet visible={visible} onClose={onClose} height={300}>
       <Text variant="header4" color={colors.text.primary} style={styles.title}>
         인증 요일을 선택해 주세요
       </Text>
@@ -89,9 +90,9 @@ export const VerificationDaysSheet: React.FC<VerificationDaysSheetProps> = ({
         activeOpacity={0.7}
       >
         {isAllSelected ? (
-          <CheckedIcon width={20} height={20} />
+          <CheckedIcon width={10} height={8} />
         ) : (
-          <UncheckedIcon width={20} height={20} />
+          <UncheckedIcon width={10} height={8} />
         )}
         <Text variant="smReg" color={colors.text.tertiary} style={styles.selectAllText}>
           전체 선택
@@ -103,18 +104,18 @@ export const VerificationDaysSheet: React.FC<VerificationDaysSheetProps> = ({
 
 const styles = StyleSheet.create({
   title: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   daysContainer: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
+    gap: scale(8),
+    marginBottom: verticalScale(24),
   },
   dayButton: {
-    width: 44,
-    height: 60,
-    borderRadius: 50,
-    borderWidth: 1.5,
+    width: scale(44),
+    height: verticalScale(60),
+    borderRadius: scale(50),
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     backgroundColor: colors.white,
     justifyContent: 'center',
@@ -128,10 +129,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-end',
-    marginBottom: 20,
-    gap: 6,
+    marginBottom: verticalScale(20),
+    gap: scale(6),
   },
   selectAllText: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
 });

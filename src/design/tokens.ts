@@ -1,3 +1,5 @@
+import { scale, moderateScale } from '../utils/scaling';
+
 export const colors = {
   // Primary
   primary: {
@@ -25,77 +27,78 @@ export const colors = {
 export const typography = {
   // hrr/Header 1
   header1: {
-    fontSize: 24,
+    fontSize: moderateScale(24),
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
   },
   // hrr/Header 2
   header2: {
-    fontSize: 20,
+    fontSize: moderateScale(20),
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
   },
   // hrr/Header 3
   header3: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
   },
   // hrr/Header 4
   header4: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
   },
   // hrr/Md size
   md: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(22),
   },
   // hrr/Sm size (Md)
   smMd: {
-    fontSize: 15,
+    fontSize: moderateScale(15),
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
   },
   // hrr/Sm size (Reg)
   smReg: {
-    fontSize: 15,
+    fontSize: moderateScale(15),
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
   },
   // hrr/Xs size (Md)
   xsMd: {
-    fontSize: 13,
+    fontSize: moderateScale(13),
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
   },
   // hrr/Xs size (Reg)
   xsReg: {
-    fontSize: 13,
+    fontSize: moderateScale(13),
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
   },
   // hrr/Xxs size
   xxs: {
-    fontSize: 12,
+    fontSize: moderateScale(12),
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
   },
   // hrr/caption
   caption: {
-    fontSize: 10,
+    fontSize: moderateScale(10),
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
@@ -103,19 +106,19 @@ export const typography = {
 } as const;
 
 export const spacing = {
-  xxs: 4,
-  xs: 8,
-  sm: 12,
-  md: 16,
-  lg: 20,
-  xl: 24,
-  xxl: 32,
-  xxxl: 40,
+  xxs: scale(4),
+  xs: scale(8),
+  sm: scale(12),
+  md: scale(16),
+  lg: scale(20),
+  xl: scale(24),
+  xxl: scale(32),
+  xxxl: scale(40),
 } as const;
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
+  sm: scale(8),
+  md: scale(12),
+  lg: scale(16),
+  xl: scale(20),
 } as const;

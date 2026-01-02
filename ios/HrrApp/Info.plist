@@ -68,9 +68,13 @@
 			</array>
 		</dict>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.hrrapp</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>hrr</string>
+				<string>com.umc.hrrapp</string>
 			</array>
 		</dict>
 	</array>
@@ -81,6 +85,9 @@
 		<string>kakaokompassauth</string>
 		<string>storykompassauth</string>
 		<string>kakaolink</string>
+		<string>naversearchapp</string>
+		<string>naversearchthirdlogin</string>
+		<string>navercafe</string>
 	</array>
 </dict>
 </plist>

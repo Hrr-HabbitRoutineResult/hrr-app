@@ -44,11 +44,11 @@ export interface UserMeResponse {
 export const getUserMe = async (): Promise<UserMe> => {
   try {
     const response = await apiClient.get<UserMeResponse>('/api/v1/user/me');
-    
+
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    
+
     throw new Error(response.data.message || '사용자 정보를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;
@@ -64,6 +64,7 @@ export interface OngoingChallengeItem {
   description: string;
   image: string;
   currentRound: number;
+  verified: boolean;
 }
 
 /**
@@ -85,7 +86,7 @@ export interface OngoingChallengesResponse {
 /**
  * 참여 중인 챌린지 목록 조회
  */
-export const getOngoingChallenges = async (page: number = 0, size: number = 10): Promise<OngoingChallengeItem[]> => {
+export const getOngoingChallenges = async (page: number = 1, size: number = 10): Promise<OngoingChallengeItem[]> => {
   try {
     const response = await apiClient.get(
       '/api/v1/user/me/challenge/ongoing',
@@ -93,17 +94,17 @@ export const getOngoingChallenges = async (page: number = 0, size: number = 10):
         params: { page, size },
       }
     );
-    
+
     // 먼저 다른 API와 동일한 형식 확인 (isSuccess)
     if (response.data.isSuccess && response.data.result) {
       return response.data.result.content || response.data.result;
     }
-    
+
     // resultType 형식 확인
     if (response.data.resultType === 'SUCCESS' && response.data.success) {
       return response.data.success.content;
     }
-    
+
     throw new Error('참여 중인 챌린지를 불러오는데 실패했습니다.');
   } catch (error: any) {
     throw error;

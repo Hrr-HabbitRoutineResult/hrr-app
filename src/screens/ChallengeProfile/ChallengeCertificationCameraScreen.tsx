@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Image, Alert, Dimensions } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
+import { View, StyleSheet, Image, Alert, Dimensions, Platform } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ViewShot from 'react-native-view-shot';
+import RNBlobUtil from 'react-native-blob-util';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
 import { colors } from '../../design/tokens';
@@ -57,8 +60,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
           setImageSize({ width, height });
         },
         (error) => {
-          console.error('이미지 크기 가져오기 실패:', error);
-          setImageSize({ width: 1024, height: 1024 });
+          // Android 일부 URI에서 getSize 실패 시 폴백
+          setImageSize({ width: scale(1024), height: 1024 });
         }
       );
     } else {
@@ -85,33 +88,36 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
     return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
   };
 
+  /**
+   * S3 presigned PUT 업로드
+   * - Android: `fetch(file://...)`가 실패하므로 react-native-blob-util 사용
+   * - iOS: 기존 fetch + blob 방식
+   */
   const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
     try {
       setIsUploading(true);
 
-      const fileExtension = imageUri.split('.').pop()?.toLowerCase() || 'jpg';
+      // Android: URI에 file:// prefix가 없을 수 있어 보정
+      let normalizedUri = imageUri;
+      if (
+        Platform.OS === 'android' &&
+        !normalizedUri.startsWith('file://') &&
+        !normalizedUri.startsWith('content://')
+      ) {
+        normalizedUri = `file://${normalizedUri}`;
+      }
+
+      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `challenge-cert-${Date.now()}.${fileExtension}`;
+      const mimeType = getMimeType(fileExtension);
 
       const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
 
-      // 이미지를 Blob으로 변환
-      const response = await fetch(imageUri);
-      if (!response.ok) {
-        throw new Error('이미지 로드 실패');
-      }
-      const blob = await response.blob();
-      console.log('업로드할 이미지 크기:', blob.size, 'bytes, 타입:', blob.type);
-
-      if (blob.size === 0) {
-        throw new Error('이미지가 비어있습니다.');
-      }
-
-      // S3 업로드 헤더 구성
       const uploadHeaders: Record<string, string> = {
-        'Content-Type': blob.type || getMimeType(fileExtension),
+        'Content-Type': mimeType,
       };
 
-      // x-amz-acl 헤더 추가
+      // x-amz-acl 헤더 (서명에 포함되어 있으면 추가)
       try {
         const urlParts = presignedUrl.split('?');
         if (urlParts.length > 1) {
@@ -121,32 +127,38 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
           }
         }
       } catch (e) {
-        // URL 파싱 실패 시 무시
+        // 파싱 실패 시에도 업로드 가능하므로 무시
       }
 
-      // S3에 업로드
-      const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
-        body: blob,
-        headers: uploadHeaders,
-      });
+      const localPath = normalizedUri.startsWith('file://')
+        ? normalizedUri.replace(/^file:\/\//, '')
+        : normalizedUri;
 
-      if (!uploadResponse.ok) {
-        throw new Error(`업로드 실패 (${uploadResponse.status})`);
+      if (Platform.OS === 'android') {
+        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
+        const status = resp.info().status;
+        if (status !== 200 && status !== 204) {
+          throw new Error(`업로드 실패 (${status})`);
+        }
+      } else {
+        const response = await fetch(normalizedUri);
+        if (!response.ok) throw new Error('이미지 로드 실패');
+        const blob = await response.blob();
+        if (blob.size === 0) throw new Error('이미지가 비어있습니다.');
+        const uploadResponse = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: blob,
+          headers: uploadHeaders,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`업로드 실패 (${uploadResponse.status})`);
+        }
       }
 
-      // S3 URL 생성
       const s3ImageUrl = presignedUrl.split('?')[0];
-
-      console.log('S3 URL 생성:', {
-        presignedUrl,
-        s3Key,
-        s3ImageUrl,
-      });
 
       return s3ImageUrl;
     } catch (error: any) {
-      console.error('S3 업로드 실패:', error);
       Alert.alert('이미지 업로드 실패', error.message || '알 수 없는 오류');
       return null;
     } finally {
@@ -165,9 +177,9 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
 
     try {
       if (!isImageLoaded) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
       } else {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), 200));
       }
 
       // ViewShot으로 이미지 캡처
@@ -178,8 +190,6 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
       }
 
       const capturedUri = await viewShot.capture();
-
-      console.log('캡처된 이미지 URI:', capturedUri);
 
       if (!capturedUri) {
         Alert.alert('오류', '이미지를 캡처할 수 없습니다.');
@@ -194,17 +204,18 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
 
       // 캡처된 이미지 검증
       try {
-        const testResponse = await fetch(localUri);
-        if (!testResponse.ok) {
-          throw new Error('캡처된 이미지를 읽을 수 없습니다.');
-        }
-        const testBlob = await testResponse.blob();
-        console.log('캡처된 이미지 크기:', testBlob.size, 'bytes');
-        if (testBlob.size === 0) {
-          throw new Error('캡처된 이미지가 비어있습니다.');
+        if (Platform.OS === 'android') {
+          const p = localUri.startsWith('file://') ? localUri.replace(/^file:\/\//, '') : localUri;
+          const stat = await RNBlobUtil.fs.stat(p);
+          const size = Number(stat.size);
+          if (!size || size === 0) throw new Error('캡처된 이미지가 비어있습니다.');
+        } else {
+          const testResponse = await fetch(localUri);
+          if (!testResponse.ok) throw new Error('캡처된 이미지를 읽을 수 없습니다.');
+          const testBlob = await testResponse.blob();
+          if (testBlob.size === 0) throw new Error('캡처된 이미지가 비어있습니다.');
         }
       } catch (error) {
-        console.error('캡처된 이미지 검증 실패:', error);
         Alert.alert('오류', '캡처된 이미지를 확인할 수 없습니다. 다시 시도해주세요.');
         return;
       }
@@ -215,14 +226,11 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
         return;
       }
 
-      console.log('S3 업로드 완료, URL:', s3ImageUrl);
-
       navigation.navigate('ChallengeCertificationPost', {
         challengeId,
         imageUri: s3ImageUrl,
       });
     } catch (error) {
-      console.error('이미지 처리 실패:', error);
       Alert.alert('오류', '이미지를 처리하는데 실패했습니다.');
     }
   };
@@ -255,7 +263,6 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 height: CROP_SIZE,
                 snapshotContentContainer: false,
               }}
-              collapsable={false}
             >
               <Image
                 source={{ uri: selectedImage }}
@@ -271,7 +278,7 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                   setIsImageLoaded(true);
                 }}
                 onError={(error) => {
-                  console.error('ViewShot 내부 이미지 로드 실패:', error);
+                  // 일부 URI에서 onError 발생 가능. 캡처/업로드 단계에서 재검증
                 }}
               />
               {/* 타임스탬프 오버레이 */}
@@ -279,10 +286,16 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 <View style={[
                   styles.timestampContainer,
                   {
-                    bottom: 16,
-                    right: 16,
+                    bottom: verticalScale(16),
+                    right: scale(16),
                   }
                 ]}>
+                  <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="light"
+                    blurAmount={20}
+                    reducedTransparencyFallbackColor="black"
+                  />
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -314,10 +327,16 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 <View style={[
                   styles.timestampContainer,
                   {
-                    bottom: 16,
-                    right: 16,
+                    bottom: verticalScale(16),
+                    right: scale(16),
                   }
                 ]}>
+                  <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="light"
+                    blurAmount={20}
+                    reducedTransparencyFallbackColor="black"
+                  />
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -368,10 +387,10 @@ const styles = StyleSheet.create({
   },
   certificationContent: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(28),
     justifyContent: 'space-between',
-    paddingBottom: 32,
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   loadingContainer: {
@@ -381,7 +400,7 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: verticalScale(80),
   },
   thumbnailContainer: {
     position: 'absolute',
@@ -389,7 +408,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   previewImage: {
-    borderRadius: 20,
+    borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -399,27 +418,30 @@ const styles = StyleSheet.create({
   },
   timestampContainer: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    width: 137,
-    height: 32,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 10,
+    bottom: verticalScale(16),
+    right: scale(16),
+    width: scale(137),
+    height: verticalScale(32),
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   timestampText: {
     color: colors.white,
   },
   certificationButtonContainer: {
-    gap: 10,
-    paddingTop: 20,
+    width: '100%',
+    maxWidth: scale(350),
+    gap: scale(10),
+    paddingTop: verticalScale(20),
   },
   retakeButton: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   certifyButton: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   hiddenViewShot: {
     position: 'absolute',

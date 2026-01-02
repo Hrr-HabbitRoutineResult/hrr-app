@@ -10,6 +10,11 @@ declare module 'react-native-config' {
     API_BASE_URL?: string;
     S3_BUCKET_NAME?: string;
     S3_REGION?: string;
+    NAVER_CONSUMER_KEY?: string;
+    NAVER_CONSUMER_SECRET?: string;
+    NAVER_APP_NAME?: string;
+    NAVER_SERVICE_URL_SCHEME?: string;
+    KAKAO_APP_KEY?: string;
   }
 
   export const Config: NativeConfig;

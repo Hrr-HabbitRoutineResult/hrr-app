@@ -1,4 +1,5 @@
 import React from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -176,46 +177,47 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   skipButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: verticalScale(4),
+    paddingHorizontal: scale(8),
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: scale(24),
     justifyContent: 'space-between',
   },
   q2TitleContainer: {
     alignItems: 'flex-start',
-    paddingTop: 39,
-    paddingBottom: 39,
+    paddingTop: verticalScale(39),
+    paddingBottom: verticalScale(39),
   },
   q2Title: {
     textAlign: 'left',
-    lineHeight: 32,
-    marginBottom: 12,
+    lineHeight: verticalScale(32),
+    marginBottom: verticalScale(12),
   },
   q2Subtitle: {
     textAlign: 'left',
-    lineHeight: 22,
+    lineHeight: verticalScale(22),
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
-    paddingTop: 0,
-    paddingBottom: 39,
-    gap: 10,
+    paddingTop: verticalScale(0),
+    paddingBottom: verticalScale(39),
+    gap: scale(10),
     alignItems: 'center',
   },
   timeSlotCard: {
-    width: 350,
-    height: 80,
-    borderRadius: 20,
-    borderWidth: 1.5,
+    width: '100%',
+    maxWidth: scale(350),
+    height: verticalScale(80),
+    borderRadius: scale(20),
+    borderWidth: scale(1.5),
     borderColor: colors.line,
     backgroundColor: colors.white,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: scale(20),
+    paddingVertical: verticalScale(16),
     justifyContent: 'center',
   },
   timeSlotCardSelected: {
@@ -224,29 +226,29 @@ const styles = StyleSheet.create({
   timeRangeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   timeText: {
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
   timeSeparator: {
-    width: 8,
-    height: 1,
+    width: scale(8),
+    height: verticalScale(1),
     backgroundColor: colors.button,
-    marginHorizontal: 8,
+    marginHorizontal: scale(8),
   },
   description: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
   },
   buttonDivider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
     width: '100%',
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
   disabledButton: {

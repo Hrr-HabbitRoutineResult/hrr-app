@@ -40,6 +40,8 @@ function App() {
 function AppContent() {
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  // 회원가입 직후 추천 온보딩을 보여줄지 여부
+  const [showRecommendation, setShowRecommendation] = useState(false);
   const appState = useRef(AppState.currentState);
 
   // 인증 상태 확인 함수
@@ -87,7 +89,9 @@ function AppContent() {
     };
   }, []);
 
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = (showOnboarding = false) => {
+    // 신규 유저인 경우 추천 온보딩 플래그 설정
+    setShowRecommendation(showOnboarding);
     setIsOnboardingComplete(true);
   };
 
@@ -97,7 +101,7 @@ function AppContent() {
   }
 
   if (isOnboardingComplete) {
-    return <RootNavigator />;
+    return <RootNavigator showRecommendation={showRecommendation} />;
   }
 
   return (

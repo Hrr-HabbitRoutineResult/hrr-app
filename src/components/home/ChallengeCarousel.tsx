@@ -9,6 +9,7 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
@@ -21,8 +22,8 @@ import CheckboxChecked from '../../../assets/icons/checkbox-checked.svg';
 import CheckboxUnchecked from '../../../assets/icons/checkbox-unchecked.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
-const ITEM_SIZE = 200;
-const SPACING = 20;
+const ITEM_SIZE = scale(200);
+const SPACING = scale(20);
 const SNAP_INTERVAL = ITEM_SIZE + SPACING;
 
 type ChallengeCarouselProps = {
@@ -73,7 +74,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
           />
           <View style={styles.overlay}>
             <View style={styles.challengeInfo}>
-              {item.todayEligible ? (
+              {item.verified ? (
                 <CheckboxChecked width={12} height={10} />
               ) : (
                 <CheckboxUnchecked width={12} height={10} />
@@ -90,14 +91,18 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   if (challenges.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <View style={styles.emptyCircle}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('ChallengeList', { category: 'all' })}
+          style={styles.emptyCircle}
+        >
           <View style={styles.contentWrapper}>
             <PlusIcon width={20} height={20} />
             <Text style={styles.emptyText}>
               새로운 챌린지에{'\n'}가입해 보세요
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -138,10 +143,10 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 19,
+    marginTop: verticalScale(19),
   },
   paginationWrapper: {
-    marginTop: 12,
+    marginTop: verticalScale(12),
   },
   emptyContainer: {
     alignItems: 'center',
@@ -149,9 +154,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   emptyCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: scale(200),
+    height: verticalScale(200),
+    borderRadius: scale(100),
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
@@ -164,8 +169,8 @@ const styles = StyleSheet.create({
     ...typography.xsReg,
     color: colors.text.tertiary,
     textAlign: 'center',
-    marginTop: 20,
-    lineHeight: 18,
+    marginTop: verticalScale(20),
+    lineHeight: verticalScale(18),
   },
   itemContainer: {
     width: ITEM_SIZE,
@@ -191,7 +196,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingBottom: 36,
+    paddingBottom: verticalScale(36),
   },
   challengeInfo: {
     flexDirection: 'row',
@@ -200,7 +205,7 @@ const styles = StyleSheet.create({
   challengeName: {
     ...typography.xsMd,
     color: colors.white,
-    marginLeft: 10,
+    marginLeft: scale(10),
   },
 });
 

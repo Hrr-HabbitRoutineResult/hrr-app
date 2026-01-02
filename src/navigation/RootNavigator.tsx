@@ -13,9 +13,11 @@ import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
+import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/ChallengeCertificationScreen';
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
 import { ChallengeCertificationPostScreen } from '../screens/ChallengeProfile/ChallengeCertificationPostScreen';
 import { ChallengeCertificationDetailScreen } from '../screens/ChallengeProfile/ChallengeCertificationDetailScreen';
+import { ChallengeCertificationEditScreen } from '../screens/ChallengeProfile/ChallengeCertificationEditScreen';
 import PopularChallengeScreen from '../screens/PopularChallengeScreen';
 import { CreateChallengeQ1 } from '../screens/CreateChallenge/CreateChallengeQ1';
 import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2';
@@ -40,7 +42,12 @@ const OnboardingScreenWrapper = () => {
   return (
     <OnboardingScreen
       onComplete={() => {
-        navigation.goBack();
+        // 뒤로 갈 화면이 있으면 goBack, 없으면(최초 회원가입 시) 홈으로 이동
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.replace('HomeTabs');
+        }
       }}
     />
   );
@@ -61,7 +68,11 @@ const HomeTabs = () => (
   </Tab.Navigator>
 );
 
-const RootNavigator = () => (
+/**
+ * RootNavigator
+ * @param showRecommendation 최초 회원가입 후 추천 온보딩 표시 여부
+ */
+const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: boolean }) => (
   <CreateChallengeProvider>
     <NavigationContainer
       onReady={() => {
@@ -69,15 +80,18 @@ const RootNavigator = () => (
         RNBootSplash.hide({ fade: true });
       }}
     >
-      <Stack.Navigator>
+      {/* showRecommendation이 true이면 온보딩을 첫 화면으로 설정 */}
+      <Stack.Navigator initialRouteName={showRecommendation ? 'Onboarding' : 'HomeTabs'}>
         <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertification" component={ChallengeCertificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationPost" component={ChallengeCertificationPostScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationDetail" component={ChallengeCertificationDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationEdit" component={ChallengeCertificationEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity, Alert } from 'react-native';
+import { scale, verticalScale } from '../utils/scaling';
 import { useChallengeStore } from '../store/challengeSlice';
 import { useUserStore } from '../store/userSlice';
 import { colors, typography, spacing } from '../design/tokens';
@@ -163,35 +164,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   welcomeContainer: {
-    paddingLeft: 20,
-    paddingTop: 16,
+    paddingLeft: scale(20),
+    paddingTop: verticalScale(16),
   },
   welcomeSubtitle: {
     ...typography.smMd,
     color: colors.text.secondary,
   },
   welcomeTitle: {
-    marginTop: 3,
+    marginTop: verticalScale(3),
     ...typography.header2,
     color: colors.text.primary,
   },
   suggestButtonContainer: {
-    marginTop: 20,
-    marginBottom: 24,
-    paddingHorizontal: 20,
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(24),
+    paddingHorizontal: scale(20),
   },
   divider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
   },
   listContainer: {
     backgroundColor: colors.background,
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    paddingBottom: 130,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(28),
+    paddingBottom: verticalScale(130),
   },
   sectionContainer: {
-    marginBottom: 36,
+    marginBottom: verticalScale(36),
   },
   lastSection: {
     marginBottom: 0,
@@ -200,13 +201,13 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 10,
-    marginBottom: 10,
+    paddingTop: verticalScale(10),
+    marginBottom: verticalScale(10),
   },
   sectionTitle: {
     ...typography.header4,
     color: colors.text.primary,
-    lineHeight: 20,
+    lineHeight: verticalScale(20),
   },
 });
 

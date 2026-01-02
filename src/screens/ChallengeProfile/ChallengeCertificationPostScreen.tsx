@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
-import { colors } from '../../design/tokens';
+import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { createPhotoVerification } from '../../libs/api/challenge';
 import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
@@ -30,7 +31,6 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
 
   // 이미지 URI 받은 그대로 사용
   React.useEffect(() => {
-    console.log('PostScreen - 받은 imageUri (S3 URL):', imageUri);
   }, [imageUri]);
 
   const handleBack = () => {
@@ -40,11 +40,20 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
   // S3 URL에서 s3Key 추출
   const extractS3Key = (s3Url: string): string | null => {
     try {
-      const url = new URL(s3Url);
-      // pathname에서 첫 번째 슬래시 제거
-      return url.pathname.substring(1);
+      // URL에서 도메인 부분 제거하고 경로만 추출
+      const urlParts = s3Url.split('.amazonaws.com/');
+      if (urlParts.length < 2) {
+        return null;
+      }
+
+      let key = urlParts[1];
+      // 끝에 슬래시가 있으면 제거
+      if (key.endsWith('/')) {
+        key = key.slice(0, -1);
+      }
+
+      return key;
     } catch (error) {
-      console.error('S3 Key 추출 실패:', error);
       return null;
     }
   };
@@ -62,6 +71,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
 
     // S3 URL에서 s3Key 추출
     const s3Key = extractS3Key(imageUri);
+
     if (!s3Key) {
       Alert.alert('오류', '이미지 정보를 가져올 수 없습니다.');
       return;
@@ -77,13 +87,33 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         isQuestion: isQuestionEnabled,
       });
 
-      // 게시글 상세 화면으로 이동 (응답 데이터 전달)
+      // 게시글 상세 화면으로 이동
       navigation.navigate('ChallengeCertificationDetail', {
         verification: result,
       });
+
+      // 다음 프레임에서 카메라와 글 작성 화면을 스택에서 제거
+      // 인증글 상세 화면에서 뒤로가기 시 글 작성>사진 촬영으로 돌아가는 것 방지
+      setTimeout(() => {
+        const state = navigation.getState();
+        const routes = state.routes.filter(
+          (route: any) =>
+            route.name !== 'ChallengeCertificationCamera' &&
+            route.name !== 'ChallengeCertificationPost'
+        );
+
+        navigation.dispatch(
+          CommonActions.reset({
+            ...state,
+            routes,
+            index: routes.length - 1,
+          })
+        );
+      }, 100);
     } catch (error: any) {
-      console.error('게시글 작성 실패:', error);
-      Alert.alert('오류', error.message || '게시글 작성에 실패했습니다.');
+
+      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -102,8 +132,8 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         title="새 게시글"
         showDivider={true}
         rightContent={
-          <TouchableOpacity 
-            onPress={handlePost} 
+          <TouchableOpacity
+            onPress={handlePost}
             activeOpacity={0.7}
             disabled={isSubmitting}
           >
@@ -132,17 +162,14 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
                 style={styles.thumbnailImage}
                 resizeMode="cover"
                 onError={(error) => {
-                  console.error('이미지 로드 실패:', error);
-                  console.error('시도한 URI:', imageUri);
                   setImageError(true);
                 }}
                 onLoad={() => {
-                  console.log('이미지 로드 성공:', imageUri);
                 }}
               />
             ) : (
               <View style={[styles.thumbnailImage, styles.placeholderContainer]}>
-                <Text variant="sm" color={colors.text.tertiary}>
+                <Text variant="xsReg" color={colors.text.tertiary}>
                   {imageError ? '이미지를 불러올 수 없습니다' : '이미지 로딩 중...'}
                 </Text>
               </View>
@@ -215,23 +242,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 32,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(24),
+    paddingBottom: verticalScale(32),
   },
   imageContainer: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   thumbnailContainer: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
+    width: scale(200),
+    height: verticalScale(200),
+    borderRadius: scale(10),
     overflow: 'hidden',
     position: 'relative',
   },
   thumbnailImage: {
-    width: 200,
-    height: 200,
+    width: scale(200),
+    height: verticalScale(200),
   },
   placeholderContainer: {
     backgroundColor: colors.background,
@@ -239,56 +266,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputContainer: {
-    height: 54,
+    height: verticalScale(54),
     backgroundColor: colors.background,
-    borderRadius: 10,
-    marginBottom: 12,
+    borderRadius: scale(10),
+    marginBottom: verticalScale(12),
     overflow: 'hidden',
   },
   inputRow: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: scale(16),
     justifyContent: 'center',
   },
   input: {
-    fontSize: 15,
-    fontFamily: 'Pretendard-Regular',
+    ...typography.smReg,
     color: colors.text.primary,
     padding: 0,
     minHeight: 40,
   },
   rulesContainer: {
-    height: 208,
+    height: verticalScale(208),
     backgroundColor: colors.background,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    marginBottom: 8,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(16),
+    paddingTop: verticalScale(18),
+    marginBottom: verticalScale(8),
   },
   rulesInput: {
     flex: 1,
-    fontSize: 15,
-    fontFamily: 'Pretendard-Regular',
+    ...typography.smReg,
     color: colors.text.secondary,
     padding: 0,
   },
   characterCount: {
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
     textAlign: 'right',
-    paddingRight: 4,
+    paddingRight: scale(4),
   },
   questionSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   questionInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: scale(16),
   },
   questionDescription: {
-    marginTop: 4,
-    lineHeight: 18,
+    marginTop: verticalScale(4),
+    lineHeight: verticalScale(18),
   },
 });

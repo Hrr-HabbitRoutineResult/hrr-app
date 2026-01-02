@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { colors, typography } from '../../design/tokens';
 
 interface SortSelectorProps {
@@ -56,17 +57,17 @@ export const SortSelector: React.FC<SortSelectorProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
+    gap: scale(8),
   },
   optionButton: {
-    width: 110,
-    height: 38,
+    width: scale(110),
+    height: verticalScale(38),
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderWidth: 1.5,
+    borderWidth: scale(1.5),
     borderColor: colors.line,
-    borderRadius: 40,
+    borderRadius: scale(40),
   },
   optionButtonSelected: {
     backgroundColor: colors.text.primary,

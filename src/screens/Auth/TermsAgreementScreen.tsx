@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
@@ -297,32 +298,32 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(40),
     justifyContent: 'space-between',
   },
   topContent: {
     flex: 1,
   },
   titleContainer: {
-    marginBottom: 28,
+    marginBottom: verticalScale(28),
   },
   title: {
-    lineHeight: 30,
+    lineHeight: verticalScale(30),
     includeFontPadding: false,
   },
   descriptionContainer: {
-    marginBottom: 32,
+    marginBottom: verticalScale(32),
   },
   description: {
-    lineHeight: 18,
+    lineHeight: verticalScale(18),
     includeFontPadding: false,
   },
   agreementSection: {
-    marginBottom: 60,
+    marginBottom: verticalScale(60),
   },
   allAgreeContainer: {
-    marginBottom: 0,
+    marginBottom: verticalScale(0),
   },
   allAgreeContent: {
     flexDirection: 'row',
@@ -330,19 +331,19 @@ const styles = StyleSheet.create({
   },
   allAgreeText: {
     flex: 1,
-    marginLeft: 12,
-    lineHeight: 16,
+    marginLeft: scale(12),
+    lineHeight: verticalScale(16),
   },
   divider: {
-    height: 1,
+    height: verticalScale(1),
     backgroundColor: colors.line,
-    marginTop: 12,
-    marginBottom: 30,
+    marginTop: verticalScale(12),
+    marginBottom: verticalScale(30),
   },
   termsList: {
-    gap: 20,
-    marginLeft: 10,
-    marginRight: 16,
+    gap: scale(20),
+    marginLeft: scale(10),
+    marginRight: scale(16),
   },
   termItem: {
     flexDirection: 'row',
@@ -355,21 +356,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   termTextContainer: {
-    marginLeft: 14,
+    marginLeft: scale(14),
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
   termText: {
-    marginRight: 4,
-    lineHeight: 16,
+    marginRight: scale(4),
+    lineHeight: verticalScale(16),
   },
   termRequired: {
-    lineHeight: 13,
+    lineHeight: verticalScale(13),
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(32),
     alignItems: 'center',
   },
 });
