@@ -9,6 +9,7 @@ export type RootStackParamList = {
   ChallengeCertification: { challengeId: number };
   ChallengeRanking: { challengeId: number };
   ChallengeCertificationCamera: { challengeId: number };
+  ChallengeCertificationText: { challengeId: number };
   ChallengeCertificationPost: { challengeId: number; imageUri: string };
   ChallengeCertificationDetail: { verification?: VerificationDetail; verificationId?: number };
   ChallengeCertificationEdit: { verification: VerificationDetailResponse['result'] };

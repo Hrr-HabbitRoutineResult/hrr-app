@@ -58,6 +58,7 @@ export interface ChallengeDetail {
   challengeId: number;
   title: string;
   description: string;
+  verificationType: 'PHOTO' | 'TEXT';
   imageUrl: string;
   currentParticipantCount: number;
   maxParticipantCount: number;
@@ -692,6 +693,40 @@ export const createPhotoVerification = async (
   try {
     const response = await apiClient.post<CreatePhotoVerificationResponse>(
       `/api/v1/verifications/${challengeId}/photo`,
+      data
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '게시글 작성에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 글 인증 게시글 작성 요청
+ */
+export interface CreateTextVerificationRequest {
+  title: string;
+  content: string;
+  textUrl: string;
+  photoUrl: string;
+  isQuestion: boolean;
+}
+
+/**
+ * 글 인증 게시글 작성
+ */
+export const createTextVerification = async (
+  challengeId: number,
+  data: CreateTextVerificationRequest
+): Promise<VerificationDetail> => {
+  try {
+    const response = await apiClient.post<CreatePhotoVerificationResponse>(
+      `/api/v1/verifications/${challengeId}/text`,
       data
     );
 

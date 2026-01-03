@@ -466,8 +466,12 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    // 모든 조건을 만족하면 인증 화면으로 이동
-    navigation.navigate('ChallengeCertificationCamera', { challengeId });
+    // 모든 조건을 만족하면 인증 타입에 따라 화면 이동
+    if (data.verificationType === 'PHOTO') {
+      navigation.navigate('ChallengeCertificationCamera', { challengeId });
+    } else if (data.verificationType === 'TEXT') {
+      navigation.navigate('ChallengeCertificationText', { challengeId });
+    }
   };
 
   const handleParticipateConfirm = async () => {
@@ -789,9 +793,7 @@ export const ChallengeProfileScreen: React.FC = () => {
                               title: item.title,
                               description: item.content,
                               date: formattedDate,
-                              thumbnail: item.imageUrl
-                                ? { uri: item.imageUrl }
-                                : require('../../../assets/images/mock-challenge-profile.png'),
+                              thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                               isQuestion: item.isQuestion,
                               isResolved: item.isResolved,
                             };
