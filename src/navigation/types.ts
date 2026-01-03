@@ -13,6 +13,7 @@ export type RootStackParamList = {
   ChallengeCertificationPost: { challengeId: number; imageUri: string };
   ChallengeCertificationDetail: { verification?: VerificationDetail; verificationId?: number };
   ChallengeCertificationEdit: { verification: VerificationDetailResponse['result'] };
+  ChallengeCertificationTextEdit: { verification: VerificationDetailResponse['result'] };
   PopularChallenge: undefined;
   Search: undefined;
   CreateChallengeQ1: undefined;

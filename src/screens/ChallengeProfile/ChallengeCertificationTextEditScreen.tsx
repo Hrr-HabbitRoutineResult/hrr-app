@@ -2,40 +2,52 @@ import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import RNBlobUtil from 'react-native-blob-util';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { createTextVerification, getPresignedUrl } from '../../libs/api/challenge';
+import { updateVerification, getPresignedUrl } from '../../libs/api/challenge';
 import { openGalleryMultiple } from '../../libs/imagePicker';
-import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
-import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
 import PostGalleryIcon from '../../../assets/icons/challenge-profile/post-gallery.svg';
 import PostLinkIcon from '../../../assets/icons/challenge-profile/post-link.svg';
 import DeleteIcon from '../../../assets/icons/challenge-profile/delete.svg';
 
-type ChallengeCertificationTextScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationText'>;
-type ChallengeCertificationTextScreenNavigationProp = StackNavigationProp<
+type ChallengeCertificationTextEditScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationTextEdit'>;
+type ChallengeCertificationTextEditScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
-  'ChallengeCertificationText'
+  'ChallengeCertificationTextEdit'
 >;
 
-export const ChallengeCertificationTextScreen: React.FC = () => {
-  const navigation = useNavigation<ChallengeCertificationTextScreenNavigationProp>();
-  const route = useRoute<ChallengeCertificationTextScreenRouteProp>();
-  const { challengeId } = route.params;
+export const ChallengeCertificationTextEditScreen: React.FC = () => {
+  const navigation = useNavigation<ChallengeCertificationTextEditScreenNavigationProp>();
+  const route = useRoute<ChallengeCertificationTextEditScreenRouteProp>();
+  const { verification } = route.params;
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [isQuestionEnabled, setIsQuestionEnabled] = useState(false);
+  const [title, setTitle] = useState(verification.title || '');
+  const [content, setContent] = useState(verification.content || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedImages, setSelectedImages] = useState<Array<{ uri: string; url: string; uploading: boolean }>>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // 기존 이미지 초기화
+  useEffect(() => {
+    if (verification.photoUrl) {
+      const cleanUrl = verification.photoUrl.endsWith('/')
+        ? verification.photoUrl.slice(0, -1)
+        : verification.photoUrl;
+
+      setSelectedImages([{
+        uri: cleanUrl,
+        url: cleanUrl,
+        uploading: false,
+      }]);
+    }
+  }, [verification.photoUrl]);
 
   // 키보드 이벤트 리스너
   useEffect(() => {
@@ -194,7 +206,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     Alert.alert('알림', '링크 첨부 기능은 준비 중입니다.');
   };
 
-  const handlePost = async () => {
+  const handleComplete = async () => {
     if (!title.trim()) {
       Alert.alert('알림', '제목을 입력해주세요.');
       return;
@@ -215,42 +227,26 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 첫 번째 업로드된 이미지의 전체 URL 사용
+      // 첫 번째 이미지 URL 사용
       const photoUrl = selectedImages.length > 0 && selectedImages[0].url
         ? selectedImages[0].url
         : '';
 
-      const result = await createTextVerification(challengeId, {
+      await updateVerification(verification.verificationId, {
         title: title.trim(),
         content: content.trim(),
         textUrl: '',
         photoUrl: photoUrl,
-        isQuestion: isQuestionEnabled,
       });
 
-      // 게시글 상세 화면으로 이동
-      navigation.navigate('ChallengeCertificationDetail', {
-        verification: result,
-      });
-
-      // 다음 프레임에서 글 작성 화면을 스택에서 제거
-      // 인증글 상세 화면에서 뒤로가기 시 글 작성으로 돌아가는 것 방지
-      setTimeout(() => {
-        const state = navigation.getState();
-        const routes = state.routes.filter(
-          (route: any) => route.name !== 'ChallengeCertificationText'
-        );
-
-        navigation.dispatch(
-          CommonActions.reset({
-            ...state,
-            routes,
-            index: routes.length - 1,
-          })
-        );
-      }, 100);
+      Alert.alert('성공', '게시글이 수정되었습니다.', [
+        {
+          text: '확인',
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      const errorMessage = error.response?.data?.message || error.message || '게시글 수정에 실패했습니다.';
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -267,11 +263,11 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         onBack={handleBack}
-        title="새 게시글"
+        title="게시글 수정"
         showDivider={true}
         rightContent={
           <TouchableOpacity
-            onPress={handlePost}
+            onPress={handleComplete}
             activeOpacity={0.7}
             disabled={isSubmitting}
           >
@@ -279,7 +275,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
               <ActivityIndicator size="small" color={colors.text.primary} />
             ) : (
               <Text variant="smMd" color={colors.text.primary}>
-                게시
+                완료
               </Text>
             )}
           </TouchableOpacity>
@@ -291,7 +287,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         contentContainerStyle={[
           styles.scrollContent,
           isKeyboardVisible && {
-            paddingBottom: keyboardHeight + verticalScale(80), // 키보드 높이 + 하단 바 높이
+            paddingBottom: keyboardHeight + verticalScale(80),
           }
         ]}
         showsVerticalScrollIndicator={false}
@@ -357,28 +353,6 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
             ))}
           </ScrollView>
         )}
-
-        {/* 질문 등록 토글 */}
-        <View style={styles.questionSection}>
-          <View style={styles.questionInfo}>
-            <Text variant="md" color={colors.text.primary}>
-              질문 등록
-            </Text>
-            <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
-              챌린저들에게 빠른 답변을 받을 수 있어요
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
-            activeOpacity={0.7}
-          >
-            {isQuestionEnabled ? (
-              <ToggleOnIcon width={48} height={28} />
-            ) : (
-              <ToggleOffIcon width={48} height={28} />
-            )}
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
       {/* 하단 첨부 바 */}
@@ -502,20 +476,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  questionSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    // marginTop: verticalScale(4),
-  },
-  questionInfo: {
-    flex: 1,
-    marginRight: scale(16),
-  },
-  questionDescription: {
-    marginTop: verticalScale(4),
-    lineHeight: verticalScale(18),
   },
   keyboardAvoidingView: {
     position: 'absolute',

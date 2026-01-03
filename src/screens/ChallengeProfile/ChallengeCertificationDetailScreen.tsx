@@ -187,10 +187,16 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
     if (!verification) return;
 
-    // 수정 화면으로 이동
-    navigation.navigate('ChallengeCertificationEdit', {
-      verification: verification
-    });
+    // 타입에 따라 다른 수정 화면으로 이동
+    if (verification.type === 'TEXT') {
+      navigation.navigate('ChallengeCertificationTextEdit', {
+        verification: verification
+      });
+    } else {
+      navigation.navigate('ChallengeCertificationEdit', {
+        verification: verification
+      });
+    }
   };
 
   const handleDelete = async () => {
