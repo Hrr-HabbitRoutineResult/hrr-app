@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
-import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import RNBlobUtil from 'react-native-blob-util';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import { createTextVerification } from '../../libs/api/challenge';
+import { createTextVerification, getPresignedUrl } from '../../libs/api/challenge';
+import { openGalleryMultiple } from '../../libs/imagePicker';
 import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
 import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
 import PostGalleryIcon from '../../../assets/icons/challenge-profile/post-gallery.svg';
 import PostLinkIcon from '../../../assets/icons/challenge-profile/post-link.svg';
+import DeleteIcon from '../../../assets/icons/challenge-profile/delete.svg';
 
 type ChallengeCertificationTextScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationText'>;
 type ChallengeCertificationTextScreenNavigationProp = StackNavigationProp<
@@ -31,6 +34,8 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [selectedImages, setSelectedImages] = useState<Array<{ uri: string; url: string; uploading: boolean }>>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // 키보드 이벤트 리스너
   useEffect(() => {
@@ -59,9 +64,129 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  const handleGalleryPress = () => {
-    // TODO: 갤러리에서 이미지 선택 기능 구현
-    Alert.alert('알림', '갤러리 기능은 준비 중입니다.');
+  const getMimeType = (extension: string): string => {
+    const mimeTypes: Record<string, string> = {
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+    };
+    return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
+  };
+
+  // S3에 이미지 업로드
+  const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
+    try {
+      // Android: URI에 file:// prefix가 없을 수 있어 보정
+      let normalizedUri = imageUri;
+      if (
+        Platform.OS === 'android' &&
+        !normalizedUri.startsWith('file://') &&
+        !normalizedUri.startsWith('content://')
+      ) {
+        normalizedUri = `file://${normalizedUri}`;
+      }
+
+      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `text-verification-${Date.now()}.${fileExtension}`;
+      const mimeType = getMimeType(fileExtension);
+
+      const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
+
+      const uploadHeaders: Record<string, string> = {
+        'Content-Type': mimeType,
+      };
+
+      // x-amz-acl 헤더 (서명에 포함되어 있으면 추가)
+      try {
+        const urlParts = presignedUrl.split('?');
+        if (urlParts.length > 1) {
+          const params = urlParts[1];
+          if (params.includes('X-Amz-SignedHeaders') && params.includes('x-amz-acl')) {
+            uploadHeaders['x-amz-acl'] = 'public-read';
+          }
+        }
+      } catch (e) {
+        // 파싱 실패 시에도 업로드 가능하므로 무시
+      }
+
+      const localPath = normalizedUri.startsWith('file://')
+        ? normalizedUri.replace(/^file:\/\//, '')
+        : normalizedUri;
+
+      if (Platform.OS === 'android') {
+        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
+        const status = resp.info().status;
+        if (status !== 200 && status !== 204) {
+          throw new Error(`업로드 실패 (${status})`);
+        }
+      } else {
+        const response = await fetch(normalizedUri);
+        if (!response.ok) throw new Error('이미지 로드 실패');
+        const blob = await response.blob();
+        if (blob.size === 0) throw new Error('이미지가 비어있습니다.');
+        const uploadResponse = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: blob,
+          headers: uploadHeaders,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`업로드 실패 (${uploadResponse.status})`);
+        }
+      }
+
+      const s3Url = presignedUrl.split('?')[0];
+      return s3Url;
+    } catch (error: any) {
+      Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error.message}`);
+      return null;
+    }
+  };
+
+  const handleGalleryPress = async () => {
+    try {
+      const assets = await openGalleryMultiple(10);
+
+      if (assets && assets.length > 0) {
+        // 선택한 이미지들을 state에 추가 (uploading 상태로)
+        const newImages = assets.map(asset => ({
+          uri: asset.uri!,
+          url: '',
+          uploading: true,
+        }));
+
+        setSelectedImages(prev => [...prev, ...newImages]);
+
+        // 각 이미지를 S3에 업로드
+        for (let i = 0; i < assets.length; i++) {
+          const asset = assets[i];
+          if (asset.uri) {
+            const s3Url = await uploadImageToS3(asset.uri);
+
+            if (s3Url) {
+              // 업로드 완료된 이미지의 url 업데이트
+              setSelectedImages(prev =>
+                prev.map(img =>
+                  img.uri === asset.uri
+                    ? { ...img, url: s3Url, uploading: false }
+                    : img
+                )
+              );
+            } else {
+              // 업로드 실패 시 해당 이미지 제거
+              setSelectedImages(prev => prev.filter(img => img.uri !== asset.uri));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      Alert.alert('오류', '이미지 선택에 실패했습니다.');
+    }
+  };
+
+  const handleRemoveImage = (uri: string) => {
+    setSelectedImages(prev => prev.filter(img => img.uri !== uri));
   };
 
   const handleLinkPress = () => {
@@ -80,14 +205,26 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       return;
     }
 
+    // 아직 업로드 중인 이미지가 있는지 확인
+    const uploadingImages = selectedImages.filter(img => img.uploading);
+    if (uploadingImages.length > 0) {
+      Alert.alert('알림', '이미지 업로드가 완료될 때까지 기다려주세요.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
+
+      // 첫 번째 업로드된 이미지의 전체 URL 사용
+      const photoUrl = selectedImages.length > 0 && selectedImages[0].url
+        ? selectedImages[0].url
+        : '';
 
       const result = await createTextVerification(challengeId, {
         title: title.trim(),
         content: content.trim(),
         textUrl: '',
-        photoUrl: '',
+        photoUrl: photoUrl,
         isQuestion: isQuestionEnabled,
       });
 
@@ -188,6 +325,38 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
           {content.length}/200
         </Text>
+
+        {/* 선택한 이미지 썸네일들 */}
+        {selectedImages.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.thumbnailsScrollView}
+            contentContainerStyle={styles.thumbnailsContent}
+          >
+            {selectedImages.map((image, index) => (
+              <View key={`${image.uri}-${index}`} style={styles.thumbnailContainer}>
+                <Image
+                  source={{ uri: image.uri }}
+                  style={styles.thumbnail}
+                  resizeMode="cover"
+                />
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => handleRemoveImage(image.uri)}
+                  activeOpacity={0.7}
+                >
+                  <DeleteIcon width={24} height={24} />
+                </TouchableOpacity>
+                {image.uploading && (
+                  <View style={styles.uploadingOverlay}>
+                    <ActivityIndicator size="small" color={colors.white} />
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+        )}
 
         {/* 질문 등록 토글 */}
         <View style={styles.questionSection}>
@@ -298,11 +467,49 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     paddingRight: scale(4),
   },
+  thumbnailsScrollView: {
+    marginBottom: verticalScale(24),
+  },
+  thumbnailsContent: {
+    gap: scale(8),
+  },
+  thumbnailContainer: {
+    width: scale(100),
+    height: verticalScale(100),
+    borderRadius: scale(10),
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  thumbnail: {
+    width: '100%',
+    height: '100%',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: scale(6),
+    right: scale(6),
+    width: scale(24),
+    height: scale(24),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: scale(12),
+  },
+  uploadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   questionSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: verticalScale(8),
+    // marginTop: verticalScale(4),
   },
   questionInfo: {
     flex: 1,
