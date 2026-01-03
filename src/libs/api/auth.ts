@@ -339,3 +339,32 @@ export const logout = async (): Promise<LogoutResponse> => {
     throw error;
   }
 };
+
+/**
+ * ============================================
+ * 회원탈퇴
+ * ============================================
+ */
+
+/**
+ * 회원탈퇴 응답
+ */
+export interface WithdrawResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: string; // As per user's provided response format
+}
+
+/**
+ * 회원탈퇴 API 호출
+ */
+export const withdraw = async (): Promise<WithdrawResponse> => {
+  try {
+    const response = await apiClient.post<WithdrawResponse>(`/api/v1/auth/withdraw`);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

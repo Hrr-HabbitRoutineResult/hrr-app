@@ -8,6 +8,7 @@ import { colors, spacing } from '../design/tokens';
 import SettingSection from '../components/MyPage/SettingSection';
 import SettingItem from '../components/MyPage/SettingItem';
 import { handleLogout } from '../libs/auth/logout';
+import { withdraw } from '../libs/api/auth'; // Import withdraw API
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { WithdrawBottomSheet } from '../components/MyPage/WithdrawBottomSheet';
 
@@ -33,30 +34,18 @@ const AccountSettingsScreen = () => {
     const handleWithdrawConfirm = async () => {
       setWithdrawSheetVisible(false); // 시트 닫기
 
-      Alert.alert(
-        '회원 탈퇴',
-        '회원 탈퇴가 완료되었습니다.',
-        [
+      try {
+        await withdraw(); // 실제 API 호출
+        Alert.alert('회원 탈퇴', '회원 탈퇴가 완료되었습니다.', [
           { text: '확인', onPress: async () => {
-              // TODO: 회원 탈퇴 API 연동
-              console.log('회원 탈퇴 API 호출 (현재 주석 처리됨)');
-              // try {
-              //   await deleteAccount(); // 실제 API 호출
-              //   await handleLogout(); // 회원 탈퇴 후 로그아웃 처리
-              //   navigation.reset({
-              //     index: 0,
-              //     routes: [{ name: 'Onboarding' }],
-              //   });
-              // } catch (error) {
-              //   console.error('회원 탈퇴 실패:', error);
-              //   Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
-              // }
-              performLogout(); // API 연동 전 임시로 로그아웃 처리
-            }
-          },
-        ],
-        { cancelable: false }
-      );
+            await handleLogout(); // 회원 탈퇴 후 로그아웃 처리 (토큰 삭제 및 온보딩으로 이동)
+            // handleLogout 내에서 이미 navigation.reset을 수행하므로 여기서 추가 호출 불필요
+          }},
+        ], { cancelable: false });
+      } catch (error: any) {
+        console.error('회원 탈퇴 실패:', error);
+        Alert.alert('오류', error.response?.data?.message || '회원 탈퇴에 실패했습니다.');
+      }
     };
 
     return (
