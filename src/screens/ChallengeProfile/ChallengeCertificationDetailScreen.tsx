@@ -570,7 +570,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </Text>
 
         {/* 이미지 */}
-        {verification.photoUrl ? (
+        {verification.photoUrl && (
           <View style={styles.imageContainer}>
             <Image
               source={{ uri: verification.photoUrl }}
@@ -581,12 +581,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               onError={(error) => {
               }}
             />
-          </View>
-        ) : (
-          <View style={styles.imageContainer}>
-            <Text variant="smReg" color={colors.text.tertiary}>
-              이미지가 없습니다
-            </Text>
           </View>
         )}
 
