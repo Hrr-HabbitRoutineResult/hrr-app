@@ -22,6 +22,10 @@ export const colors = {
   line: '#E9EDF4',
   background: '#F7F8FB',
   white: '#FFFFFF',
+  destructive: {
+    ios: '#FF3B30',
+    Android: '#E53935'
+  }
 } as const;
 
 export const typography = {

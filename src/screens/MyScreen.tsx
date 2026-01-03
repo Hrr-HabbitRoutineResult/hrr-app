@@ -136,6 +136,7 @@ const MyScreen = () => {
           variant="me"
           onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower' })}
           onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following' })}
+          onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
         />
 
         {false && (

@@ -26,6 +26,7 @@ interface ProfileCardProps {
   badges?: React.ReactNode[]; // 추가: 뱃지 목록
   onPressFollowers?: () => void;
   onPressFollowing?: () => void;
+  onPressProfileEdit?: () => void; // New prop for profile edit button
 }
 
 const ProfileCard = ({
@@ -36,6 +37,7 @@ const ProfileCard = ({
   badges = [],
   onPressFollowers,
   onPressFollowing,
+  onPressProfileEdit, // Destructure new prop
 }: ProfileCardProps) => {
   const { nickname, avatarUrl, followerCount, followingCount, isChallenger } = user;
 
@@ -45,7 +47,7 @@ const ProfileCard = ({
     if (!isOther) {
       return (
         <View style={styles.buttonRow}>
-          <Button variant="gray" size="small" style={styles.singleButton} onPress={() => {}}>
+          <Button variant="gray" size="small" style={styles.singleButton} onPress={onPressProfileEdit}>
             <Text variant="sm" color={colors.text.tertiary}>
               프로필 수정
             </Text>

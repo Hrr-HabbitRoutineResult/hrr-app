@@ -246,3 +246,39 @@ export const unfollowUser = async (userId: number): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * 사용자 프로필 업데이트 요청 타입
+ */
+export interface UpdateUserProfileRequest {
+  nickname?: string;
+  profileImage?: string; // Renamed from profileImageUrl for consistency with UserMe
+  isPublic?: boolean;
+}
+
+/**
+ * 사용자 프로필 업데이트 응답 타입 (UserMe와 동일)
+ */
+export interface UpdateUserProfileResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: UserMe; // Returns the updated UserMe object
+}
+
+/**
+ * 사용자 프로필 업데이트
+ */
+export const updateUserProfile = async (data: UpdateUserProfileRequest): Promise<UserMe> => {
+  try {
+    const response = await apiClient.patch<UpdateUserProfileResponse>('/api/v1/user/me', data);
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+    throw new Error(response.data.message || '프로필 업데이트에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+

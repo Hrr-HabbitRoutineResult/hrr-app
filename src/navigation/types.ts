@@ -24,6 +24,7 @@ export type RootStackParamList = {
   FollowerList: { initialTab: 'follower' | 'following' };
   Settings: undefined;
   AccountSettings: undefined;
+  ProfileEdit: undefined;
 };
 
 export type HomeTabParamList = {

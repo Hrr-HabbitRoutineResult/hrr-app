@@ -11,6 +11,8 @@ import {
   followUser,
   unfollowUser,
   FollowItem,
+  updateUserProfile,
+  UpdateUserProfileRequest,
 } from '../libs/api/user';
 
 type UserState = {
@@ -40,6 +42,7 @@ type UserState = {
   fetchFollowings: () => Promise<void>;
   followUser: (userId: number) => Promise<void>;
   unfollowUser: (userId: number) => Promise<void>;
+  updateUserInfo: (data: UpdateUserProfileRequest) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -121,26 +124,34 @@ export const useUserStore = create<UserState>((set, get) => ({
   followUser: async (userId: number) => {
     try {
       await followUser(userId);
-      // Optimistically update the UI or refetch
       get().fetchFollowers();
       get().fetchFollowings();
     } catch (error: any) {
-      // Handle error, maybe show a toast
       console.error("Follow failed:", error);
-      throw error; // Re-throw to allow component to handle it
+      throw error;
     }
   },
 
   unfollowUser: async (userId: number) => {
     try {
       await unfollowUser(userId);
-      // Optimistically update the UI or refetch
       get().fetchFollowers();
       get().fetchFollowings();
     } catch (error: any) {
-      // Handle error
       console.error("Unfollow failed:", error);
-      throw error; // Re-throw to allow component to handle it
+      throw error;
+    }
+  },
+
+  updateUserInfo: async (data: UpdateUserProfileRequest) => {
+    set({ isLoadingUserInfo: true, errorUserInfo: null }); // Use general userInfo loading
+    try {
+      const updatedUserInfo = await updateUserProfile(data);
+      set({ userInfo: updatedUserInfo, nickname: updatedUserInfo.nickname, isLoadingUserInfo: false });
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || error?.message || '프로필 업데이트에 실패했습니다.';
+      set({ errorUserInfo: errorMessage, isLoadingUserInfo: false });
+      throw error;
     }
   },
 }));
