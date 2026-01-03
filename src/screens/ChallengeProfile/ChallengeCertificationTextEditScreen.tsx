@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
-import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -33,6 +33,8 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedImages, setSelectedImages] = useState<Array<{ uri: string; url: string; uploading: boolean }>>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkUrl, setLinkUrl] = useState('');
 
   // 기존 이미지 초기화
   useEffect(() => {
@@ -202,8 +204,31 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
   };
 
   const handleLinkPress = () => {
-    // TODO: 링크 첨부 기능 구현
-    Alert.alert('알림', '링크 첨부 기능은 준비 중입니다.');
+    setShowLinkModal(true);
+  };
+
+  const handleLinkCancel = () => {
+    setShowLinkModal(false);
+    setLinkUrl('');
+  };
+
+  const handleLinkConfirm = () => {
+    if (!linkUrl.trim()) {
+      Alert.alert('알림', 'URL을 입력해주세요.');
+      return;
+    }
+
+    // URL 유효성 검사 (간단한 체크)
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    if (!urlPattern.test(linkUrl.trim())) {
+      Alert.alert('알림', '올바른 URL 형식을 입력해주세요.');
+      return;
+    }
+
+    // TODO: 나중에 textUrl 필드에 저장될 예정
+    Alert.alert('성공', `링크가 첨부되었습니다: ${linkUrl.trim()}`);
+    setShowLinkModal(false);
+    setLinkUrl('');
   };
 
   const handleComplete = async () => {
@@ -387,6 +412,63 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {/* 링크 첨부 모달 */}
+      <Modal
+        visible={showLinkModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleLinkCancel}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={handleLinkCancel}
+          activeOpacity={1}
+        >
+          <TouchableOpacity
+            style={styles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+            activeOpacity={1}
+          >
+            <View style={styles.modalInputContainer}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="URL을 입력하세요"
+                placeholderTextColor={colors.icon.gray}
+                value={linkUrl}
+                onChangeText={setLinkUrl}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+              />
+            </View>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleLinkCancel}
+                activeOpacity={0.7}
+              >
+                <Text variant="smMd" color={colors.text.primary}>
+                  취소
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleLinkConfirm}
+                disabled={linkUrl.trim().length === 0}
+                activeOpacity={0.7}
+              >
+                <Text
+                  variant="smMd"
+                  color={linkUrl.trim().length === 0 ? colors.icon.gray : colors.text.primary}
+                >
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -501,6 +583,47 @@ const styles = StyleSheet.create({
   attachmentButton: {
     width: scale(40),
     height: verticalScale(40),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: scale(20),
+  },
+  modalContent: {
+    width: '100%',
+    height: verticalScale(200),
+    backgroundColor: colors.white,
+    borderRadius: scale(20),
+    paddingTop: verticalScale(16),
+    paddingHorizontal: scale(16),
+    justifyContent: 'space-between',
+  },
+  modalInputContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+  },
+  modalInput: {
+    ...typography.smReg,
+    color: colors.text.primary,
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(14),
+    height: verticalScale(48),
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: scale(4),
+    paddingBottom: verticalScale(12),
+  },
+  modalButton: {
+    width: scale(60),
+    height: verticalScale(48),
     justifyContent: 'center',
     alignItems: 'center',
   },
