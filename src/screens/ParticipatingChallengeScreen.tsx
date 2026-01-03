@@ -50,7 +50,7 @@ const ParticipatingChallengeScreen = () => {
       <TouchableOpacity
         activeOpacity={0.9}
         style={styles.card}
-        onPress={() => console.log('Participating Challenge Item Pressed:', item.title)} // Add onPress handler
+        onPress={() => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })} // Add onPress handler
       >
         <ImageBackground
           source={{ uri: item.imageUrl }}

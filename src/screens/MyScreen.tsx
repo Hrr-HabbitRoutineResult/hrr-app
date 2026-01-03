@@ -87,13 +87,12 @@ const MyScreen = () => {
     if (activeTab === 'challenge') {
       return (
         <View style={styles.tabContentListWrapper}>
-          <ParticipatingChallengeSection
-            items={participatingChallenges}
-            onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
-            onPressItem={(item) => console.log('Participating Challenge Item Pressed:', item.title)}
-            onPressEmpty={() => navigation.navigate('ChallengeList')}
-          />
-          <ViewModeHeader
+                      <ParticipatingChallengeSection
+                        items={participatingChallenges}
+                        onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
+                        onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: item.id })}
+                        onPressEmpty={() => navigation.navigate('ChallengeList')}
+                      />          <ViewModeHeader
             title="인증 기록"
             initialMode={certificationViewMode}
             onViewModeChange={(mode) => setCertificationViewMode(mode)}
