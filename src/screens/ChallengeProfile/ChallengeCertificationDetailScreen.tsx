@@ -4,6 +4,7 @@ import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicato
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
@@ -80,6 +81,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   // 신고 관련 state
   const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] = useState(false);
   const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] = useState(false);
+
+  // 이미지 뷰어 관련 state
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -577,7 +581,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 이미지 */}
         {verification.photoUrl && (
-          <View style={styles.imageContainer}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => setIsImageViewerVisible(true)}
+            style={styles.imageContainer}
+          >
             <Image
               source={{ uri: verification.photoUrl }}
               style={styles.image}
@@ -587,7 +595,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               onError={(error) => {
               }}
             />
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* 좋아요, 댓글, 스크랩 */}
@@ -919,6 +927,23 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         onClose={() => setIsReportUserBottomSheetVisible(false)}
         onSubmit={handleSubmitReportUser}
       />
+
+      {/* 이미지 확대 뷰어 */}
+      <Modal
+        visible={isImageViewerVisible}
+        transparent={true}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+      >
+        <ImageViewer
+          imageUrls={[{ url: verification?.photoUrl || '' }]}
+          enableSwipeDown
+          onSwipeDown={() => setIsImageViewerVisible(false)}
+          onClick={() => setIsImageViewerVisible(false)}
+          backgroundColor="rgba(0, 0, 0, 1)"
+          renderIndicator={() => <View />}
+          saveToLocalByLongPress={false}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };
