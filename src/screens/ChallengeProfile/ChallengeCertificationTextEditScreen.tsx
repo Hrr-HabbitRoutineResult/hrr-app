@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import RNBlobUtil from 'react-native-blob-util';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
+import { LinkLoadingSpinner } from '../../components/common/LinkLoadingSpinner';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { updateVerification, getPresignedUrl } from '../../libs/api/challenge';
@@ -35,6 +36,8 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
+  const [attachedLink, setAttachedLink] = useState<string | null>(null);
+  const [isLinkLoading, setIsLinkLoading] = useState(false);
 
   // 기존 이미지 초기화
   useEffect(() => {
@@ -212,7 +215,7 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
     setLinkUrl('');
   };
 
-  const handleLinkConfirm = () => {
+  const handleLinkConfirm = async () => {
     if (!linkUrl.trim()) {
       Alert.alert('알림', 'URL을 입력해주세요.');
       return;
@@ -225,10 +228,16 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
       return;
     }
 
-    // TODO: 나중에 textUrl 필드에 저장될 예정
-    Alert.alert('성공', `링크가 첨부되었습니다: ${linkUrl.trim()}`);
-    setShowLinkModal(false);
-    setLinkUrl('');
+    setIsLinkLoading(true);
+    setAttachedLink(linkUrl.trim());
+    
+    // TODO: 실제 링크 썸네일 로딩 로직
+    // 지금은 10초 후 로딩 완료로 시뮬레이션
+    setTimeout(() => {
+      setIsLinkLoading(false);
+      setShowLinkModal(false);
+      setLinkUrl('');
+    }, 10000);
   };
 
   const handleComplete = async () => {
@@ -440,27 +449,35 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"
+                editable={!isLinkLoading}
               />
             </View>
+            {/* 로딩 스피너 */}
+            {isLinkLoading && (
+              <View style={styles.modalSpinnerContainer}>
+                <LinkLoadingSpinner />
+              </View>
+            )}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleLinkCancel}
                 activeOpacity={0.7}
+                disabled={isLinkLoading}
               >
-                <Text variant="smMd" color={colors.text.primary}>
+                <Text variant="smMd" color={isLinkLoading ? colors.icon.gray : colors.text.primary}>
                   취소
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleLinkConfirm}
-                disabled={linkUrl.trim().length === 0}
+                disabled={linkUrl.trim().length === 0 || isLinkLoading}
                 activeOpacity={0.7}
               >
                 <Text
                   variant="smMd"
-                  color={linkUrl.trim().length === 0 ? colors.icon.gray : colors.text.primary}
+                  color={linkUrl.trim().length === 0 || isLinkLoading ? colors.icon.gray : colors.text.primary}
                 >
                   확인
                 </Text>
@@ -603,8 +620,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   modalInputContainer: {
+    justifyContent: 'flex-start',
+  },
+  modalSpinnerContainer: {
     flex: 1,
     justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: verticalScale(28),
   },
   modalInput: {
     ...typography.smReg,

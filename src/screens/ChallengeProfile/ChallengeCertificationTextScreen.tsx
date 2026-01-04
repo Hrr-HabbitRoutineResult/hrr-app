@@ -203,7 +203,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     setLinkUrl('');
   };
 
-  const handleLinkConfirm = () => {
+  const handleLinkConfirm = async () => {
     if (!linkUrl.trim()) {
       Alert.alert('알림', 'URL을 입력해주세요.');
       return;
@@ -216,10 +216,16 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       return;
     }
 
-    // TODO: 나중에 textUrl 필드에 저장될 예정
-    Alert.alert('성공', `링크가 첨부되었습니다: ${linkUrl.trim()}`);
-    setShowLinkModal(false);
-    setLinkUrl('');
+    setIsLinkLoading(true);
+    setAttachedLink(linkUrl.trim());
+    
+    // TODO: 실제 링크 썸네일 로딩 로직
+    // 지금은 10초 후 로딩 완료로 시뮬레이션
+    setTimeout(() => {
+      setIsLinkLoading(false);
+      setShowLinkModal(false);
+      setLinkUrl('');
+    }, 10000);
   };
 
   const handlePost = async () => {
@@ -459,42 +465,50 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-            <View style={styles.modalInputContainer}>
-              <TextInput
-                style={styles.modalInput}
-                placeholder="URL을 입력하세요"
-                placeholderTextColor={colors.icon.gray}
-                value={linkUrl}
-                onChangeText={setLinkUrl}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="url"
-              />
-            </View>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={handleLinkCancel}
-                activeOpacity={0.7}
-              >
-                <Text variant="smMd" color={colors.text.primary}>
-                  취소
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={handleLinkConfirm}
-                disabled={linkUrl.trim().length === 0}
-                activeOpacity={0.7}
-              >
-                <Text
-                  variant="smMd"
-                  color={linkUrl.trim().length === 0 ? colors.icon.gray : colors.text.primary}
-                >
-                  확인
-                </Text>
-              </TouchableOpacity>
-            </View>
+           <View style={styles.modalInputContainer}>
+             <TextInput
+               style={styles.modalInput}
+               placeholder="URL을 입력하세요"
+               placeholderTextColor={colors.icon.gray}
+               value={linkUrl}
+               onChangeText={setLinkUrl}
+               autoCapitalize="none"
+               autoCorrect={false}
+               keyboardType="url"
+               editable={!isLinkLoading}
+             />
+           </View>
+           {/* 로딩 스피너 */}
+           {isLinkLoading && (
+             <View style={styles.modalSpinnerContainer}>
+               <LinkLoadingSpinner />
+             </View>
+           )}
+           <View style={styles.modalButtons}>
+             <TouchableOpacity
+               style={styles.modalButton}
+               onPress={handleLinkCancel}
+               activeOpacity={0.7}
+               disabled={isLinkLoading}
+             >
+               <Text variant="smMd" color={isLinkLoading ? colors.icon.gray : colors.text.primary}>
+                 취소
+               </Text>
+             </TouchableOpacity>
+             <TouchableOpacity
+               style={styles.modalButton}
+               onPress={handleLinkConfirm}
+               disabled={linkUrl.trim().length === 0 || isLinkLoading}
+               activeOpacity={0.7}
+             >
+               <Text
+                 variant="smMd"
+                 color={linkUrl.trim().length === 0 || isLinkLoading ? colors.icon.gray : colors.text.primary}
+               >
+                 확인
+               </Text>
+             </TouchableOpacity>
+           </View>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -645,11 +659,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     justifyContent: 'space-between',
   },
-  modalInputContainer: {
+   modalInputContainer: {
+     justifyContent: 'flex-start',
+   },
+  modalSpinnerContainer: {
     flex: 1,
     justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: verticalScale(28),
   },
-  modalInput: {
+   modalInput: {
     ...typography.smReg,
     color: colors.text.primary,
     backgroundColor: colors.background,
