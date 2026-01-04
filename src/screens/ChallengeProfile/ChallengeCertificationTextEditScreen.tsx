@@ -250,8 +250,9 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
   };
 
   const handleLinkConfirm = async () => {
-    // 이미 프리뷰가 로드된 경우 -> 모달 닫고 메인에 링크 표시
+    // 이미 프리뷰가 로드된 경우 -> 모달 닫고 메인에 링크 첨부하고 리턴
     if (modalLinkPreview) {
+      setAttachedLink(linkUrl || modalLinkPreview.url);
       setShowLinkModal(false);
       setLinkUrl('');
       setModalLinkPreview(null);
@@ -272,12 +273,12 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
     setIsLinkLoading(true);
 
     try {
-      // 링크 프리뷰 데이터 가져오기
+      // 첫 번째 확인 클릭 시 -> 링크 프리뷰만 가져오기 (아직 첨부 전)
       const preview = await LinkPreview.getPreview(fullUrl, {
         timeout: 5000,
       });
 
-      setAttachedLink(fullUrl);
+      setLinkUrl(fullUrl);
       setModalLinkPreview({
         url: preview.url,
         title: preview.title,
