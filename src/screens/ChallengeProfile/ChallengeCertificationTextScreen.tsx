@@ -53,6 +53,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   const [isLinkLoading, setIsLinkLoading] = useState(false);
   const [linkPreview, setLinkPreview] = useState<LinkPreview | null>(null);
   const [modalLinkPreview, setModalLinkPreview] = useState<LinkPreview | null>(null);
+  const [linkError, setLinkError] = useState(false);
 
   // 키보드 이벤트 리스너
   useEffect(() => {
@@ -228,6 +229,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     setLinkUrl('');
     setModalLinkPreview(null);
     setIsLinkLoading(false);
+    setLinkError(false);
   };
 
   const handleLinkConfirm = async () => {
@@ -237,6 +239,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       setShowLinkModal(false);
       setLinkUrl('');
       setModalLinkPreview(null);
+      setLinkError(false);
       return;
     }
 
@@ -252,6 +255,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     }
 
     setIsLinkLoading(true);
+    setLinkError(false);
 
     try {
       // 첫 번째 확인 클릭 시 -> 링크 프리뷰만 가져오기 (아직 첨부 전)
@@ -267,7 +271,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         siteName: preview.siteName,
       });
     } catch (error: any) {
-      Alert.alert('오류', `링크 정보를 불러올 수 없습니다.\n${error.message || '알 수 없는 오류'}`);
+      setLinkError(true);
     } finally {
       setIsLinkLoading(false);
     }
@@ -562,6 +566,15 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
               </View>
             )}
 
+            {/* 에러 메시지 */}
+            {!isLinkLoading && linkError && (
+              <View style={styles.modalErrorContainer}>
+                <Text variant="xsReg" color={colors.icon.gray} style={styles.modalErrorText}>
+                  해당 링크의 정보를 불러올 수 없습니다.{'\n'}링크를 다시 확인해 주세요.
+                </Text>
+              </View>
+            )}
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalButton}
@@ -576,12 +589,12 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleLinkConfirm}
-                disabled={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading}
+                disabled={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading || linkError}
                 activeOpacity={0.7}
               >
                 <Text
                   variant="smMd"
-                  color={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading ? colors.icon.gray : colors.text.primary}
+                  color={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading || linkError ? colors.icon.gray : colors.text.primary}
                 >
                   확인
                 </Text>
@@ -758,6 +771,17 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: scale(10),
     backgroundColor: colors.background,
+  },
+  modalErrorContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingTop: verticalScale(16),
+    paddingLeft: scale(8),
+  },
+  modalErrorText: {
+    textAlign: 'left',
+    lineHeight: verticalScale(18),
   },
   modalInput: {
     ...typography.smReg,
