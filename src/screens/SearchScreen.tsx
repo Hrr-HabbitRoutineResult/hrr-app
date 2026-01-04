@@ -19,7 +19,7 @@ import DeleteCircleIcon from '../../assets/icons/delete-circle.svg';
 
 type SearchScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const RECENT_SEARCHES_KEY = 'tabSearchRecentSearches';
+const RECENT_SEARCHES_KEY = 'recentSearches'; // CategorySearchScreen과 공유
 const MAX_RECENT_SEARCHES = 20;
 
 const SearchScreen = () => {
