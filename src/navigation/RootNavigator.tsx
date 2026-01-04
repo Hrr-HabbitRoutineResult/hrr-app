@@ -15,9 +15,11 @@ import MyScreen from '../screens/MyScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
 import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/ChallengeCertificationScreen';
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
+import { ChallengeCertificationTextScreen } from '../screens/ChallengeProfile/ChallengeCertificationTextScreen';
 import { ChallengeCertificationPostScreen } from '../screens/ChallengeProfile/ChallengeCertificationPostScreen';
 import { ChallengeCertificationDetailScreen } from '../screens/ChallengeProfile/ChallengeCertificationDetailScreen';
 import { ChallengeCertificationEditScreen } from '../screens/ChallengeProfile/ChallengeCertificationEditScreen';
+import { ChallengeCertificationTextEditScreen } from '../screens/ChallengeProfile/ChallengeCertificationTextEditScreen';
 import PopularChallengeScreen from '../screens/PopularChallengeScreen';
 import { CreateChallengeQ1 } from '../screens/CreateChallenge/CreateChallengeQ1';
 import { CreateChallengeQ2 } from '../screens/CreateChallenge/CreateChallengeQ2';
@@ -85,9 +87,11 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertification" component={ChallengeCertificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationText" component={ChallengeCertificationTextScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationPost" component={ChallengeCertificationPostScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationDetail" component={ChallengeCertificationDetailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationEdit" component={ChallengeCertificationEditScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ChallengeCertificationTextEdit" component={ChallengeCertificationTextEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />

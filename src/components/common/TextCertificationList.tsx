@@ -6,13 +6,15 @@ import { colors } from '../../design/tokens';
 import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
 import ResolvedTextIcon from '../../../assets/icons/challenge-profile/resolved-text.svg';
+import ThumbnailDefaultIcon from '../../../assets/icons/challenge-profile/thumbnail_default.svg';
 
 export interface TextCertificationItem {
   id: number;           // 인증 아이템 고유 ID
   title: string;        // 인증 글 제목
   description: string;  // 인증 글 내용
   date: string;         // 인증 날짜
-  thumbnail: any;       // 썸네일 이미지
+  thumbnail: any | null; // 썸네일 이미지 (없으면 null)
+  hasLink?: boolean;    // 링크 첨부 여부
   isQuestion?: boolean; // 질문 여부
   isResolved?: boolean; // 채택 답변 존재 여부
 }
@@ -39,21 +41,27 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
           activeOpacity={0.8}
         >
           <View style={styles.content}>
-            <Text variant="smMd" color={colors.text.primary} style={styles.title}>
+            <Text variant="smMd" color={colors.text.primary} style={styles.title} numberOfLines={1}>
               {item.title}
             </Text>
-            <Text variant="xxs" color={colors.text.tertiary} style={styles.description}>
+            <Text variant="xxs" color={colors.text.tertiary} style={styles.description} numberOfLines={2}>
               {item.description}
             </Text>
             <View style={styles.date}>
               <Text variant="xxs" color={colors.text.tertiary}>
                 {item.date}
               </Text>
-              <LinkIcon width={10} height={10} />
+              {item.hasLink && <LinkIcon width={10} height={10} />}
             </View>
           </View>
           <View style={styles.thumbnail}>
-            <Image source={item.thumbnail} style={styles.thumbnailImage} />
+            {item.thumbnail ? (
+              <Image source={item.thumbnail} style={styles.thumbnailImage} />
+            ) : (
+              <View style={styles.defaultThumbnail}>
+                <ThumbnailDefaultIcon width={scale(40)} height={verticalScale(40)} />
+              </View>
+            )}
             {/* 질문이 포함된 글일 때만 오버레이와 아이콘 표시 */}
             {item.isQuestion && (
               <View style={styles.thumbnailOverlay}>
@@ -108,6 +116,13 @@ const styles = StyleSheet.create({
   thumbnailImage: {
     width: '100%',
     height: '100%',
+  },
+  defaultThumbnail: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   thumbnailOverlay: {
     position: 'absolute',
