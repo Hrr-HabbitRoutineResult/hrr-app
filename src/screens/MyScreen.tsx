@@ -92,7 +92,8 @@ const MyScreen = () => {
                         onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
                         onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: item.id })}
                         onPressEmpty={() => navigation.navigate('ChallengeList')}
-                      />          <ViewModeHeader
+                      />
+          <ViewModeHeader
             title="인증 기록"
             initialMode={certificationViewMode}
             onViewModeChange={(mode) => setCertificationViewMode(mode)}

@@ -1,10 +1,9 @@
-// src/components/profile/ProfileHeader.tsx
+// src/components/MyPage/ProfileHeader.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, radius, spacing } from '../../design/tokens';
 import { Avatar } from './Avatar';
 import { Text } from '../common/Text';
-import ChevronRightIcon from '../../../assets/icons/chevron-right-grey.svg';
 
 interface ProfileHeaderProps {
   nickname: string;
@@ -38,8 +37,6 @@ export const ProfileHeader = ({
           <Text variant="xsReg" color={colors.text.secondary} style={styles.profileType}>
             {profileTypeText}
           </Text>
-
-          <ChevronRightIcon width={4} height={8} />
         </View>
 
         <View style={styles.followRow}>

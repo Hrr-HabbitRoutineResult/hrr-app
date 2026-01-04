@@ -1,7 +1,8 @@
-// src/components/common/Avatar.tsx
+// src/components/MyPage/Avatar.tsx
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { colors } from '../../design/tokens';
+import { getS3ImageUrl } from '../../libs/s3'; // 헬퍼 함수 임포트
 
 // 추가: 기본 프로필 SVG
 import ProfileDefaultIcon from '../../../assets/icons/mypage/profile-default.svg';
@@ -18,9 +19,11 @@ export const Avatar = ({ uri, size }: AvatarProps) => {
     borderRadius: size / 2,
   };
 
-  // uri가 있으면 원래대로 이미지 사용
-  if (uri) {
-    return <Image source={{ uri }} style={[styles.image, style]} />;
+  const imageUrl = getS3ImageUrl(uri); // S3 키를 전체 URL로 변환
+
+  // 전체 imageUrl을 사용하여 이미지 렌더링
+  if (imageUrl) {
+    return <Image source={{ uri: imageUrl }} style={[styles.image, style]} />;
   }
 
   // uri가 없으면 기본 SVG 아이콘 표시

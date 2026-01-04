@@ -144,14 +144,20 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   updateUserInfo: async (data: UpdateUserProfileRequest) => {
-    set({ isLoadingUserInfo: true, errorUserInfo: null }); // Use general userInfo loading
+    set({ isLoadingUserInfo: true, errorUserInfo: null });
     try {
-      const updatedUserInfo = await updateUserProfile(data);
-      set({ userInfo: updatedUserInfo, nickname: updatedUserInfo.nickname, isLoadingUserInfo: false });
+      // 1. 서버에 업데이트 요청을 보냅니다.
+      await updateUserProfile(data);
+      // 2. 업데이트 성공 시, 즉시 전체 사용자 프로필을 다시 가져옵니다.
+      // 이를 통해 스토어는 항상 서버의 최신 정식 데이터를 갖게 됩니다.
+      // fetchUserInfo 액션이 최종 상태 설정 및 isLoading을 false로 처리합니다.
+      await get().fetchUserInfo();
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '프로필 업데이트에 실패했습니다.';
+      const errorMessage =
+        error?.response?.data?.message || error?.message || '프로필 업데이트에 실패했습니다.';
+      // 실패 시 에러 상태를 설정하고 로딩 인디케이터를 끕니다.
       set({ errorUserInfo: errorMessage, isLoadingUserInfo: false });
-      throw error;
+      throw error; // 컴포넌트가 실패를 알 수 있도록 에러를 다시 던집니다.
     }
   },
 }));

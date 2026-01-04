@@ -252,7 +252,7 @@ export const unfollowUser = async (userId: number): Promise<void> => {
  */
 export interface UpdateUserProfileRequest {
   nickname?: string;
-  profileImage?: string; // Renamed from profileImageUrl for consistency with UserMe
+  profileImageKey?: string; // 백엔드 요구사항에 맞춰 profileImage에서 profileImageKey로 변경됨
   isPublic?: boolean;
 }
 
@@ -264,7 +264,7 @@ export interface UpdateUserProfileResponse {
   status: string;
   code: string;
   message: string;
-  result: UserMe; // Returns the updated UserMe object
+  result: UserMe; // 업데이트된 UserMe 객체를 반환
 }
 
 /**

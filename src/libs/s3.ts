@@ -51,13 +51,19 @@ export const getS3ImageUrl = (imageKey: string | null | undefined): string | nul
 export const extractS3Key = (s3Url: string): string | null => {
   try {
     // URL에서 프로토콜과 도메인 제거하여 경로만 추출
-    // https://<bucket>.s3.<region>.amazonaws.com/uploads/file.jpg -> uploads/file.jpg
+    // https://<bucket>.s3.<region>.amazonaws.com/uploads/file.jpg?query=value -> uploads/file.jpg
     const pathStart = s3Url.indexOf('.com/');
     if (pathStart === -1) {
       throw new Error('유효하지 않은 S3 URL 형식');
     }
-    return s3Url.substring(pathStart + 5); // '.com/' 다음부터 반환
+    let key = s3Url.substring(pathStart + 5);
+    const queryIndex = key.indexOf('?');
+    if (queryIndex !== -1) {
+      key = key.substring(0, queryIndex);
+    }
+    return key;
   } catch (error) {
+    console.error("Error extracting S3 key:", error); // Add console.error for better debugging
     return null;
   }
 };
