@@ -51,7 +51,7 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
               <Text variant="xxs" color={colors.text.tertiary}>
                 {item.date}
               </Text>
-              <LinkIcon width={10} height={10} />
+              {item.hasLink && <LinkIcon width={10} height={10} />}
             </View>
           </View>
           <View style={styles.thumbnail}>
