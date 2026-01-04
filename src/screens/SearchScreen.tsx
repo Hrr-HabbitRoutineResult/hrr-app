@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
 import { scale, verticalScale, moderateScale } from '../utils/scaling';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, CompositeNavigationProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RootStackParamList } from '../navigation/types';
+import { RootStackParamList, HomeTabParamList } from '../navigation/types';
 import { colors, typography } from '../design/tokens';
 import { Text } from '../components/common/Text';
+// ... 나머지 import는 그대로 유지 ...
 import { getChallenges, ChallengeInfo, trackChallengeClick } from '../libs/api/challenge';
 import { getPopularKeywords, incrementSearchCount } from '../libs/api/search';
 import ChallengeItem from '../components/common/ChallengeItem';
@@ -17,7 +19,10 @@ import SearchIcon from '../../assets/icons/search.svg';
 import DeleteIcon from '../../assets/icons/delete.svg';
 import DeleteCircleIcon from '../../assets/icons/delete-circle.svg';
 
-type SearchScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+type SearchScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<HomeTabParamList, '검색'>,
+  StackNavigationProp<RootStackParamList>
+>;
 
 const RECENT_SEARCHES_KEY = 'recentSearches'; // CategorySearchScreen과 공유
 const MAX_RECENT_SEARCHES = 20;
@@ -33,6 +38,14 @@ const SearchScreen = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
+
+  // 뒤로가기 (인기 검색어 모드로 복귀)
+  const handleBackToPopular = useCallback(() => {
+    setIsSearchMode(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setHasSearched(false);
+  }, []);
 
   const topPadding = Platform.OS === 'android' ? verticalScale(18) : verticalScale(10);
   const bottomPadding = verticalScale(4);
@@ -75,6 +88,18 @@ const SearchScreen = () => {
       loadPopularKeywords();
     }, [])
   );
+
+  // 검색 탭을 다시 누르면 초기 화면으로 리셋
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('tabPress', (e) => {
+      // 현재 화면이 포커스된 상태에서 검색 탭을 누른 경우
+      if (navigation.isFocused()) {
+        handleBackToPopular();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, handleBackToPopular]);
 
   // 최근 검색어를 AsyncStorage에 저장
   const saveRecentSearches = async (searches: string[]) => {
@@ -122,14 +147,6 @@ const SearchScreen = () => {
 
   // 검색 입력 필드 초기화 함수
   const handleClearSearch = () => {
-    setSearchQuery('');
-    setSearchResults([]);
-    setHasSearched(false);
-  };
-
-  // 뒤로가기 (인기 검색어 모드로 복귀)
-  const handleBackToPopular = () => {
-    setIsSearchMode(false);
     setSearchQuery('');
     setSearchResults([]);
     setHasSearched(false);
