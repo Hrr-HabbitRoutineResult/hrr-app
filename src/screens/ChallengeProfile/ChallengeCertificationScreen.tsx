@@ -228,22 +228,18 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 myCertificationType === 'text' ? (
                   // 글 인증(리스트 형태)
                   <TextCertificationList
-                    items={myData.verifications.content.map(item => {
-                      const date = new Date(item.createdDate);
-                      const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-
-                      return {
-                        id: item.verificationId,
-                        title: item.title,
-                        description: item.content,
-                        date: formattedDate,
-                        thumbnail: item.imageUrl
-                          ? { uri: item.imageUrl }
-                          : require('../../../assets/images/mock-challenge-profile.png'),
-                        isQuestion: item.isQuestion,
-                        isResolved: item.isResolved,
-                      };
-                    })}
+                    items={myData.verifications.content.map(item => ({
+                      id: item.verificationId,
+                      title: item.title,
+                      description: item.content,
+                      date: item.createdDate,
+                      thumbnail: item.imageUrl
+                        ? { uri: item.imageUrl }
+                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      hasLink: item.hasLink,
+                      isQuestion: item.isQuestion,
+                      isResolved: item.isResolved,
+                    }))}
                     onItemPress={(item) => {
                       navigation.navigate('ChallengeCertificationDetail', {
                         verificationId: item.id,
@@ -432,22 +428,18 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 challengerCertificationType === 'text' ? (
                   // 글 인증(리스트 형태)
                   <TextCertificationList
-                    items={challengerFeed.map(item => {
-                      const date = new Date(item.createdDate);
-                      const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-
-                      return {
-                        id: item.verificationId,
-                        title: item.title,
-                        description: item.content,
-                        date: formattedDate,
-                        thumbnail: item.imageUrl
-                          ? { uri: item.imageUrl }
-                          : require('../../../assets/images/mock-challenge-profile.png'),
-                        isQuestion: item.isQuestion,
-                        isResolved: item.isResolved,
-                      };
-                    })}
+                    items={challengerFeed.map(item => ({
+                      id: item.verificationId,
+                      title: item.title,
+                      description: item.content,
+                      date: item.createdDate,
+                      thumbnail: item.imageUrl
+                        ? { uri: item.imageUrl }
+                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      hasLink: item.hasLink,
+                      isQuestion: item.isQuestion,
+                      isResolved: item.isResolved,
+                    }))}
                     onItemPress={(item) => {
                       navigation.navigate('ChallengeCertificationDetail', {
                         verificationId: item.id,
