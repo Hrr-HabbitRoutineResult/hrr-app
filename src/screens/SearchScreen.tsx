@@ -9,6 +9,7 @@ import { RootStackParamList } from '../navigation/types';
 import { colors, typography } from '../design/tokens';
 import { Text } from '../components/common/Text';
 import { getChallenges, ChallengeInfo, trackChallengeClick } from '../libs/api/challenge';
+import { getPopularKeywords, incrementSearchCount } from '../libs/api/search';
 import ChallengeItem from '../components/common/ChallengeItem';
 import LogoGray from '../../assets/images/logo-gray.svg';
 import BackIcon from '../../assets/icons/back.svg';
@@ -18,22 +19,8 @@ import DeleteCircleIcon from '../../assets/icons/delete-circle.svg';
 
 type SearchScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const RECENT_SEARCHES_KEY = 'tabSearchRecentSearches'; // CategorySearchScreen과 다른 키 사용
+const RECENT_SEARCHES_KEY = 'tabSearchRecentSearches';
 const MAX_RECENT_SEARCHES = 20;
-
-// 더미 인기 검색어 데이터 (추후 API 연동)
-const POPULAR_SEARCHES = [
-  '코딩테스트',
-  '코테',
-  '토스',
-  '건기',
-  '산책',
-  '네이버',
-  '카카오',
-  '케이뱅크',
-  '다이어리',
-  '독서',
-];
 
 const SearchScreen = () => {
   const insets = useSafeAreaInsets();
@@ -45,12 +32,25 @@ const SearchScreen = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [popularSearches, setPopularSearches] = useState<string[]>([]);
 
   const topPadding = Platform.OS === 'android' ? verticalScale(18) : verticalScale(10);
   const bottomPadding = verticalScale(4);
   const safeAreaTop = Platform.OS === 'android' ? Math.max(insets.top, verticalScale(24)) : insets.top;
 
-  // AsyncStorage에서 최근 검색어 불러오기
+  // 인기 검색어 불러오기 함수
+  const loadPopularKeywords = async () => {
+    try {
+      const response = await getPopularKeywords();
+      if (response.isSuccess && Array.isArray(response.result)) {
+        setPopularSearches(response.result);
+      }
+    } catch (error) {
+      // 인기 검색어 불러오기 실패
+    }
+  };
+
+  // AsyncStorage에서 최근 검색어 불러오기 + 인기 검색어 API 호출
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
@@ -67,6 +67,7 @@ const SearchScreen = () => {
     };
 
     loadRecentSearches();
+    loadPopularKeywords();
   }, []);
 
   // 최근 검색어를 AsyncStorage에 저장
@@ -145,6 +146,16 @@ const SearchScreen = () => {
     setHasSearched(true);
 
     try {
+      // 검색 카운트 증가 API 호출 (성공 시 인기 검색어 갱신)
+      incrementSearchCount(trimmedQuery)
+        .then(() => {
+          // 인기 검색어 목록 갱신 (서버에서 1시간 단위로 업데이트됨)
+          loadPopularKeywords();
+        })
+        .catch(() => {
+          // 검색 카운트 증가 실패 (검색 기능은 정상적으로 동작)
+        });
+
       const searchParams = {
         title: trimmedQuery,
         page: 1,
@@ -173,8 +184,8 @@ const SearchScreen = () => {
   };
 
   // 인기 검색어 두 그룹으로 나누기 (1-5위, 6-10위)
-  const leftColumn = POPULAR_SEARCHES.slice(0, 5);
-  const rightColumn = POPULAR_SEARCHES.slice(5, 10);
+  const leftColumn = popularSearches.slice(0, 5);
+  const rightColumn = popularSearches.slice(5, 10);
 
   // 검색 모드일 때 UI
   if (isSearchMode) {
@@ -471,7 +482,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: scale(24),
-    paddingBottom: verticalScale(40),
+    paddingBottom: verticalScale(100), // 하단 네비게이션 바 여유 공간
   },
   popularSearchSection: {
     marginTop: verticalScale(32),
