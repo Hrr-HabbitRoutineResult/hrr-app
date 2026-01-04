@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Platform } from 'react-native';
 import { scale, verticalScale, moderateScale } from '../utils/scaling';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../navigation/types';
@@ -50,7 +50,7 @@ const SearchScreen = () => {
     }
   };
 
-  // AsyncStorage에서 최근 검색어 불러오기 + 인기 검색어 API 호출
+  // AsyncStorage에서 최근 검색어 불러오기
   useEffect(() => {
     const loadRecentSearches = async () => {
       try {
@@ -67,8 +67,14 @@ const SearchScreen = () => {
     };
 
     loadRecentSearches();
-    loadPopularKeywords();
   }, []);
+
+  // 화면이 포커스될 때마다 인기 검색어 새로 불러오기
+  useFocusEffect(
+    useCallback(() => {
+      loadPopularKeywords();
+    }, [])
+  );
 
   // 최근 검색어를 AsyncStorage에 저장
   const saveRecentSearches = async (searches: string[]) => {
