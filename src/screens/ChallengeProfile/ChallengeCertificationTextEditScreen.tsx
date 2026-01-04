@@ -66,6 +66,13 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
     }
   }, [verification.photoUrl]);
 
+  // 기존 링크 초기화
+  useEffect(() => {
+    if (verification.textUrl) {
+      setAttachedLink(verification.textUrl);
+    }
+  }, [verification.textUrl]);
+
   // 키보드 이벤트 리스너
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -314,7 +321,7 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
       await updateVerification(verification.verificationId, {
         title: title.trim(),
         content: content.trim(),
-        textUrl: '',
+        textUrl: attachedLink || '',
         photoUrl: photoUrl,
       });
 

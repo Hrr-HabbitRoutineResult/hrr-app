@@ -1420,7 +1420,7 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(12),
   },
   textFeedSection: {
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(-20),
   },
   sectionTitleRow: {
     paddingVertical: verticalScale(10),

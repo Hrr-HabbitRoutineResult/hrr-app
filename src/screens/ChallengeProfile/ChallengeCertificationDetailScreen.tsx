@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -598,6 +598,25 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           </TouchableOpacity>
         )}
 
+        {/* 링크 */}
+        {verification.textUrl && (
+          <TouchableOpacity 
+            style={styles.linkBox}
+            onPress={() => {
+              Linking.canOpenURL(verification.textUrl).then(supported => {
+                if (supported) {
+                  Linking.openURL(verification.textUrl);
+                }
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
+              {verification.textUrl}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* 좋아요, 댓글, 스크랩 */}
         <View style={styles.engagementSection}>
           <TouchableOpacity
@@ -1018,6 +1037,18 @@ const styles = StyleSheet.create({
   content: {
     marginBottom: verticalScale(16),
     lineHeight: verticalScale(18),
+  },
+  linkBox: {
+    height: verticalScale(48),
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    marginBottom: verticalScale(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: scale(16),
+  },
+  linkText: {
+    flex: 1,
   },
   imageContainer: {
     width: '100%',

@@ -14,6 +14,7 @@ export interface TextCertificationItem {
   description: string;  // 인증 글 내용
   date: string;         // 인증 날짜
   thumbnail: any | null; // 썸네일 이미지 (없으면 null)
+  hasLink?: boolean;    // 링크 첨부 여부
   isQuestion?: boolean; // 질문 여부
   isResolved?: boolean; // 채택 답변 존재 여부
 }
@@ -40,10 +41,10 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
           activeOpacity={0.8}
         >
           <View style={styles.content}>
-            <Text variant="smMd" color={colors.text.primary} style={styles.title}>
+            <Text variant="smMd" color={colors.text.primary} style={styles.title} numberOfLines={1}>
               {item.title}
             </Text>
-            <Text variant="xxs" color={colors.text.tertiary} style={styles.description}>
+            <Text variant="xxs" color={colors.text.tertiary} style={styles.description} numberOfLines={2}>
               {item.description}
             </Text>
             <View style={styles.date}>

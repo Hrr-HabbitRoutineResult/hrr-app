@@ -301,7 +301,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       const result = await createTextVerification(challengeId, {
         title: title.trim(),
         content: content.trim(),
-        textUrl: '',
+        textUrl: attachedLink || '',
         photoUrl: photoUrl,
         isQuestion: isQuestionEnabled,
       });
