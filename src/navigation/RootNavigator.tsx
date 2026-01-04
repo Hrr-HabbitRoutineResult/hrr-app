@@ -9,6 +9,7 @@ import HomeScreen from '../screens/HomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ChallengeListScreen from '../screens/ChallengeListScreen';
 import RandomMissionScreen from '../screens/RandomMissionScreen';
+import CategorySearchScreen from '../screens/CategorySearchScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
@@ -93,7 +94,7 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="ChallengeCertificationEdit" component={ChallengeCertificationEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationTextEdit" component={ChallengeCertificationTextEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Search" component={SearchScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Search" component={CategorySearchScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ2" component={CreateChallengeQ2} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />

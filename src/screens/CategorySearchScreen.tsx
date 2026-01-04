@@ -19,10 +19,10 @@ import DeleteCircleIcon from '../../assets/icons/delete-circle.svg';
 const RECENT_SEARCHES_KEY = 'recentSearches';
 const MAX_RECENT_SEARCHES = 20;
 
-type SearchScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+type CategorySearchScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
-const SearchScreen = () => {
-  const navigation = useNavigation<SearchScreenNavigationProp>();
+const CategorySearchScreen = () => {
+  const navigation = useNavigation<CategorySearchScreenNavigationProp>();
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<ChallengeInfo[]>([]);
@@ -399,4 +399,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SearchScreen;
+export default CategorySearchScreen;
