@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
-import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image, Modal } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image, Modal, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import RNBlobUtil from 'react-native-blob-util';
+import * as LinkPreview from 'react-native-link-preview';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
 import { LinkLoadingSpinner } from '../../components/common/LinkLoadingSpinner';
@@ -17,6 +18,15 @@ import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
 import PostGalleryIcon from '../../../assets/icons/challenge-profile/post-gallery.svg';
 import PostLinkIcon from '../../../assets/icons/challenge-profile/post-link.svg';
 import DeleteIcon from '../../../assets/icons/challenge-profile/delete.svg';
+import DeleteLinkIcon from '../../../assets/icons/challenge-profile/delete-link.svg';
+
+interface LinkPreview {
+  url: string;
+  title?: string;
+  description?: string;
+  images?: string[];
+  siteName?: string;
+}
 
 type ChallengeCertificationTextScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationText'>;
 type ChallengeCertificationTextScreenNavigationProp = StackNavigationProp<
@@ -41,6 +51,8 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   const [linkUrl, setLinkUrl] = useState('');
   const [attachedLink, setAttachedLink] = useState<string | null>(null);
   const [isLinkLoading, setIsLinkLoading] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<LinkPreview | null>(null);
+  const [modalLinkPreview, setModalLinkPreview] = useState<LinkPreview | null>(null);
 
   // 키보드 이벤트 리스너
   useEffect(() => {
@@ -194,38 +206,70 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     setSelectedImages(prev => prev.filter(img => img.uri !== uri));
   };
 
+  const handleRemoveLink = () => {
+    setAttachedLink(null);
+  };
+
   const handleLinkPress = () => {
     setShowLinkModal(true);
+  };
+
+  const handleOpenLink = async () => {
+    if (attachedLink) {
+      const canOpen = await Linking.canOpenURL(attachedLink);
+      if (canOpen) {
+        await Linking.openURL(attachedLink);
+      }
+    }
   };
 
   const handleLinkCancel = () => {
     setShowLinkModal(false);
     setLinkUrl('');
+    setModalLinkPreview(null);
+    setIsLinkLoading(false);
   };
 
   const handleLinkConfirm = async () => {
+    // 이미 프리뷰가 로드된 경우 - 모달 닫고 메인에 링크 표시
+    if (modalLinkPreview) {
+      setShowLinkModal(false);
+      setLinkUrl('');
+      setModalLinkPreview(null);
+      return;
+    }
+
     if (!linkUrl.trim()) {
       Alert.alert('알림', 'URL을 입력해주세요.');
       return;
     }
-    
-    // URL 유효성 검사 (간단한 체크)
-    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
-    if (!urlPattern.test(linkUrl.trim())) {
-      Alert.alert('알림', '올바른 URL 형식을 입력해주세요.');
-      return;
+
+    // URL에 프로토콜이 없으면 추가
+    let fullUrl = linkUrl.trim();
+    if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
+      fullUrl = `https://${fullUrl}`;
     }
 
     setIsLinkLoading(true);
-    setAttachedLink(linkUrl.trim());
-    
-    // TODO: 실제 링크 썸네일 로딩 로직
-    // 지금은 10초 후 로딩 완료로 시뮬레이션
-    setTimeout(() => {
+
+    try {
+      // 링크 프리뷰 데이터 가져오기
+      const preview = await LinkPreview.getPreview(fullUrl, {
+        timeout: 5000,
+      });
+      setAttachedLink(fullUrl);
+      setModalLinkPreview({
+        url: preview.url,
+        title: preview.title,
+        description: preview.description,
+        images: preview.images || [],
+        siteName: preview.siteName,
+      });
+    } catch (error: any) {
+      Alert.alert('오류', `링크 정보를 불러올 수 없습니다.\n${error.message || '알 수 없는 오류'}`);
+    } finally {
       setIsLinkLoading(false);
-      setShowLinkModal(false);
-      setLinkUrl('');
-    }, 10000);
+    }
   };
 
   const handlePost = async () => {
@@ -360,6 +404,22 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
           {content.length}/200
         </Text>
 
+        {/* 첨부된 링크 */}
+        {attachedLink && (
+          <View style={styles.linkBox}>
+            <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
+              {attachedLink}
+            </Text>
+            <TouchableOpacity
+              onPress={handleRemoveLink}
+              activeOpacity={0.7}
+              style={styles.linkDeleteIconContainer}
+            >
+              <DeleteLinkIcon width={9} height={9} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* 선택한 이미지 썸네일들 */}
         {selectedImages.length > 0 && (
           <ScrollView
@@ -457,58 +517,75 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       >
         <TouchableOpacity
           style={styles.modalOverlay}
-          onPress={handleLinkCancel}
+          onPress={isLinkLoading ? undefined : handleLinkCancel}
           activeOpacity={1}
+          disabled={isLinkLoading}
         >
           <TouchableOpacity
-            style={styles.modalContent}
+            style={[
+              styles.modalContent,
+              modalLinkPreview && styles.modalContentExpanded
+            ]}
             onPress={(e) => e.stopPropagation()}
             activeOpacity={1}
           >
-           <View style={styles.modalInputContainer}>
-             <TextInput
-               style={styles.modalInput}
-               placeholder="URL을 입력하세요"
-               placeholderTextColor={colors.icon.gray}
-               value={linkUrl}
-               onChangeText={setLinkUrl}
-               autoCapitalize="none"
-               autoCorrect={false}
-               keyboardType="url"
-               editable={!isLinkLoading}
-             />
-           </View>
-           {/* 로딩 스피너 */}
-           {isLinkLoading && (
-             <View style={styles.modalSpinnerContainer}>
-               <LinkLoadingSpinner />
-             </View>
-           )}
-           <View style={styles.modalButtons}>
-             <TouchableOpacity
-               style={styles.modalButton}
-               onPress={handleLinkCancel}
-               activeOpacity={0.7}
-               disabled={isLinkLoading}
-             >
-               <Text variant="smMd" color={isLinkLoading ? colors.icon.gray : colors.text.primary}>
-                 취소
-               </Text>
-             </TouchableOpacity>
-             <TouchableOpacity
-               style={styles.modalButton}
-               onPress={handleLinkConfirm}
-               disabled={linkUrl.trim().length === 0 || isLinkLoading}
-               activeOpacity={0.7}
-             >
-               <Text
-                 variant="smMd"
-                 color={linkUrl.trim().length === 0 || isLinkLoading ? colors.icon.gray : colors.text.primary}
-               >
-                 확인
-               </Text>
-             </TouchableOpacity>
-           </View>
+            <View style={styles.modalInputContainer}>
+              <TextInput
+                style={styles.modalInput}
+                placeholder="URL을 입력하세요"
+                placeholderTextColor={colors.icon.gray}
+                value={linkUrl}
+                onChangeText={setLinkUrl}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                editable={!isLinkLoading && !modalLinkPreview}
+              />
+            </View>
+
+            {/* 로딩 스피너 */}
+            {isLinkLoading && (
+              <View style={styles.modalSpinnerContainer}>
+                <LinkLoadingSpinner />
+              </View>
+            )}
+
+            {/* 썸네일 프리뷰 */}
+            {!isLinkLoading && modalLinkPreview && modalLinkPreview.images && modalLinkPreview.images.length > 0 && (
+              <View style={styles.modalThumbnailContainer}>
+                <Image
+                  source={{ uri: modalLinkPreview.images[0] }}
+                  style={styles.modalThumbnail}
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleLinkCancel}
+                activeOpacity={0.7}
+                disabled={isLinkLoading}
+              >
+                <Text variant="smMd" color={isLinkLoading ? colors.icon.gray : colors.text.primary}>
+                  취소
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleLinkConfirm}
+                disabled={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading}
+                activeOpacity={0.7}
+              >
+                <Text
+                  variant="smMd"
+                  color={(linkUrl.trim().length === 0 && !modalLinkPreview) || isLinkLoading ? colors.icon.gray : colors.text.primary}
+                >
+                  확인
+                </Text>
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -659,16 +736,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(16),
     justifyContent: 'space-between',
   },
-   modalInputContainer: {
-     justifyContent: 'flex-start',
-   },
+  modalContentExpanded: {
+    height: verticalScale(292),
+  },
+  modalInputContainer: {
+    justifyContent: 'flex-start',
+  },
   modalSpinnerContainer: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: verticalScale(28),
   },
-   modalInput: {
+  modalThumbnailContainer: {
+    marginTop: verticalScale(12),
+    height: verticalScale(160),
+  },
+  modalThumbnail: {
+    width: '100%',
+    height: '100%',
+    borderRadius: scale(10),
+    backgroundColor: colors.background,
+  },
+  modalInput: {
     ...typography.smReg,
     color: colors.text.primary,
     backgroundColor: colors.background,
@@ -686,6 +776,26 @@ const styles = StyleSheet.create({
   modalButton: {
     width: scale(60),
     height: verticalScale(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  linkBox: {
+    height: verticalScale(60),
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    marginBottom: verticalScale(20),
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: scale(16),
+    paddingRight: scale(8),
+  },
+  linkText: {
+    flex: 1,
+    marginRight: scale(8),
+  },
+  linkDeleteIconContainer: {
+    width: scale(36),
+    height: scale(36),
     justifyContent: 'center',
     alignItems: 'center',
   },
