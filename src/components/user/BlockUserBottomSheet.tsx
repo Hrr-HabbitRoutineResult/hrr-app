@@ -18,7 +18,7 @@ export const BlockUserBottomSheet: React.FC<BlockUserBottomSheetProps> = ({
   username = '사용자',
 }) => {
   const renderFooter = () => (
-    <>
+    <View>
       <View style={styles.buttonDivider} />
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.blockButton} onPress={onConfirm} activeOpacity={0.8}>
@@ -27,7 +27,7 @@ export const BlockUserBottomSheet: React.FC<BlockUserBottomSheetProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
-    </>
+    </View>
   );
 
   return (

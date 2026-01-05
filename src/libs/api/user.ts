@@ -19,7 +19,6 @@ export interface UserMe {
   followerCount: number;
   followingCount: number;
   points: number;
-  isPublic: boolean;
   role: string;
   status: string;
   alarmId: number;
@@ -253,7 +252,6 @@ export const unfollowUser = async (unfollowedUserId: number): Promise<void> => {
 export interface UpdateUserProfileRequest {
   nickname?: string;
   profileImageKey?: string; // 백엔드 요구사항에 맞춰 profileImage에서 profileImageKey로 변경됨
-  isPublic?: boolean;
 }
 
 /**
@@ -322,7 +320,6 @@ export interface OtherUserVerificationHistoryResponse {
   code: string;
   message: string;
   result: {
-    isPublic: boolean;
     nickname: string;
     verifications: {
       content: VerificationHistoryItem[];

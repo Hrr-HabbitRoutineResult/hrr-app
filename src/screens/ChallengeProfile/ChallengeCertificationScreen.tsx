@@ -100,11 +100,22 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
       // 현재 라운드를 기본 선택
       const currentRound = roundsList.find(r => r.isCurrentRound);
+      let initialRoundNumber: number | null = null;
       if (currentRound) {
-        setSelectedRound(currentRound.roundNumber);
+        initialRoundNumber = currentRound.roundNumber;
       } else if (roundsList.length > 0) {
-        setSelectedRound(roundsList[0].roundNumber);
+        initialRoundNumber = roundsList[0].roundNumber;
       }
+      
+      setSelectedRound(initialRoundNumber);
+
+      // 라운드가 있으면 해당 라운드의 피드를 즉시 조회
+      if (initialRoundNumber !== null) {
+        await fetchChallengerFeed(initialRoundNumber);
+      } else {
+        setChallengerFeed([]);
+      }
+
     } catch (error: any) {
       Alert.alert('오류', error.message || '챌린저 정보를 불러오는데 실패했습니다.');
     } finally {

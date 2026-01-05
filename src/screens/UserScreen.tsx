@@ -47,7 +47,6 @@ const UserScreen = () => {
   const [user, setUser] = useState<OtherUser | null>(null);
   const [ongoingChallenges, setOngoingChallenges] = useState<OngoingChallengeItem[]>([]);
   const [verificationHistory, setVerificationHistory] = useState<VerificationHistoryItem[]>([]);
-  const [isPublic, setIsPublic] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [certificationViewMode, setCertificationViewMode] = useState('grid');
@@ -105,8 +104,7 @@ const UserScreen = () => {
           setOngoingChallenges(challengesData.content);
 
           const historyData = await getVerificationHistoryById(userId);
-          setIsPublic(historyData.isPublic);
-          if (historyData.isPublic) {
+          if (historyData.verifications) { // isPublic 필드가 제거되었으므로, verifications 객체 자체의 존재 여부로 확인
             setVerificationHistory(historyData.verifications.content);
           }
         } catch (error) {
@@ -234,14 +232,6 @@ const UserScreen = () => {
     if (isBlocked) {
       return (
         <View style={styles.emptyCertificationContainer}>
-          <Text style={styles.tabContentText}>차단된 사용자입니다.</Text>
-        </View>
-      );
-    }
-    if (!isPublic) {
-      return (
-        <View style={styles.emptyCertificationContainer}>
-          <Text style={styles.tabContentText}>비공개 프로필입니다.</Text>
         </View>
       );
     }

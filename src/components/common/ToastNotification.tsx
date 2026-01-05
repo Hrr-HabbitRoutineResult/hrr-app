@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { colors, spacing, radius, typography } from '../../design/tokens';
 import LockIcon from '../../../assets/icons/lock.svg';
+import BlockIcon from '../../../assets/icons/ic_block.svg';
 
 interface ToastNotificationProps {
   visible: boolean;
@@ -61,6 +62,8 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
     outputRange: [0, 0.8, 1],
   });
 
+  const isBlockMessage = message.includes('차단');
+
   return (
     <Animated.View
       style={[
@@ -72,7 +75,11 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
         },
       ]}
     >
-      <LockIcon width={16} height={16} style={styles.icon} />
+      {isBlockMessage ? (
+        <BlockIcon width={16} height={16} style={styles.icon} />
+      ) : (
+        <LockIcon width={16} height={16} style={styles.icon} />
+      )}
       <Text variant="smReg" color={colors.text.primary}>
         {message}
       </Text>

@@ -24,7 +24,6 @@ const CertificationHistoryScreen = () => {
   
   // State for other user's data
   const [otherUserHistory, setOtherUserHistory] = useState<VerificationHistoryItem[]>([]);
-  const [isPublic, setIsPublic] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   // Global state for logged-in user
@@ -41,8 +40,8 @@ const CertificationHistoryScreen = () => {
           setIsLoading(true);
           try {
             const result = await getVerificationHistoryById(userId);
-            setIsPublic(result.isPublic);
-            if(result.isPublic) {
+            // isPublic 체크 없이 모든 인증 기록을 표시합니다.
+            if(result.verifications) {
                 setOtherUserHistory(result.verifications.content);
             }
           } catch (error) {
@@ -75,14 +74,6 @@ const CertificationHistoryScreen = () => {
                 <ActivityIndicator />
             </View>
         )
-    }
-
-    if (!isMe && !isPublic) {
-        return (
-            <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>비공개 프로필입니다.</Text>
-            </View>
-        );
     }
 
     if (certificationItems.length === 0) {

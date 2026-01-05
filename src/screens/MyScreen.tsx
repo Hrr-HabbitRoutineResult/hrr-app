@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,6 +7,7 @@ import { colors, typography, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
+import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
 
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
@@ -21,25 +22,43 @@ import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-
   const {
     userInfo,
     fetchUserInfo,
     myOngoingChallenges,
     fetchMyOngoingChallenges,
-    myVerificationHistory,
-    fetchMyVerificationHistory,
   } = useUserStore();
 
   const [certificationViewMode, setCertificationViewMode] = useState('grid');
-  
+  const [myVerificationHistory, setMyVerificationHistory] = useState<VerificationHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+
+  // 화면 포커스 시, 유저 정보와 진행중 챌린지는 스토어를 통해 호출
   useFocusEffect(
     useCallback(() => {
       fetchMyOngoingChallenges();
-      fetchMyVerificationHistory();
       fetchUserInfo();
-    }, [fetchMyOngoingChallenges, fetchMyVerificationHistory, fetchUserInfo])
+    }, [fetchMyOngoingChallenges, fetchUserInfo])
   );
+
+  // userInfo가 로드된 후, 인증 기록을 직접 API로 호출
+  useEffect(() => {
+    if (userInfo) {
+      const fetchHistory = async () => {
+        setIsHistoryLoading(true);
+        try {
+          const history = await getVerificationHistory();
+          setMyVerificationHistory(history);
+        } catch (error) {
+          console.error("Failed to fetch verification history:", error);
+          setMyVerificationHistory([]); // 에러 발생 시 기록을 비웁니다.
+        } finally {
+          setIsHistoryLoading(false);
+        }
+      };
+      fetchHistory();
+    }
+  }, [userInfo]);
 
   const userProfile = useMemo(() => {
     if (!userInfo) {
@@ -111,7 +130,9 @@ const MyScreen = () => {
                 onViewModeChange={(mode) => setCertificationViewMode(mode)}
                 onPressTitle={() => navigation.navigate('CertificationHistory')}
             />
-            {certificationItems.length === 0 ? (
+            {isHistoryLoading ? (
+              <ActivityIndicator style={styles.loadingIndicator} />
+            ) : certificationItems.length === 0 ? (
             <View style={styles.emptyCertificationContainer}>
                 <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
             </View>
@@ -171,6 +192,9 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: spacing.xl,
+  },
+  loadingIndicator: {
     marginTop: spacing.xl,
   },
 });

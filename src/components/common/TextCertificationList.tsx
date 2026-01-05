@@ -6,6 +6,7 @@ import { colors } from '../../design/tokens';
 import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 import QuestionMarkTextIcon from '../../../assets/icons/challenge-profile/question-mark-text.svg';
 import ResolvedTextIcon from '../../../assets/icons/challenge-profile/resolved-text.svg';
+import TextIcon from '../../../assets/icons/text.svg';
 
 export interface TextCertificationItem {
   id: number;           // 인증 아이템 고유 ID
@@ -53,7 +54,13 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
             </View>
           </View>
           <View style={styles.thumbnail}>
-            <Image source={item.thumbnail} style={styles.thumbnailImage} />
+            {item.thumbnail && item.thumbnail.uri ? (
+              <Image source={item.thumbnail} style={styles.thumbnailImage} />
+            ) : (
+              <View style={styles.fallbackContainer}>
+                <TextIcon width={32} height={32} />
+              </View>
+            )}
             {/* 질문이 포함된 글일 때만 오버레이와 아이콘 표시 */}
             {item.isQuestion && (
               <View style={styles.thumbnailOverlay}>
@@ -104,10 +111,20 @@ const styles = StyleSheet.create({
     borderRadius: scale(10),
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#f0f0f0', // Fallback background color
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   thumbnailImage: {
     width: '100%',
     height: '100%',
+  },
+  fallbackContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E9E9E9', // A light grey background for the fallback
   },
   thumbnailOverlay: {
     position: 'absolute',
