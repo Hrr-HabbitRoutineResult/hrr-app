@@ -54,18 +54,32 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
 
   // 기존 이미지 초기화
   useEffect(() => {
-    if (verification.photoUrl) {
-      const cleanUrl = verification.photoUrl.endsWith('/')
-        ? verification.photoUrl.slice(0, -1)
-        : verification.photoUrl;
+    const images: Array<{ uri: string; url: string; uploading: boolean }> = [];
 
-      setSelectedImages([{
-        uri: cleanUrl,
-        url: cleanUrl,
-        uploading: false,
-      }]);
+    // textImage1, textImage2, textImage3 순서로 이미지 추가
+    if (verification.textImage1) {
+      const cleanUrl = verification.textImage1.endsWith('/')
+        ? verification.textImage1.slice(0, -1)
+        : verification.textImage1;
+      images.push({ uri: cleanUrl, url: cleanUrl, uploading: false });
     }
-  }, [verification.photoUrl]);
+
+    if (verification.textImage2) {
+      const cleanUrl = verification.textImage2.endsWith('/')
+        ? verification.textImage2.slice(0, -1)
+        : verification.textImage2;
+      images.push({ uri: cleanUrl, url: cleanUrl, uploading: false });
+    }
+
+    if (verification.textImage3) {
+      const cleanUrl = verification.textImage3.endsWith('/')
+        ? verification.textImage3.slice(0, -1)
+        : verification.textImage3;
+      images.push({ uri: cleanUrl, url: cleanUrl, uploading: false });
+    }
+
+    setSelectedImages(images);
+  }, [verification.textImage1, verification.textImage2, verification.textImage3]);
 
   // 기존 링크 초기화
   useEffect(() => {
@@ -183,7 +197,17 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
 
   const handleGalleryPress = async () => {
     try {
-      const assets = await openGalleryMultiple(10);
+      // 이미 선택된 이미지 개수 확인
+      const currentImageCount = selectedImages.length;
+      
+      if (currentImageCount >= 3) {
+        Alert.alert('알림', '이미지는 최대 3장까지 첨부 가능합니다.');
+        return;
+      }
+
+      // 남은 개수만큼만 선택 가능
+      const remainingCount = 3 - currentImageCount;
+      const assets = await openGalleryMultiple(remainingCount);
 
       if (assets && assets.length > 0) {
         // 선택한 이미지들을 state에 추가 (uploading 상태로)
@@ -318,16 +342,18 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 첫 번째 이미지 URL 사용
-      const photoUrl = selectedImages.length > 0 && selectedImages[0].url
-        ? selectedImages[0].url
-        : '';
+      // 최대 3개까지 이미지 URL 추출
+      const textImage1 = selectedImages.length > 0 && selectedImages[0].url ? selectedImages[0].url : null;
+      const textImage2 = selectedImages.length > 1 && selectedImages[1].url ? selectedImages[1].url : null;
+      const textImage3 = selectedImages.length > 2 && selectedImages[2].url ? selectedImages[2].url : null;
 
       await updateVerification(verification.verificationId, {
         title: title.trim(),
         content: content.trim(),
         textUrl: attachedLink || '',
-        photoUrl: photoUrl,
+        textImage1,
+        textImage2,
+        textImage3,
       });
 
       Alert.alert('성공', '게시글이 수정되었습니다.', [

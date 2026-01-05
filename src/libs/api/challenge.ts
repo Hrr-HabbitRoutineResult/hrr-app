@@ -665,6 +665,9 @@ export interface VerificationDetail {
   content: string;
   photoUrl: string;
   textUrl: string;
+  textImage1: string | null;
+  textImage2: string | null;
+  textImage3: string | null;
   isQuestion: boolean;
   status: string;
   createdAt: string;
@@ -713,7 +716,9 @@ export interface CreateTextVerificationRequest {
   title: string;
   content: string;
   textUrl: string;
-  photoUrl: string;
+  textImage1: string | null;
+  textImage2: string | null;
+  textImage3: string | null;
   isQuestion: boolean;
 }
 
@@ -789,7 +794,7 @@ export interface VerificationUser {
   userId: number;
   nickname: string;
   profileImageUrl: string;
-  role: string;
+  level: string;
 }
 
 /**
@@ -821,6 +826,9 @@ export interface VerificationDetailResponse {
     content: string;
     textUrl: string;
     photoUrl: string;
+    textImage1: string | null;
+    textImage2: string | null;
+    textImage3: string | null;
     isQuestion: boolean;
     isResolved: boolean;
     status: string;
@@ -1103,7 +1111,9 @@ export interface UpdateVerificationRequest {
   title?: string;
   content?: string;
   textUrl?: string;
-  photoUrl?: string;
+  textImage1?: string | null;
+  textImage2?: string | null;
+  textImage3?: string | null;
 }
 
 /**

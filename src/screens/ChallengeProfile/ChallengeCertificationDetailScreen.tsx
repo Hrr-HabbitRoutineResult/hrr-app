@@ -101,9 +101,15 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         size: 10,
       });
 
-      // photoUrl 끝 슬래시 제거
-      if (result.photoUrl && result.photoUrl.endsWith('/')) {
-        result.photoUrl = result.photoUrl.slice(0, -1);
+      // textImage1~3 끝 슬래시 제거
+      if (result.textImage1 && result.textImage1.endsWith('/')) {
+        result.textImage1 = result.textImage1.slice(0, -1);
+      }
+      if (result.textImage2 && result.textImage2.endsWith('/')) {
+        result.textImage2 = result.textImage2.slice(0, -1);
+      }
+      if (result.textImage3 && result.textImage3.endsWith('/')) {
+        result.textImage3 = result.textImage3.slice(0, -1);
       }
 
       setVerification(result);
@@ -547,7 +553,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                {getUserRoleText(verification.user.role)}
+                {getUserRoleText(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -580,23 +586,36 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </Text>
 
         {/* 이미지 */}
-        {verification.photoUrl && (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => setIsImageViewerVisible(true)}
-            style={styles.imageContainer}
-          >
-            <Image
-              source={{ uri: verification.photoUrl }}
-              style={styles.image}
-              resizeMode="cover"
-              onLoad={() => {
-              }}
-              onError={(error) => {
-              }}
-            />
-          </TouchableOpacity>
-        )}
+        {(() => {
+          const images = [
+            verification.textImage1,
+            verification.textImage2,
+            verification.textImage3,
+          ].filter(Boolean);
+
+          if (images.length === 0) return null;
+
+          return (
+            <View style={styles.imagesContainer}>
+              {images.map((imageUrl, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.9}
+                  onPress={() => setIsImageViewerVisible(true)}
+                  style={styles.imageContainer}
+                >
+                  <Image
+                    source={{ uri: imageUrl as string }}
+                    style={styles.image}
+                    resizeMode="cover"
+                    onLoad={() => { }}
+                    onError={(error) => { }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          );
+        })()}
 
         {/* 링크 */}
         {verification.textUrl && (
@@ -954,7 +973,15 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         onRequestClose={() => setIsImageViewerVisible(false)}
       >
         <ImageViewer
-          imageUrls={[{ url: verification?.photoUrl || '' }]}
+          imageUrls={(() => {
+            const images = [
+              verification?.textImage1,
+              verification?.textImage2,
+              verification?.textImage3,
+            ].filter(Boolean);
+
+            return images.map(url => ({ url: url as string }));
+          })()}
           enableSwipeDown
           onSwipeDown={() => setIsImageViewerVisible(false)}
           onClick={() => setIsImageViewerVisible(false)}
@@ -1049,6 +1076,9 @@ const styles = StyleSheet.create({
   },
   linkText: {
     flex: 1,
+  },
+  imagesContainer: {
+    gap: verticalScale(8),
   },
   imageContainer: {
     width: '100%',
