@@ -11,6 +11,7 @@ interface NotificationItemProps {
   description: string;
   timeAgo: string;
   isRead: boolean;
+  onPress?: () => void;
   onYesPress?: () => void;
   onNoPress?: () => void;
 }
@@ -22,14 +23,19 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   timeAgo,
   type,
   isRead,
+  onPress,
   onYesPress,
   onNoPress,
 }) => {
   return (
-    <View style={[
-      styles.notificationItem,
-      !isRead && styles.notificationItemUnread,
-    ]}>
+    <TouchableOpacity
+      style={[
+        styles.notificationItem,
+        !isRead && styles.notificationItemUnread,
+      ]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
       <Image source={profileImage} style={styles.profileImage} />
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
@@ -59,7 +65,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
           </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

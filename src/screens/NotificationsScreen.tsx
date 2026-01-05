@@ -9,6 +9,7 @@ import { Header } from '../components/common/Header';
 import { NotificationItem as NotificationItemComponent } from '../components/notification/NotificationItem';
 import {
   getNotifications,
+  markNotificationAsRead,
   NotificationItem as NotificationItemType
 } from '../libs/api/notification';
 import LogoGray from '../../assets/images/logo-gray.svg';
@@ -93,6 +94,26 @@ const NotificationsScreen = () => {
     return type === 'CHALLENGE_EXTENSION' ? 'challenge_ending' : 'normal';
   };
 
+  // 알림 읽음 처리
+  const handleNotificationRead = async (notificationId: number) => {
+    try {
+      const result = await markNotificationAsRead(notificationId);
+
+      // 로컬 state 업데이트 (배경색 변경)
+      if (result.isRead) {
+        setNotifications(prev =>
+          prev.map(notification =>
+            notification.id === notificationId
+              ? { ...notification, isRead: true }
+              : notification
+          )
+        );
+      }
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+    }
+  };
+
   const handleYesPress = (id: number) => {
     console.log('네 버튼 클릭:', id);
     // TODO: 챌린지 연장 여부 제출 API 연동
@@ -151,6 +172,7 @@ const NotificationsScreen = () => {
               description={item.message.replace(/\\n/g, '\n')}
               timeAgo={formatTimeAgo(item.createdAt)}
               isRead={item.isRead}
+              onPress={() => !item.isRead && handleNotificationRead(item.id)}
               onYesPress={() => handleYesPress(item.id)}
               onNoPress={() => handleNoPress(item.id)}
             />

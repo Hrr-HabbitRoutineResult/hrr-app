@@ -76,3 +76,38 @@ export const getNotifications = async (
   }
 };
 
+/**
+ * 알림 읽음 처리 응답
+ */
+export interface MarkNotificationAsReadResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    notificationId: number;
+    isRead: boolean;
+  };
+}
+
+/**
+ * 알림 읽음 처리
+ */
+export const markNotificationAsRead = async (
+  notificationId: number
+): Promise<MarkNotificationAsReadResponse['result']> => {
+  try {
+    const response = await apiClient.patch<MarkNotificationAsReadResponse>(
+      `/api/v1/notifications/${notificationId}/read`
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '알림 읽음 처리에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
