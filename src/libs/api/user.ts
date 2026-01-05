@@ -174,6 +174,7 @@ export interface FollowItem {
   level: string;
   profilePhoto: string;
   isFollowing: boolean;
+  isBlocked: boolean;
 }
 
 /**
@@ -321,6 +322,7 @@ export interface OtherUserVerificationHistoryResponse {
   message: string;
   result: {
     nickname: string;
+    isBlocked: boolean;
     verifications: {
       content: VerificationHistoryItem[];
       currentPage: number;
