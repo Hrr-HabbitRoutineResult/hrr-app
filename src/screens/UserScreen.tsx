@@ -84,39 +84,39 @@ const UserScreen = () => {
     });
   };
 
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const userData = await getUserById(userId);
+      setUser(userData);
+      setIsFollowing(userData.isFollowing);
+      setIsBlocked(userData.isBlocked);
+
+      if (userData.isBlocked) {
+        setOngoingChallenges([]);
+        setVerificationHistory([]);
+        return;
+      }
+
+      const challengesData = await getOngoingChallengesById(userId);
+      setOngoingChallenges(challengesData.content);
+
+      const historyData = await getVerificationHistoryById(userId);
+      if (historyData.verifications) {
+        setVerificationHistory(historyData.verifications.content);
+      }
+    } catch (error) {
+      Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
+      navigation.goBack();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, navigation]);
+
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
-        setIsLoading(true);
-        try {
-          const userData = await getUserById(userId);
-          setUser(userData);
-          setIsFollowing(userData.isFollowing);
-          setIsBlocked(userData.isBlocked);
-
-          if (userData.isBlocked) {
-            setOngoingChallenges([]);
-            setVerificationHistory([]);
-            return;
-          }
-
-          const challengesData = await getOngoingChallengesById(userId);
-          setOngoingChallenges(challengesData.content);
-
-          const historyData = await getVerificationHistoryById(userId);
-          if (historyData.verifications) { // isPublic 필드가 제거되었으므로, verifications 객체 자체의 존재 여부로 확인
-            setVerificationHistory(historyData.verifications.content);
-          }
-        } catch (error) {
-          Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
-          navigation.goBack();
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       fetchData();
-    }, [userId])
+    }, [fetchData])
   );
 
   const handleFollowToggle = async () => {
@@ -151,8 +151,7 @@ const UserScreen = () => {
     setIsBlockSheetVisible(false);
     try {
       await blockUserById(user.userId);
-      setIsBlocked(true);
-      setIsFollowing(false); // 차단 시 팔로우 해제
+      await fetchData(); // 차단 후 데이터 새로고침
       setToast({ visible: true, message: '차단이 완료되었어요' });
     } catch (error) {
       Alert.alert('오류', '사용자 차단에 실패했습니다.');
@@ -168,8 +167,8 @@ const UserScreen = () => {
     setIsUnblockSheetVisible(false);
     try {
       await unblockUserById(user.userId);
-      setIsBlocked(false);
       setToast({ visible: true, message: '차단 해제가 완료되었어요' });
+      await fetchData(); // 차단 해제 후 데이터 새로고침
     } catch (error) {
       Alert.alert('오류', '사용자 차단 해제에 실패했습니다.');
     }
