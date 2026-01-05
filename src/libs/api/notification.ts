@@ -1,0 +1,78 @@
+import { apiClient } from './client';
+
+/**
+ * ============================================
+ * 알림 관련
+ * ============================================
+ */
+
+/**
+ * 알림 아이템
+ */
+export interface NotificationItem {
+  id: number;
+  title: string;
+  message: string;
+  imageUrl: string;
+  category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
+  type: 'CHALLENGE_EXTENSION' | string; // 현재는 CHALLENGE_EXTENSION만 존재, 추후 추가 예정
+  targetType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 화면 이동을 위한 타입
+  targetId: number;
+  contextType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 추가 처리를 위한 타입
+  contextId: number;
+  isRead: boolean;
+  createdAt: string;
+}
+
+/**
+ * 알림 목록 조회 요청 파라미터
+ */
+export interface GetNotificationsParams {
+  category?: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
+  page?: number;
+  size?: number;
+}
+
+/**
+ * 알림 목록 조회 응답
+ */
+export interface GetNotificationsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: NotificationItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 알림 목록 조회
+ */
+export const getNotifications = async (
+  params?: GetNotificationsParams
+): Promise<GetNotificationsResponse['result']> => {
+  try {
+    const response = await apiClient.get<GetNotificationsResponse>('/api/v1/notifications', {
+      params: {
+        category: params?.category,
+        page: params?.page ?? 1,
+        size: params?.size ?? 10,
+      },
+    });
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '알림 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+

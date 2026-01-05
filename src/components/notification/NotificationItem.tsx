@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image, ImageSourcePropType } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../design/tokens';
 import { Text } from '../common/Text';
 
 interface NotificationItemProps {
   type: 'normal' | 'challenge_ending';
-  profileImage: number;
+  profileImage: ImageSourcePropType;
   title: string;
   description: string;
   timeAgo: string;
