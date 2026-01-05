@@ -307,7 +307,9 @@ export const ChallengeProfileScreen: React.FC = () => {
   };
 
   const handleHostProfile = () => {
-    // TODO: 방장 프로필 화면으로 이동
+    if (data?.owner.id) {
+      navigation.navigate('User', { userId: data.owner.id });
+    }
   };
 
   const handleParticipate = () => {
@@ -1532,11 +1534,13 @@ const styles = StyleSheet.create({
   modalButtonsWithPassword: {
     marginTop: -16, // 비밀번호 모드일 때 타이틀과 텍스트 필드 사이 간격
   },
-  modalButton: {
-    width: scale(60),
-    height: verticalScale(48),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    modalButton: {
+      paddingHorizontal: scale(16),
+      paddingVertical: verticalScale(12),
+      minWidth: scale(60),
+      height: verticalScale(48),
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 });
 

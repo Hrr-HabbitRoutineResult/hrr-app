@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, FlatList, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -59,13 +59,15 @@ const FollowerListScreen = () => {
             <FlatList
                 data={data}
                 renderItem={({ item }) => (
-                  <PersonListItem
-                    avatarUrl={item.profilePhoto}
-                    nickname={item.nickname}
-                    tier={item.level}
-                    isFollowing={item.isFollowing}
-                    onPressFollow={() => handleFollowToggle(item.id, item.isFollowing)}
-                  />
+                  <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.id })}>
+                    <PersonListItem
+                      avatarUrl={item.profilePhoto}
+                      nickname={item.nickname}
+                      tier={item.level}
+                      isFollowing={item.isFollowing}
+                      onPressFollow={() => handleFollowToggle(item.id, item.isFollowing)}
+                    />
+                  </TouchableOpacity>
                 )}
                 keyExtractor={(item) => String(item.id)}
                 contentContainerStyle={styles.listContent}

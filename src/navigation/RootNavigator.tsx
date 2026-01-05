@@ -12,6 +12,7 @@ import RandomMissionScreen from '../screens/RandomMissionScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
+import UserScreen from '../screens/UserScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
 import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/ChallengeCertificationScreen';
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
@@ -107,6 +108,7 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="User" component={UserScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>

@@ -26,7 +26,9 @@ interface ProfileCardProps {
   badges?: React.ReactNode[]; // 추가: 뱃지 목록
   onPressFollowers?: () => void;
   onPressFollowing?: () => void;
-  onPressProfileEdit?: () => void; // New prop for profile edit button
+  onPressProfileEdit?: () => void;
+  onPressFollow?: () => void;
+  onPressBlock?: () => void;
 }
 
 const ProfileCard = ({
@@ -37,7 +39,9 @@ const ProfileCard = ({
   badges = [],
   onPressFollowers,
   onPressFollowing,
-  onPressProfileEdit, // Destructure new prop
+  onPressProfileEdit,
+  onPressFollow,
+  onPressBlock,
 }: ProfileCardProps) => {
   const { nickname, avatarUrl, followerCount, followingCount, isChallenger } = user;
 
@@ -63,7 +67,7 @@ const ProfileCard = ({
             variant="outlinePrimary"
             size="small"
             style={styles.singleButton}
-            onPress={() => {}}
+            onPress={onPressBlock}
           >
             <Text variant="sm" color={colors.primary.main}>
               차단됨
@@ -89,7 +93,7 @@ const ProfileCard = ({
             variant="outlinePrimary"
             size="small"
             style={styles.buttonStyle}
-            onPress={() => {}}
+            onPress={onPressFollow}
           >
             <Text variant="sm" color={colors.primary.main}>
               팔로잉
@@ -101,7 +105,7 @@ const ProfileCard = ({
 
     return (
       <View style={styles.buttonRow}>
-        <Button variant="primary" size="small" style={styles.singleButton} onPress={() => {}}>
+        <Button variant="primary" size="small" style={styles.singleButton} onPress={onPressFollow}>
           <Text variant="sm" color={colors.white}>
             팔로우
           </Text>

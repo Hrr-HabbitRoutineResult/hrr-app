@@ -19,12 +19,13 @@ export type RootStackParamList = {
   CreateChallengeQ3: undefined;
   CreateChallengeQ4: undefined;
   Onboarding: undefined;
-  ParticipatingChallenge: undefined;
-  CertificationHistory: undefined;
-  FollowerList: { initialTab: 'follower' | 'following' };
+  ParticipatingChallenge: { userId?: number };
+  CertificationHistory: { userId?: number };
+  FollowerList: { initialTab: 'follower' | 'following', userId?: number };
   Settings: undefined;
   AccountSettings: undefined;
   ProfileEdit: undefined;
+  User: { userId: number };
 };
 
 export type HomeTabParamList = {
