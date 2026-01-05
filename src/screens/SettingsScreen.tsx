@@ -35,12 +35,12 @@ const SettingsScreen = () => {
         {
           label: '찜한 챌린지',
           icon: <IcHeartDefaultIcon width={24} height={24} />,
-          onPress: () => console.log('Navigate to Liked Challenges'),
+          onPress: () => navigation.navigate('LikedChallenge'),
         },
         {
           label: '종료된 챌린지',
           icon: <IcCheckIcon width={24} height={24} />,
-          onPress: () => console.log('Navigate to Finished Challenges'),
+          onPress: () => navigation.navigate('CompletedChallenge'),
         },
       ],
     },

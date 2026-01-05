@@ -26,6 +26,8 @@ export type RootStackParamList = {
   AccountSettings: undefined;
   ProfileEdit: undefined;
   User: { userId: number };
+  LikedChallenge: undefined;
+  CompletedChallenge: undefined;
 };
 
 export type HomeTabParamList = {

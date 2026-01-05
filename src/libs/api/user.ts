@@ -532,3 +532,77 @@ export const reportUserById = async (data: ReportRequest): Promise<void> => {
   }
 };
 
+/**
+ * ============================================
+ * 찜한/종료된 챌린지 관련
+ * ============================================
+ */
+
+/**
+ * 챌린지 아이템
+ */
+export interface ChallengeItem {
+  challengeId: number;
+  title: string;
+  description: string;
+  image: string;
+}
+
+/**
+ * 챌린지 목록 응답
+ */
+export interface ChallengeListResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: ChallengeItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 찜한 챌린지 목록 조회
+ */
+export const getLikedChallenges = async (page: number = 1, size: number = 10): Promise<ChallengeListResponse['result']> => {
+  try {
+    const response = await apiClient.get<ChallengeListResponse>(
+      '/api/v1/user/challenges/liked',
+      {
+        params: { page, size },
+      }
+    );
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+    throw new Error(response.data.message || '찜한 챌린지 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 종료된 챌린지 목록 조회
+ */
+export const getCompletedChallenges = async (page: number = 1, size: number = 10): Promise<ChallengeListResponse['result']> => {
+  try {
+    const response = await apiClient.get<ChallengeListResponse>(
+      '/api/v1/user/challenges/completed',
+      {
+        params: { page, size },
+      }
+    );
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+    throw new Error(response.data.message || '종료된 챌린지 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+

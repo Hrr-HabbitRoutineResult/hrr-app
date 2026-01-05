@@ -21,6 +21,7 @@ import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
+
   const {
     userInfo,
     fetchUserInfo,
@@ -100,9 +101,10 @@ const MyScreen = () => {
             <ParticipatingChallengeSection
                 items={participatingChallenges}
                 onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
-                onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: item.id })}
+                onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
                 onPressEmpty={() => navigation.navigate('ChallengeList')}
             />
+
             <ViewModeHeader
                 title="인증 기록"
                 initialMode={certificationViewMode}

@@ -32,6 +32,8 @@ import FollowerListScreen from '../screens/FollowerListScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
+import LikedChallengeScreen from '../screens/LikedChallengeScreen';
+import CompletedChallengeScreen from '../screens/CompletedChallengeScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -109,6 +111,8 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="User" component={UserScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="LikedChallenge" component={LikedChallengeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CompletedChallenge" component={CompletedChallengeScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>
