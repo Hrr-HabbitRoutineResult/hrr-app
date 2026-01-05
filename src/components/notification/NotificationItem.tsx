@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     marginRight: scale(8),
   },
   notificationDescription: {
-    lineHeight: verticalScale(18),
     marginTop: verticalScale(4),
   },
   buttonContainer: {
@@ -116,9 +115,7 @@ const styles = StyleSheet.create({
     minWidth: scale(52),
     minHeight: verticalScale(26),
   },
-  yesButtonText: {
-    lineHeight: verticalScale(18),
-  },
+  yesButtonText: {},
   noButton: {
     paddingHorizontal: scale(18),
     paddingVertical: verticalScale(4),
@@ -131,8 +128,6 @@ const styles = StyleSheet.create({
     minWidth: scale(74),
     minHeight: verticalScale(26),
   },
-  noButtonText: {
-    lineHeight: verticalScale(18),
-  },
+  noButtonText: {},
 });
 

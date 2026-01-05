@@ -600,7 +600,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 링크 */}
         {verification.textUrl && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.linkBox}
             onPress={() => {
               Linking.canOpenURL(verification.textUrl).then(supported => {
@@ -1036,7 +1036,6 @@ const styles = StyleSheet.create({
   },
   content: {
     marginBottom: verticalScale(16),
-    lineHeight: verticalScale(18),
   },
   linkBox: {
     height: verticalScale(48),

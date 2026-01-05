@@ -118,8 +118,8 @@ const NotificationsScreen = () => {
 
     // 화면 이동
     if (notification.targetType === 'CHALLENGE') {
-      navigation.navigate('ChallengeProfile', { 
-        challengeId: notification.targetId 
+      navigation.navigate('ChallengeProfile', {
+        challengeId: notification.targetId
       });
     }
   };
@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: verticalScale(21),
     marginTop: verticalScale(32),
   },
   notificationList: {
