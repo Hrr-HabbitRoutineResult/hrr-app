@@ -9,6 +9,7 @@ import { Text } from '../../components/common/Text';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { createPhotoVerification } from '../../libs/api/challenge';
+import { useUserStore } from '../../store/userSlice';
 import ToggleOnIcon from '../../../assets/icons/toggle-on.svg';
 import ToggleOffIcon from '../../../assets/icons/toggle-off.svg';
 
@@ -22,6 +23,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationPostScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationPostScreenRouteProp>();
   const { challengeId, imageUri } = route.params;
+  const { fetchMyVerificationHistory } = useUserStore();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -86,6 +88,9 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         s3Key,
         isQuestion: isQuestionEnabled,
       });
+
+      // 인증 생성 후, 전역 상태의 내 인증 기록을 새로고침
+      await fetchMyVerificationHistory();
 
       // 게시글 상세 화면으로 이동
       navigation.navigate('ChallengeCertificationDetail', {

@@ -147,17 +147,17 @@ export interface VerificationHistoryResponse {
 /**
  * 내 챌린지 인증 기록 조회
  */
-export const getVerificationHistory = async (page: number = 0, size: number = 20): Promise<VerificationHistoryItem[]> => {
+export const getVerificationHistory = async (page: number = 1, size: number = 20): Promise<VerificationHistoryItem[]> => {
   try {
     const response = await apiClient.get<VerificationHistoryResponse>(
-      '/api/v1/user/challenges/history',
+      '/api/v1/user/me/verifications/history',
       {
         params: { page, size },
       }
     );
 
     if (response.data.isSuccess && response.data.result) {
-      return response.data.result.content;
+      return response.data.result.content || response.data.result;
     }
 
     throw new Error(response.data.message || '인증 기록을 불러오는데 실패했습니다.');

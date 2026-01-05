@@ -94,9 +94,26 @@ const CertificationHistoryScreen = () => {
     }
 
     return certificationViewMode === 'grid' ? (
-        <PhotoCertificationGrid items={certificationItems} showOverlay={false} containerPadding={spacing.md} />
+        <PhotoCertificationGrid
+            items={certificationItems}
+            showOverlay={false}
+            containerPadding={spacing.md}
+            onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+            }
+        />
       ) : (
-        <TextCertificationList items={certificationItems} containerPadding={spacing.md} />
+        <TextCertificationList
+            items={certificationItems}
+            containerPadding={spacing.md}
+            onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+            }
+        />
       );
   }
 

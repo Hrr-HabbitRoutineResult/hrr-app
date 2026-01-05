@@ -264,9 +264,24 @@ const UserScreen = () => {
             <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
           </View>
         ) : certificationViewMode === 'grid' ? (
-          <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
+          <PhotoCertificationGrid
+            items={certificationItems}
+            showOverlay={false}
+            onItemPress={(item) =>
+              navigation.navigate('ChallengeCertificationDetail', {
+                verificationId: item.id,
+              })
+            }
+          />
         ) : (
-          <TextCertificationList items={certificationItems} />
+          <TextCertificationList
+            items={certificationItems}
+            onItemPress={(item) =>
+              navigation.navigate('ChallengeCertificationDetail', {
+                verificationId: item.id,
+              })
+            }
+          />
         )}
       </View>
     );

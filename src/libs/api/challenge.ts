@@ -970,7 +970,7 @@ export const getVerificationFeed = async (
 ): Promise<VerificationFeedResponse['result']> => {
   try {
     const response = await apiClient.get<VerificationFeedResponse>(
-      `/api/v1/verifications/${challengeId}/feed`,
+      `/api/v1/challenges/${challengeId}/verifications/feed`,
       {
         params: {
           roundNumber: params.roundNumber,

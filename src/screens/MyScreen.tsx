@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -116,9 +116,24 @@ const MyScreen = () => {
                 <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
             </View>
             ) : certificationViewMode === 'grid' ? (
-            <PhotoCertificationGrid items={certificationItems} showOverlay={false} />
+            <PhotoCertificationGrid
+              items={certificationItems}
+              showOverlay={false}
+              onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+              }
+            />
             ) : (
-            <TextCertificationList items={certificationItems} />
+            <TextCertificationList
+              items={certificationItems}
+              onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+              }
+            />
             )}
         </View>
       </ScrollView>

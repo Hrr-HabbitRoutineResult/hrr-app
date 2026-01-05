@@ -63,7 +63,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
-  const { fetchMyOngoingChallenges } = useUserStore();
+  const { fetchMyOngoingChallenges, userInfo } = useUserStore();
 
   const [data, setData] = useState<ChallengeDetail | null>(null);
   const [profile, setProfile] = useState<ChallengeProfile | null>(null);
@@ -308,7 +308,11 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleHostProfile = () => {
     if (data?.owner.id) {
-      navigation.navigate('User', { userId: data.owner.id });
+      if (data.owner.id === userInfo?.userId) {
+        navigation.navigate('HomeTabs', { screen: '마이' });
+      } else {
+        navigation.navigate('User', { userId: data.owner.id });
+      }
     }
   };
 
@@ -543,6 +547,9 @@ export const ChallengeProfileScreen: React.FC = () => {
     setPasswordError(undefined); // 입력 시 에러 메시지 초기화
   };
 
+  const isMyProfile = data?.owner.id === userInfo?.userId;
+  const hostProfileImage = isMyProfile ? userInfo?.profileImage : data?.owner.profileImageUrl;
+
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       {/* 헤더 */}
@@ -637,9 +644,9 @@ export const ChallengeProfileScreen: React.FC = () => {
           onPress={handleHostProfile}
           activeOpacity={0.7}
         >
-          {data.owner.profileImageUrl ? (
+          {hostProfileImage ? (
             <Image
-              source={{ uri: data.owner.profileImageUrl.replace('http://', 'https://') }}
+              source={{ uri: hostProfileImage.replace('http://', 'https://') }}
               style={{ width: scale(40), height: verticalScale(40), borderRadius: 20 }}
             />
           ) : (

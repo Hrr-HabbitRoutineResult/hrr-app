@@ -36,7 +36,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
   const route = useRoute<ChallengeCertificationScreenRouteProp>();
   const { challengeId } = route.params;
 
-  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>('my');
+  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>('challenger');
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
