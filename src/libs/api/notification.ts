@@ -111,3 +111,36 @@ export const markNotificationAsRead = async (
   }
 };
 
+/**
+ * 읽지 않은 알림 상태 조회 응답
+ */
+export interface GetUnreadStatusResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    hasUnread: boolean;
+  };
+}
+
+/**
+ * 읽지 않은 알림 상태 조회
+ */
+export const getUnreadStatus = async (): Promise<boolean> => {
+  try {
+    const response = await apiClient.get<GetUnreadStatusResponse>(
+      '/api/v1/notifications/unread-status'
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result.hasUnread;
+    }
+
+    return false;
+  } catch (error: any) {
+    // 에러가 발생해도 조용히 false 반환
+    return false;
+  }
+};
+
