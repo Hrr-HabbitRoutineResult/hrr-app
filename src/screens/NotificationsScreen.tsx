@@ -94,23 +94,33 @@ const NotificationsScreen = () => {
     return type === 'CHALLENGE_EXTENSION' ? 'challenge_ending' : 'normal';
   };
 
-  // 알림 읽음 처리
-  const handleNotificationRead = async (notificationId: number) => {
-    try {
-      const result = await markNotificationAsRead(notificationId);
+  // 알림 클릭 처리 (읽음 처리 + 화면 이동)
+  const handleNotificationPress = async (notification: NotificationItemType) => {
+    // 읽지 않은 알림만 읽음 처리
+    if (!notification.isRead) {
+      try {
+        const result = await markNotificationAsRead(notification.id);
 
-      // 로컬 state 업데이트 (배경색 변경)
-      if (result.isRead) {
-        setNotifications(prev =>
-          prev.map(notification =>
-            notification.id === notificationId
-              ? { ...notification, isRead: true }
-              : notification
-          )
-        );
+        // 로컬 state 업데이트 (배경색 변경)
+        if (result.isRead) {
+          setNotifications(prev =>
+            prev.map(item =>
+              item.id === notification.id
+                ? { ...item, isRead: true }
+                : item
+            )
+          );
+        }
+      } catch (error) {
+        console.error('알림 읽음 처리 실패:', error);
       }
-    } catch (error) {
-      console.error('알림 읽음 처리 실패:', error);
+    }
+
+    // 화면 이동
+    if (notification.targetType === 'CHALLENGE') {
+      navigation.navigate('ChallengeProfile', { 
+        challengeId: notification.targetId 
+      });
     }
   };
 
@@ -172,7 +182,7 @@ const NotificationsScreen = () => {
               description={item.message.replace(/\\n/g, '\n')}
               timeAgo={formatTimeAgo(item.createdAt)}
               isRead={item.isRead}
-              onPress={() => !item.isRead && handleNotificationRead(item.id)}
+              onPress={() => handleNotificationPress(item)}
               onYesPress={() => handleYesPress(item.id)}
               onNoPress={() => handleNoPress(item.id)}
             />
