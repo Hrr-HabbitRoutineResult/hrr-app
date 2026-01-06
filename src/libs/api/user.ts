@@ -474,6 +474,56 @@ export const unblockUserById = async (blockedId: number): Promise<UnblockUserRes
 };
 
 /**
+ * 차단된 사용자 아이템
+ */
+export interface BlockedUser {
+  userId: number;
+  nickname: string;
+  level: string;
+  blocked: boolean;
+  // Note: profilePhoto is missing from the API response in etc.txt
+}
+
+/**
+ * 차단된 사용자 목록 응답
+ */
+export interface GetBlockedUsersResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: BlockedUser[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 내 차단 목록 조회
+ */
+export const getBlockedUsers = async (page: number = 1, size: number = 20): Promise<BlockedUser[]> => {
+  try {
+    const response = await apiClient.get<GetBlockedUsersResponse>(
+      '/api/v1/blocks/me',
+      {
+        params: { page, size },
+      }
+    );
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result.content;
+    }
+    throw new Error(response.data.message || '차단 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+
+/**
  * ============================================
  * 사용자 신고 관련
  * ============================================

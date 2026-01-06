@@ -55,7 +55,7 @@ const SettingsScreen = () => {
         {
           label: '차단한 사용자',
           icon: <IcBlockIcon width={24} height={24} />,
-          onPress: () => console.log('Navigate to Blocked Users'),
+          onPress: () => navigation.navigate('BlockedUserScreen'),
         },
       ],
     },
