@@ -618,7 +618,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 링크 */}
         {verification.textUrl && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.linkBox}
             onPress={() => {
               Linking.canOpenURL(verification.textUrl).then(supported => {
@@ -987,7 +987,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           renderHeader={() => (
             <View style={styles.imageViewerHeader}>
               <LinearGradient
-                colors={['rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0)']}
+                colors={['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0)']}
                 style={styles.imageViewerGradient}
               />
               <TouchableOpacity
@@ -1007,7 +1007,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             return (
               <View style={styles.imageViewerFooter}>
                 <LinearGradient
-                  colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.5)']}
+                  colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0.2)']}
                   style={StyleSheet.absoluteFill}
                 />
                 <View style={styles.imageViewerIndicator}>
@@ -1262,7 +1262,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: verticalScale(150),
+    height: verticalScale(100),
   },
   imageViewerCloseButton: {
     position: 'absolute',
@@ -1276,7 +1276,7 @@ const styles = StyleSheet.create({
   },
   imageViewerFooter: {
     width: Dimensions.get('window').width,
-    height: verticalScale(150),
+    height: verticalScale(100),
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
