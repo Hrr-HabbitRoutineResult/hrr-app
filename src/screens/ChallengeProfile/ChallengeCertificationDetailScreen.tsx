@@ -101,15 +101,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         size: 10,
       });
 
-      // textImage1~3 끝 슬래시 제거
-      if (result.textImage1 && result.textImage1.endsWith('/')) {
-        result.textImage1 = result.textImage1.slice(0, -1);
-      }
-      if (result.textImage2 && result.textImage2.endsWith('/')) {
-        result.textImage2 = result.textImage2.slice(0, -1);
-      }
-      if (result.textImage3 && result.textImage3.endsWith('/')) {
-        result.textImage3 = result.textImage3.slice(0, -1);
+      // textImages 배열 끝 슬래시 제거
+      if (result.textImages && Array.isArray(result.textImages)) {
+        result.textImages = result.textImages.map(url =>
+          url.endsWith('/') ? url.slice(0, -1) : url
+        );
       }
 
       setVerification(result);
@@ -587,11 +583,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 이미지 */}
         {(() => {
-          const images = [
-            verification.textImage1,
-            verification.textImage2,
-            verification.textImage3,
-          ].filter(Boolean);
+          const images = verification.textImages || [];
 
           if (images.length === 0) return null;
 
@@ -974,11 +966,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       >
         <ImageViewer
           imageUrls={(() => {
-            const images = [
-              verification?.textImage1,
-              verification?.textImage2,
-              verification?.textImage3,
-            ].filter(Boolean);
+            const images = verification?.textImages || [];
 
             return images.map(url => ({ url: url as string }));
           })()}

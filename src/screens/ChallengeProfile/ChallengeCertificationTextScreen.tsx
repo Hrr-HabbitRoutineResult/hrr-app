@@ -308,18 +308,16 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 최대 3개까지 이미지 URL 추출
-      const textImage1 = selectedImages.length > 0 && selectedImages[0].url ? selectedImages[0].url : null;
-      const textImage2 = selectedImages.length > 1 && selectedImages[1].url ? selectedImages[1].url : null;
-      const textImage3 = selectedImages.length > 2 && selectedImages[2].url ? selectedImages[2].url : null;
+      // 이미지 URL 배열 추출
+      const textImages = selectedImages
+        .filter(img => img.url)
+        .map(img => img.url);
 
       const result = await createTextVerification(challengeId, {
         title: title.trim(),
         content: content.trim(),
         textUrl: attachedLink || '',
-        textImage1,
-        textImage2,
-        textImage3,
+        textImages: textImages,
         isQuestion: isQuestionEnabled,
       });
 
