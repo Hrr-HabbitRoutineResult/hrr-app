@@ -84,6 +84,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
   // 이미지 뷰어 관련 state
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -593,7 +594,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 <TouchableOpacity
                   key={index}
                   activeOpacity={0.9}
-                  onPress={() => setIsImageViewerVisible(true)}
+                  onPress={() => {
+                    setSelectedImageIndex(index);
+                    setIsImageViewerVisible(true);
+                  }}
                   style={styles.imageContainer}
                 >
                   <Image
@@ -970,6 +974,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
             return images.map(url => ({ url: url as string }));
           })()}
+          index={selectedImageIndex}
           enableSwipeDown
           onSwipeDown={() => setIsImageViewerVisible(false)}
           onClick={() => setIsImageViewerVisible(false)}
