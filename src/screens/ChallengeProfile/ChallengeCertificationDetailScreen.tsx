@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ImageViewer from 'react-native-image-zoom-viewer';
+import LinearGradient from 'react-native-linear-gradient';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
@@ -39,7 +40,7 @@ import LockIcon from '../../../assets/icons/lock.svg';
 import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
-
+import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -977,10 +978,25 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           index={selectedImageIndex}
           enableSwipeDown
           onSwipeDown={() => setIsImageViewerVisible(false)}
-          onClick={() => setIsImageViewerVisible(false)}
           backgroundColor="rgba(0, 0, 0, 1)"
           renderIndicator={() => <View />}
           saveToLocalByLongPress={false}
+          renderHeader={() => (
+            <View style={styles.imageViewerHeader}>
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.5)', 'rgba(0, 0, 0, 0)']}
+                style={styles.imageViewerGradient}
+              />
+              <TouchableOpacity
+                onPress={() => setIsImageViewerVisible(false)}
+                activeOpacity={0.7}
+                style={styles.imageViewerCloseButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <DeleteViewerIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
+          )}
         />
       </Modal>
     </SafeAreaView>
@@ -1206,5 +1222,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(24),
     paddingTop: verticalScale(12),
     alignItems: 'center',
+  },
+  imageViewerHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  imageViewerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: verticalScale(150),
+  },
+  imageViewerCloseButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
+    left: scale(20),
+    width: scale(44),
+    height: verticalScale(44),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1001,
   },
 });
