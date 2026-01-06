@@ -86,6 +86,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   // 이미지 뷰어 관련 state
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -597,6 +598,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   activeOpacity={0.9}
                   onPress={() => {
                     setSelectedImageIndex(index);
+                    setCurrentImageIndex(index);
                     setIsImageViewerVisible(true);
                   }}
                   style={styles.imageContainer}
@@ -981,6 +983,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           backgroundColor="rgba(0, 0, 0, 1)"
           renderIndicator={() => <View />}
           saveToLocalByLongPress={false}
+          onChange={(index) => setCurrentImageIndex(index || 0)}
           renderHeader={() => (
             <View style={styles.imageViewerHeader}>
               <LinearGradient
@@ -997,6 +1000,30 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
+          renderFooter={() => {
+            const totalImages = verification?.textImages?.length || 0;
+            if (totalImages <= 1) return <View />;
+
+            return (
+              <View style={styles.imageViewerFooter}>
+                <LinearGradient
+                  colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.5)']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.imageViewerIndicator}>
+                  {Array.from({ length: totalImages }).map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.indicatorDot,
+                        currentImageIndex === index ? styles.indicatorDotActive : styles.indicatorDotInactive
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+            );
+          }}
         />
       </Modal>
     </SafeAreaView>
@@ -1246,5 +1273,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1001,
+  },
+  imageViewerFooter: {
+    width: Dimensions.get('window').width,
+    height: verticalScale(150),
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  imageViewerIndicator: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+    zIndex: 1001,
+  },
+  indicatorDot: {
+    width: scale(6),
+    height: scale(6),
+    borderRadius: scale(3),
+    marginHorizontal: scale(4),
+  },
+  indicatorDotActive: {
+    backgroundColor: colors.white,
+  },
+  indicatorDotInactive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
 });
