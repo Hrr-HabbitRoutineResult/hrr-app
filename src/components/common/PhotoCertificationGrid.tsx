@@ -43,7 +43,7 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
             <Image source={item.thumbnail} style={styles.gridImage} />
           ) : (
             <View style={styles.fallbackContainer}>
-              <TextIcon width={40} height={40} />
+              <TextIcon width="100%" height="100%" />
             </View>
           )}
           {/* 질문 아이콘 표시 (showOverlay가 true이고 item이 질문일 때만) */}
