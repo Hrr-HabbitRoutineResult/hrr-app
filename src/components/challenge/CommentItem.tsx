@@ -84,7 +84,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const isDeleted = comment.userName === "삭제";
   const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
   const isInactive = comment.content === "탈퇴한 사용자의 댓글입니다.";
-  
+
   // 프로필 이미지 표시 여부 (모든 마스킹 케이스에서 숨김)
   const showProfile = !isMasked;
 
@@ -136,8 +136,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                     <LockIcon width={10} height={12} />
                   </View>
                 )}
-                <Text 
-                  variant="smMd" 
+                <Text
+                  variant="smMd"
                   color={isMasked ? colors.text.secondary : colors.text.primary}
                 >
                   {comment.userName}
@@ -164,8 +164,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             </View>
 
             {/* 댓글 텍스트 */}
-            <Text 
-              variant="xsReg" 
+            <Text
+              variant="xsReg"
               color={colors.text.secondary}
               style={styles.commentText}
             >
@@ -205,7 +205,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               </TouchableOpacity>
             )}
 
-            {isQuestion && canSelectComment && !isMine && (
+            {isQuestion && (comment.adopted || (canSelectComment && !isMine)) && (
               <TouchableOpacity
                 style={styles.actionButton}
                 activeOpacity={0.7}
