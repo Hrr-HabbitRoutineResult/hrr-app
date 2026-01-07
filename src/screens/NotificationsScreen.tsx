@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { scale, verticalScale } from '../utils/scaling';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { colors, typography } from '../design/tokens';
@@ -64,6 +64,13 @@ const NotificationsScreen = () => {
   useEffect(() => {
     fetchNotifications(activeCategory, 1);
   }, [activeCategory]);
+
+  // 화면 포커스 시 알림 목록 새로고침
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchNotifications(activeCategory, 1);
+    }, [activeCategory])
+  );
 
   // 시간 포맷팅 함수
   const formatTimeAgo = (dateString: string): string => {
@@ -133,6 +140,25 @@ const NotificationsScreen = () => {
 
     try {
       await submitRoundDecision(challengeId, 'CONTINUE');
+
+      // 서버에 읽음 처리 요청
+      try {
+        await markNotificationAsRead(id);
+      } catch (error) {
+        // 읽음 처리 실패해도 계속 진행
+      }
+
+      // 로컬 state 업데이트
+      setNotifications(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, isRead: true, isResponded: true } : item
+        )
+      );
+
+      // 성공 시 알림 목록 새로고침하여 새 알림 반영
+      setTimeout(() => {
+        fetchNotifications(activeCategory, 1);
+      }, 1000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
       Alert.alert('알림', errorMessage);
@@ -147,6 +173,25 @@ const NotificationsScreen = () => {
 
     try {
       await submitRoundDecision(challengeId, 'STOP');
+
+      // 서버에 읽음 처리 요청
+      try {
+        await markNotificationAsRead(id);
+      } catch (error) {
+        // 읽음 처리 실패해도 계속 진행
+      }
+
+      // 로컬 state 업데이트
+      setNotifications(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, isRead: true, isResponded: true } : item
+        )
+      );
+
+      // 성공 시 알림 목록 새로고침하여 새 알림 반영
+      setTimeout(() => {
+        fetchNotifications(activeCategory, 1);
+      }, 1000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
       Alert.alert('알림', errorMessage);
@@ -201,6 +246,7 @@ const NotificationsScreen = () => {
               description={item.message.replace(/\\n/g, '\n')}
               timeAgo={formatTimeAgo(item.createdAt)}
               isRead={item.isRead}
+              showButtons={!item.isResponded}
               onPress={() => handleNotificationPress(item)}
               onYesPress={() => handleYesPress(item.id)}
               onNoPress={() => handleNoPress(item.id)}

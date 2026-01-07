@@ -11,6 +11,7 @@ interface NotificationItemProps {
   description: string;
   timeAgo: string;
   isRead: boolean;
+  showButtons?: boolean; // 버튼 표시 여부 (기본값: true)
   onPress?: () => void;
   onYesPress?: () => void;
   onNoPress?: () => void;
@@ -23,6 +24,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
   timeAgo,
   type,
   isRead,
+  showButtons = true,
   onPress,
   onYesPress,
   onNoPress,
@@ -50,7 +52,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
           {description}
         </Text>
 
-        {type === 'challenge_ending' && (
+        {type === 'challenge_ending' && showButtons && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.yesButton} onPress={onYesPress}>
               <Text variant="xsReg" color={colors.white} style={styles.yesButtonText}>

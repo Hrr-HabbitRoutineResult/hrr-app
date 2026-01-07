@@ -15,12 +15,13 @@ export interface NotificationItem {
   message: string;
   imageUrl: string;
   category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
-  type: 'CHALLENGE_EXTENSION' | string; // 현재는 CHALLENGE_EXTENSION만 존재, 추후 추가 예정
+  type: 'CHALLENGE_EXTENSION' | 'CHALLENGE_EXTENSION_SUCCESS' | 'CHALLENGE_EXTENSION_CANCEL' | string;
   targetType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 화면 이동을 위한 타입
   targetId: number;
   contextType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 추가 처리를 위한 타입
   contextId: number;
   isRead: boolean;
+  isResponded: boolean; // 챌린지 연장 여부에 응답했는지 여부
   createdAt: string;
 }
 
