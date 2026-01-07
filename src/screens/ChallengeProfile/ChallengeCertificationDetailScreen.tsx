@@ -681,8 +681,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             }}
           >
             {getCommentTree().map(({ parent, children }, index) => {
-              const isMineParent = parent.userId === verification?.user.userId;
-
               return (
                 <View
                   key={parent.commentId}
@@ -694,7 +692,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   {/* 부모 댓글 */}
                   <CommentItem
                     comment={parent}
-                    isMine={isMineParent}
+                    isMine={parent.myComment}
                     currentUserNickname={verification?.user.nickname}
                     isMenuOpen={openMenuCommentId === parent.commentId}
                     onMenuToggle={handleMenuToggle}
@@ -736,12 +734,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   {expandedComments.has(parent.commentId) && (
                     <>
                       {children.map((child) => {
-                        const isMineChild = child.userId === verification?.user.userId;
                         return (
                           <CommentItem
                             key={child.commentId}
                             comment={child}
-                            isMine={isMineChild}
+                            isMine={child.myComment}
                             currentUserNickname={verification?.user.nickname}
                             isMenuOpen={openMenuCommentId === child.commentId}
                             onMenuToggle={handleMenuToggle}

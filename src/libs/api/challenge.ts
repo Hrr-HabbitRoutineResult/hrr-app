@@ -1186,9 +1186,9 @@ export interface CommentItem {
   commentId: number;
   parentId: number;
   verificationId: number;
-  userId: number;
+  userId: number | null;
   userName: string;
-  userProfileUrl: string;
+  userProfileUrl: string | null;
   depth: number;
   content: string;
   likesCount: number;
@@ -1196,6 +1196,7 @@ export interface CommentItem {
   updatedAt: string;
   anonymous: boolean;
   adopted: boolean;
+  myComment: boolean;
 }
 
 /**

@@ -79,12 +79,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // 대댓글인 경우 왼쪽 여백 추가
   const isReply = comment.depth > 0;
 
-  // 표시할 닉네임 결정
-  // TODO: 백엔드 API 수정 이후 변경 필요
-  const displayName =
-    isMine
-      ? currentUserNickname
-      : comment.userName;
+  // 마스킹된 댓글 여부 및 타입 확인
+  const isMasked = comment.userId === null;
+  const isDeleted = comment.userName === "삭제";
+  const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
+  const isInactive = comment.content === "탈퇴한 사용자의 댓글입니다.";
+  
+  // 프로필 이미지 표시 여부 (모든 마스킹 케이스에서 숨김)
+  const showProfile = !isMasked;
 
   const handleDelete = () => {
     onMenuToggle?.(comment.commentId);
@@ -110,91 +112,115 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       }}
       style={[styles.container, isReply && styles.replyContainer]}
     >
-      {/* 프로필 이미지 */}
-      <View style={styles.profileContainer}>
-        <DefaultProfileIcon width={32} height={32} />
-      </View>
+      {/* 프로필 이미지 - 삭제/탈퇴는 숨김 */}
+      {showProfile && (
+        <View style={styles.profileContainer}>
+          <DefaultProfileIcon width={32} height={32} />
+        </View>
+      )}
 
       {/* 댓글 내용 */}
-      <View style={styles.contentContainer}>
-        {/* 사용자 닉네임과 작성 시간 */}
-        <View style={styles.headerRow}>
-          <View style={styles.userInfoRow}>
-            {comment.anonymous && (
-              <View style={styles.lockIconContainer}>
-                <LockIcon width={10} height={12} />
+      <View style={[styles.contentContainer, !showProfile && styles.contentContainerNoProfile]}>
+        {isBlocked ? (
+          /* 차단된 사용자 - userName 없이 content만 표시 */
+          <Text variant="xsReg" color={colors.text.tertiary} style={styles.commentText}>
+            {comment.content}
+          </Text>
+        ) : (
+          <>
+            {/* 사용자 닉네임과 작성 시간 */}
+            <View style={styles.headerRow}>
+              <View style={styles.userInfoRow}>
+                {comment.anonymous && !isMasked && (
+                  <View style={styles.lockIconContainer}>
+                    <LockIcon width={10} height={12} />
+                  </View>
+                )}
+                <Text 
+                  variant="smMd" 
+                  color={isMasked ? colors.text.secondary : colors.text.primary}
+                >
+                  {comment.userName}
+                </Text>
+                {!isMasked && (
+                  <>
+                    <View style={styles.dot} />
+                    <Text variant="xxs" color={colors.icon.gray}>
+                      {formatDate(comment.createdAt)}
+                    </Text>
+                  </>
+                )}
               </View>
-            )}
-            <Text variant="smMd" color={colors.text.primary}>
-              {displayName}
-            </Text>
-            <View style={styles.dot} />
-            <Text variant="xxs" color={colors.icon.gray}>
-              {formatDate(comment.createdAt)}
-            </Text>
-          </View>
-          {isMine && (
-            <TouchableOpacity
-              onPress={() => onMenuToggle?.(comment.commentId)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              style={styles.moreButton}
+              {isMine && !isMasked && (
+                <TouchableOpacity
+                  onPress={() => onMenuToggle?.(comment.commentId)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={styles.moreButton}
+                >
+                  <MoreIcon width={15} height={3} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* 댓글 텍스트 */}
+            <Text 
+              variant="xsReg" 
+              color={colors.text.secondary}
+              style={styles.commentText}
             >
-              <MoreIcon width={15} height={3} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* 댓글 텍스트 */}
-        <Text variant="xsReg" color={colors.text.secondary} style={styles.commentText}>
-          {comment.content}
-        </Text>
-
-        {/* 좋아요 및 답글 버튼 */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            activeOpacity={0.7}
-            onPress={() => onLike?.(comment.commentId)}
-          >
-            {isLiked ? (
-              <LikeSelectedIcon width={14} height={12} />
-            ) : (
-              <LikeUnselectedIcon width={14} height={12} />
-            )}
-            <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
-              {comment.likesCount || 0}
+              {comment.content}
             </Text>
-          </TouchableOpacity>
+          </>
+        )}
 
-          {!isReply && (
+        {/* 마스킹되지 않은 댓글만 액션 버튼 표시 */}
+        {!isMasked && (
+          <View style={styles.actionsRow}>
             <TouchableOpacity
               style={styles.actionButton}
               activeOpacity={0.7}
-              onPress={onReply}
+              onPress={() => onLike?.(comment.commentId)}
             >
-              <CommentIcon width={12} height={12} />
+              {isLiked ? (
+                <LikeSelectedIcon width={14} height={12} />
+              ) : (
+                <LikeUnselectedIcon width={14} height={12} />
+              )}
               <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
-                {replyCount}
+                {comment.likesCount || 0}
               </Text>
             </TouchableOpacity>
-          )}
 
-          {isQuestion && canSelectComment && !isMine && (
-            <TouchableOpacity
-              style={styles.actionButton}
-              activeOpacity={0.7}
-              onPress={() => onAdopt?.(comment.commentId)}
-              disabled={comment.adopted || isResolved}
-            >
-              {comment.adopted ? (
-                <AdoptedIcon width={52} height={20} />
-              ) : (
-                <AdoptableIcon width={52} height={20} />
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+            {!isReply && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                activeOpacity={0.7}
+                onPress={onReply}
+              >
+                <CommentIcon width={12} height={12} />
+                <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
+                  {replyCount}
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {isQuestion && canSelectComment && !isMine && (
+              <TouchableOpacity
+                style={styles.actionButton}
+                activeOpacity={0.7}
+                onPress={() => onAdopt?.(comment.commentId)}
+                disabled={comment.adopted || isResolved}
+              >
+                {comment.adopted ? (
+                  <AdoptedIcon width={52} height={20} />
+                ) : (
+                  <AdoptableIcon width={52} height={20} />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       {/* 더보기 메뉴 */}
@@ -278,6 +304,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+  },
+  contentContainerNoProfile: {
+    marginLeft: 0,
   },
   headerRow: {
     flexDirection: 'row',
