@@ -1099,7 +1099,6 @@ const styles = StyleSheet.create({
   },
   content: {
     marginBottom: verticalScale(16),
-    lineHeight: verticalScale(18),
   },
   linkBox: {
     height: verticalScale(48),

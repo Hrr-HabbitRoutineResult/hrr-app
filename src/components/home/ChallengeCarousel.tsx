@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
     textAlign: 'center',
     marginTop: verticalScale(20),
-    lineHeight: verticalScale(18),
   },
   itemContainer: {
     width: ITEM_SIZE,

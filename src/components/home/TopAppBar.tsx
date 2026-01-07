@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../design/tokens';
+import { getUnreadStatus } from '../../libs/api/notification';
 import Logo from '../../../assets/images/logo-primary.svg';
 import BellIcon from '../../../assets/icons/alarm.svg';
 
 const TopAppBar = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const [hasUnread, setHasUnread] = useState(false);
 
   // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
   // iOS: 기존 디자인 스펙 유지 (16)
@@ -19,13 +21,30 @@ const TopAppBar = () => {
 
   // safeAreaTop 높이 계산
   const safeAreaTop = Platform.OS === 'android'
-    ? Math.max(insets.top, 24) 
+    ? Math.max(insets.top, 24)
     : insets.top;
+
+  // 읽지 않은 알림 상태 조회
+  const fetchUnreadStatus = async () => {
+    try {
+      const unread = await getUnreadStatus();
+      setHasUnread(unread);
+    } catch (error) {
+      // 에러가 나도 화면은 정상 동작하도록 함
+    }
+  };
+
+  // 홈 화면에 포커스될 때마다 읽지 않은 알림 상태 확인
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUnreadStatus();
+    }, [])
+  );
 
   return (
     <View style={[
-      styles.container, 
-      { 
+      styles.container,
+      {
         paddingTop: safeAreaTop + verticalPadding,
         paddingBottom: verticalPadding - 4 // borderBottomWidth 1px + 콘텐츠 높이 차이 3px 차감
       }
@@ -47,6 +66,7 @@ const TopAppBar = () => {
           style={styles.iconWrapper}
         >
           <BellIcon width={18.82} height={20} />
+          {hasUnread && <View style={styles.badge} />}
         </TouchableOpacity>
       </View>
     </View>
@@ -76,6 +96,16 @@ const styles = StyleSheet.create({
     height: verticalScale(24),
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: scale(-0.5),
+    width: scale(6),
+    height: scale(6),
+    borderRadius: scale(10),
+    backgroundColor: colors.primary.main,
   },
 });
 

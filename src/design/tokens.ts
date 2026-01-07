@@ -35,6 +35,7 @@ export const typography = {
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(34),
   },
   // hrr/Header 2
   header2: {
@@ -42,6 +43,7 @@ export const typography = {
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(28),
   },
   // hrr/Header 3
   header3: {
@@ -49,6 +51,7 @@ export const typography = {
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(26),
   },
   // hrr/Header 4
   header4: {
@@ -56,6 +59,7 @@ export const typography = {
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(22),
   },
   // hrr/Md size
   md: {
@@ -71,6 +75,7 @@ export const typography = {
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(21),
   },
   // hrr/Sm size (Reg)
   smReg: {
@@ -78,6 +83,7 @@ export const typography = {
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(21),
   },
   // hrr/Xs size (Md)
   xsMd: {
@@ -85,6 +91,7 @@ export const typography = {
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(18),
   },
   // hrr/Xs size (Reg)
   xsReg: {
@@ -92,6 +99,7 @@ export const typography = {
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(18),
   },
   // hrr/Xxs size
   xxs: {
@@ -99,6 +107,7 @@ export const typography = {
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(17),
   },
   // hrr/caption
   caption: {
@@ -106,6 +115,7 @@ export const typography = {
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
+    lineHeight: moderateScale(14),
   },
 } as const;
 
