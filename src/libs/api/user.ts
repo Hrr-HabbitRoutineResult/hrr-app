@@ -565,7 +565,6 @@ export interface ReportResponse {
  */
 export const reportUserById = async (data: ReportRequest): Promise<void> => {
   try {
-    console.log('reportUserById 함수로 전달된 데이터:', data); // Add this line
     const response = await apiClient.post<ReportResponse>(
       '/api/v1/report/user',
       data

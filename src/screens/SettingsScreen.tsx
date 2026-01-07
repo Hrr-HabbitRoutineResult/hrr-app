@@ -50,7 +50,6 @@ const SettingsScreen = () => {
         {
           label: '계정 공개 범위',
           icon: <IcLockIcon width={24} height={24} />,
-          onPress: () => console.log('Navigate to Account Privacy'),
         },
         {
           label: '차단한 사용자',

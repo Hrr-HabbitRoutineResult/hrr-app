@@ -36,7 +36,6 @@ export const kakaoLoginByToken = async (
       `/api/v1/auth/login/kakao`,
       { accessToken: kakaoAccessToken }
     );
-    console.log('App Access Token (from server):', response.data.result.accessToken);
     return response.data;
   } catch (error: any) {
     throw error;
