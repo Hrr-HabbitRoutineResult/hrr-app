@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import LinearGradient from 'react-native-linear-gradient';
 import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
@@ -38,12 +40,16 @@ import LockIcon from '../../../assets/icons/lock.svg';
 import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
-
+import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   'ChallengeCertificationDetail'
 >;
+
+// 플랫폼별 키보드 오프셋
+const KEYBOARD_OFFSET_IOS = 0;
+const KEYBOARD_OFFSET_ANDROID = 15;
 
 export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
@@ -77,6 +83,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] = useState(false);
   const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] = useState(false);
 
+  // 이미지 뷰어 관련 state
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const fetchVerificationDetail = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -93,9 +104,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         size: 10,
       });
 
-      // photoUrl 끝 슬래시 제거
-      if (result.photoUrl && result.photoUrl.endsWith('/')) {
-        result.photoUrl = result.photoUrl.slice(0, -1);
+      // textImages 배열 끝 슬래시 제거
+      if (result.textImages && Array.isArray(result.textImages)) {
+        result.textImages = result.textImages.map(url =>
+          url.endsWith('/') ? url.slice(0, -1) : url
+        );
       }
 
       setVerification(result);
@@ -183,10 +196,16 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
     if (!verification) return;
 
-    // 수정 화면으로 이동
-    navigation.navigate('ChallengeCertificationEdit', {
-      verification: verification
-    });
+    // 타입에 따라 다른 수정 화면으로 이동
+    if (verification.type === 'TEXT') {
+      navigation.navigate('ChallengeCertificationTextEdit', {
+        verification: verification
+      });
+    } else {
+      navigation.navigate('ChallengeCertificationEdit', {
+        verification: verification
+      });
+    }
   };
 
   const handleDelete = async () => {
@@ -533,7 +552,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                {getUserRoleText(verification.user.role)}
+                {getUserRoleText(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -566,24 +585,54 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </Text>
 
         {/* 이미지 */}
-        {verification.photoUrl ? (
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: verification.photoUrl }}
-              style={styles.image}
-              resizeMode="cover"
-              onLoad={() => {
-              }}
-              onError={(error) => {
-              }}
-            />
-          </View>
-        ) : (
-          <View style={styles.imageContainer}>
-            <Text variant="smReg" color={colors.text.tertiary}>
-              이미지가 없습니다
+        {(() => {
+          const images = verification.textImages || [];
+
+          if (images.length === 0) return null;
+
+          return (
+            <View style={styles.imagesContainer}>
+              {images.map((imageUrl, index) => (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.9}
+                  onPress={() => {
+                    setSelectedImageIndex(index);
+                    setCurrentImageIndex(index);
+                    setIsImageViewerVisible(true);
+                  }}
+                  style={styles.imageContainer}
+                >
+                  <Image
+                    source={{ uri: imageUrl as string }}
+                    style={styles.image}
+                    resizeMode="cover"
+                    onLoad={() => { }}
+                    onError={(error) => { }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          );
+        })()}
+
+        {/* 링크 */}
+        {verification.textUrl && (
+          <TouchableOpacity
+            style={styles.linkBox}
+            onPress={() => {
+              Linking.canOpenURL(verification.textUrl).then(supported => {
+                if (supported) {
+                  Linking.openURL(verification.textUrl);
+                }
+              });
+            }}
+            activeOpacity={0.7}
+          >
+            <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
+              {verification.textUrl}
             </Text>
-          </View>
+          </TouchableOpacity>
         )}
 
         {/* 좋아요, 댓글, 스크랩 */}
@@ -736,13 +785,16 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       {/* 댓글 입력 필드 */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? KEYBOARD_OFFSET_IOS : 0}
         style={styles.keyboardAvoidingView}
       >
         <View style={[
           styles.commentInputContainer,
-          isKeyboardVisible && styles.commentInputContainerKeyboard
+          isKeyboardVisible && styles.commentInputContainerKeyboard,
+          Platform.OS === 'android' && isKeyboardVisible && {
+            bottom: keyboardHeight + KEYBOARD_OFFSET_ANDROID,
+          }
         ]}>
           <TextField
             ref={commentInputRef}
@@ -912,6 +964,68 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         onClose={() => setIsReportUserBottomSheetVisible(false)}
         onSubmit={handleSubmitReportUser}
       />
+
+      {/* 이미지 확대 뷰어 */}
+      <Modal
+        visible={isImageViewerVisible}
+        transparent={true}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+      >
+        <ImageViewer
+          imageUrls={(() => {
+            const images = verification?.textImages || [];
+
+            return images.map(url => ({ url: url as string }));
+          })()}
+          index={selectedImageIndex}
+          enableSwipeDown
+          onSwipeDown={() => setIsImageViewerVisible(false)}
+          backgroundColor="rgba(0, 0, 0, 1)"
+          renderIndicator={() => <View />}
+          saveToLocalByLongPress={false}
+          onChange={(index) => setCurrentImageIndex(index || 0)}
+          renderHeader={() => (
+            <View style={styles.imageViewerHeader}>
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0)']}
+                style={styles.imageViewerGradient}
+              />
+              <TouchableOpacity
+                onPress={() => setIsImageViewerVisible(false)}
+                activeOpacity={0.7}
+                style={styles.imageViewerCloseButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <DeleteViewerIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
+          )}
+          renderFooter={() => {
+            const totalImages = verification?.textImages?.length || 0;
+            if (totalImages <= 1) return <View />;
+
+            return (
+              <View style={styles.imageViewerFooter}>
+                <LinearGradient
+                  colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0.2)']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.imageViewerIndicator}>
+                  {Array.from({ length: totalImages }).map((_, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.indicatorDot,
+                        currentImageIndex === index ? styles.indicatorDotActive : styles.indicatorDotInactive
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+            );
+          }}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -986,6 +1100,21 @@ const styles = StyleSheet.create({
   content: {
     marginBottom: verticalScale(16),
     lineHeight: verticalScale(18),
+  },
+  linkBox: {
+    height: verticalScale(48),
+    backgroundColor: colors.background,
+    borderRadius: scale(10),
+    marginBottom: verticalScale(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: scale(16),
+  },
+  linkText: {
+    flex: 1,
+  },
+  imagesContainer: {
+    gap: verticalScale(8),
   },
   imageContainer: {
     width: '100%',
@@ -1120,5 +1249,54 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(24),
     paddingTop: verticalScale(12),
     alignItems: 'center',
+  },
+  imageViewerHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  },
+  imageViewerGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: verticalScale(100),
+  },
+  imageViewerCloseButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(20),
+    left: scale(20),
+    width: scale(44),
+    height: verticalScale(44),
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1001,
+  },
+  imageViewerFooter: {
+    width: Dimensions.get('window').width,
+    height: verticalScale(100),
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  imageViewerIndicator: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Platform.OS === 'ios' ? verticalScale(50) : verticalScale(30),
+    zIndex: 1001,
+  },
+  indicatorDot: {
+    width: scale(6),
+    height: scale(6),
+    borderRadius: scale(3),
+    marginHorizontal: scale(4),
+  },
+  indicatorDotActive: {
+    backgroundColor: colors.white,
+  },
+  indicatorDotInactive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
 });

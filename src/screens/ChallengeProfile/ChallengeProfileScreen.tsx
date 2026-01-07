@@ -475,8 +475,12 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    // 모든 조건을 만족하면 인증 화면으로 이동
-    navigation.navigate('ChallengeCertificationCamera', { challengeId });
+    // 모든 조건을 만족하면 인증 타입에 따라 화면 이동
+    if (data.verificationType === 'PHOTO') {
+      navigation.navigate('ChallengeCertificationCamera', { challengeId });
+    } else if (data.verificationType === 'TEXT') {
+      navigation.navigate('ChallengeCertificationText', { challengeId });
+    }
   };
 
   const handleParticipateConfirm = async () => {
@@ -790,22 +794,16 @@ export const ChallengeProfileScreen: React.FC = () => {
                       <TextCertificationList
                         items={verificationFeed
                           .filter(item => item.type === 'TEXT')
-                          .map(item => {
-                            const date = new Date(item.createdDate);
-                            const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-
-                            return {
-                              id: item.verificationId,
-                              title: item.title,
-                              description: item.content,
-                              date: formattedDate,
-                              thumbnail: item.imageUrl
-                                ? { uri: item.imageUrl }
-                                : require('../../../assets/images/mock-challenge-profile.png'),
-                              isQuestion: item.isQuestion,
-                              isResolved: item.isResolved,
-                            };
-                          })}
+                          .map(item => ({
+                            id: item.verificationId,
+                            title: item.title,
+                            description: item.content,
+                            date: item.createdDate,
+                            thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
+                            hasLink: item.hasLink,
+                            isQuestion: item.isQuestion,
+                            isResolved: item.isResolved,
+                          }))}
                         containerPadding={scale(24)}
                         onItemPress={(item) => {
                           navigation.navigate('ChallengeCertificationDetail', {
@@ -1432,7 +1430,7 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(12),
   },
   textFeedSection: {
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(-20),
   },
   sectionTitleRow: {
     paddingVertical: verticalScale(10),

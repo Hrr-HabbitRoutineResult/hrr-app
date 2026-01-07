@@ -102,3 +102,29 @@ export const openGallery = async (): Promise<Asset | null> => {
     return null;
   }
 };
+
+export const openGalleryMultiple = async (maxCount: number = 10): Promise<Asset[] | null> => {
+  try {
+    const response: ImagePickerResponse = await launchImageLibrary({
+      ...commonOptions,
+      selectionLimit: maxCount, // 여러 장 선택
+    });
+
+    if (response.didCancel) {
+      return null;
+    }
+
+    if (response.errorCode) {
+      Alert.alert('오류', `갤러리를 실행할 수 없습니다: ${response.errorMessage}`);
+      return null;
+    }
+
+    if (response.assets && response.assets.length > 0) {
+      return response.assets;
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+};
