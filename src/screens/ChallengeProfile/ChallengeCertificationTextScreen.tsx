@@ -164,7 +164,17 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
 
   const handleGalleryPress = async () => {
     try {
-      const assets = await openGalleryMultiple(10);
+      // 이미 선택된 이미지 개수 확인
+      const currentImageCount = selectedImages.length;
+
+      if (currentImageCount >= 3) {
+        Alert.alert('알림', '이미지는 최대 3장까지 첨부 가능합니다.');
+        return;
+      }
+
+      // 남은 개수만큼만 선택 가능
+      const remainingCount = 3 - currentImageCount;
+      const assets = await openGalleryMultiple(remainingCount);
 
       if (assets && assets.length > 0) {
         // 선택한 이미지들을 state에 추가 (uploading 상태로)
@@ -298,16 +308,16 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 첫 번째 업로드된 이미지의 전체 URL 사용
-      const photoUrl = selectedImages.length > 0 && selectedImages[0].url
-        ? selectedImages[0].url
-        : '';
+      // 이미지 URL 배열 추출
+      const textImages = selectedImages
+        .filter(img => img.url)
+        .map(img => img.url);
 
       const result = await createTextVerification(challengeId, {
         title: title.trim(),
         content: content.trim(),
         textUrl: attachedLink || '',
-        photoUrl: photoUrl,
+        textImages: textImages,
         isQuestion: isQuestionEnabled,
       });
 

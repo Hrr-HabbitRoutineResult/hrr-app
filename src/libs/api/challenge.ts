@@ -665,6 +665,7 @@ export interface VerificationDetail {
   content: string;
   photoUrl: string;
   textUrl: string;
+  textImages: string[];
   isQuestion: boolean;
   status: string;
   createdAt: string;
@@ -713,7 +714,7 @@ export interface CreateTextVerificationRequest {
   title: string;
   content: string;
   textUrl: string;
-  photoUrl: string;
+  textImages: string[];
   isQuestion: boolean;
 }
 
@@ -789,7 +790,7 @@ export interface VerificationUser {
   userId: number;
   nickname: string;
   profileImageUrl: string;
-  role: string;
+  level: string;
 }
 
 /**
@@ -821,6 +822,7 @@ export interface VerificationDetailResponse {
     content: string;
     textUrl: string;
     photoUrl: string;
+    textImages: string[];
     isQuestion: boolean;
     isResolved: boolean;
     status: string;
@@ -1103,7 +1105,8 @@ export interface UpdateVerificationRequest {
   title?: string;
   content?: string;
   textUrl?: string;
-  photoUrl?: string;
+  textImages?: string[];
+  isQuestion?: boolean;
 }
 
 /**
