@@ -314,6 +314,5 @@ const styles = StyleSheet.create({
   },
   questionDescription: {
     marginTop: verticalScale(4),
-    lineHeight: verticalScale(18),
   },
 });
