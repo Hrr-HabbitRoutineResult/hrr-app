@@ -29,6 +29,7 @@ export type RootStackParamList = {
   LikedChallenge: undefined;
   CompletedChallenge: undefined;
   BlockedUserScreen: undefined;
+  ErrorScreen: undefined;
 };
 
 export type HomeTabParamList = {

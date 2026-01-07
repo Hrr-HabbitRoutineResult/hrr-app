@@ -33,7 +33,6 @@ import MoreIcon from '../../assets/icons/more.svg';
 import { BlockUserBottomSheet } from '../components/user/BlockUserBottomSheet';
 import { UnblockUserBottomSheet } from '../components/user/UnblockUserBottomSheet';
 import { ToastNotification } from '../components/common/ToastNotification';
-import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { ReportUserBottomSheet } from '../components/MyPage/ReportUserBottomSheet';
 
 const SHEET_ANIM_MS = 220;
@@ -56,7 +55,6 @@ const UserScreen = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [certificationViewMode, setCertificationViewMode] = useState('grid');
-  const [errorModalVisible, setErrorModalVisible] = useState(false);
   
   const [sheetVisible, setSheetVisible] = useState(false);
   const [isBlockSheetVisible, setIsBlockSheetVisible] = useState(false);
@@ -117,7 +115,8 @@ const UserScreen = () => {
       }
     } catch (error: any) {
       if (error?.response?.status === 404) {
-        setErrorModalVisible(true);
+        setToast({ visible: true, message: '오류가 발생했습니다.' });
+        navigation.replace('ErrorScreen');
       } else {
         Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
         navigation.goBack();
@@ -125,7 +124,7 @@ const UserScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, navigation]);
+  }, [userId, navigation, setToast]);
 
   useFocusEffect(
     useCallback(() => {
@@ -165,7 +164,7 @@ const UserScreen = () => {
     setIsBlockSheetVisible(false);
     try {
       await blockUserById(user.userId);
-      await fetchData(); // 차단 후 데이터 새로고침
+      await fetchData(); 
       setToast({ visible: true, message: '차단이 완료되었어요' });
     } catch (error) {
       Alert.alert('오류', '사용자 차단에 실패했습니다.');
@@ -182,7 +181,7 @@ const UserScreen = () => {
     try {
       await unblockUserById(user.userId);
       setToast({ visible: true, message: '차단 해제가 완료되었어요' });
-      await fetchData(); // 차단 해제 후 데이터 새로고침
+      await fetchData(); 
     } catch (error) {
       Alert.alert('오류', '사용자 차단 해제에 실패했습니다.');
     }
@@ -391,29 +390,9 @@ const UserScreen = () => {
         message={toast.message}
         onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
-      <ConfirmationModal
-        visible={errorModalVisible}
-        onClose={() => {
-          setErrorModalVisible(false);
-          navigation.goBack();
-        }}
-        title=""
-        description="오류가 발생했습니다."
-        buttons={[
-          {
-            text: '확인',
-            onPress: () => {
-              setErrorModalVisible(false);
-              navigation.goBack();
-            },
-          },
-        ]}
-      />
     </SafeAreaView>
   );
 };
-
-export default UserScreen;
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -482,3 +461,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default UserScreen;
