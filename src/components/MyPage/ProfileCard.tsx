@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, StyleSheet, Modal, Pressable, TouchableOpacity, findNodeHandle } from 'react-native';
 import { colors, radius, spacing } from '../../design/tokens';
 import { Button } from '../common/Button';
 import CommentIcon from '../../../assets/icons/comment-color.svg';
@@ -19,11 +19,8 @@ interface UserProfile {
 interface ProfileCardProps {
   user: UserProfile;
   variant?: 'me' | 'other';
-
   isFollowing?: boolean;
   isBlocked?: boolean;
-
-  badges?: React.ReactNode[]; // 추가: 뱃지 목록
   onPressFollowers?: () => void;
   onPressFollowing?: () => void;
   onPressProfileEdit?: () => void;
@@ -36,7 +33,6 @@ const ProfileCard = ({
   variant = 'me',
   isFollowing = false,
   isBlocked = false,
-  badges = [],
   onPressFollowers,
   onPressFollowing,
   onPressProfileEdit,
@@ -44,8 +40,30 @@ const ProfileCard = ({
   onPressBlock,
 }: ProfileCardProps) => {
   const { nickname, avatarUrl, followerCount, followingCount, level = Level.CHALLENGER } = user;
+  const [popoverVisible, setPopoverVisible] = useState(false);
+  const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const buttonRef = useRef<TouchableOpacity>(null);
 
   const isOther = variant === 'other';
+
+  const handleFollowingPress = () => {
+    if (buttonRef.current) {
+      const nodeHandle = findNodeHandle(buttonRef.current);
+      if (nodeHandle) {
+        buttonRef.current.measure((_fx, _fy, width, height, px, py) => {
+          setButtonLayout({ x: px, y: py, width, height });
+          setPopoverVisible(true);
+        });
+      }
+    }
+  };
+
+  const handleUnfollowConfirm = () => {
+    if (onPressFollow) {
+      onPressFollow();
+    }
+    setPopoverVisible(false);
+  };
 
   const renderButtons = () => {
     if (!isOther) {
@@ -78,38 +96,14 @@ const ProfileCard = ({
     }
 
     if (isFollowing) {
-      /*
       return (
         <View style={styles.buttonRow}>
           <Button
-            variant="outlinePrimary"
-            size="small"
-            style={[styles.buttonStyle, styles.iconOnlyButton]}
-            onPress={() => {}}
-          >
-            <CommentIcon width={20} height={20} />
-          </Button>
-
-          <Button
-            variant="outlinePrimary"
-            size="small"
-            style={styles.buttonStyle}
-            onPress={onPressFollow}
-          >
-            <Text variant="sm" color={colors.primary.main}>
-              팔로잉
-            </Text>
-          </Button>
-        </View>
-      );
-      */
-      return (
-        <View style={styles.buttonRow}>
-          <Button
+            ref={buttonRef}
             variant="gray"
             size="small"
             style={styles.singleButton}
-            onPress={onPressFollow}
+            onPress={handleFollowingPress}
           >
             <Text variant="sm" color={colors.primary.main}>
               팔로잉
@@ -131,21 +125,42 @@ const ProfileCard = ({
   };
 
   return (
-    <View style={styles.container}>
-      <ProfileHeader
-        nickname={nickname}
-        avatarUrl={avatarUrl}
-        followerCount={followerCount}
-        followingCount={followingCount}
-        profileTypeText={levelToDisplayString[level]}
-        onPressFollowers={onPressFollowers}
-        onPressFollowing={onPressFollowing}
-      />
+    <>
+      <View style={styles.container}>
+        <ProfileHeader
+          nickname={nickname}
+          avatarUrl={avatarUrl}
+          followerCount={followerCount}
+          followingCount={followingCount}
+          profileTypeText={levelToDisplayString[level]}
+          onPressFollowers={onPressFollowers}
+          onPressFollowing={onPressFollowing}
+        />
 
-      {/* <BadgeRow badges={badges} /> */}
+        {renderButtons()}
+      </View>
 
-      {renderButtons()}
-    </View>
+      <Modal visible={popoverVisible} transparent onRequestClose={() => setPopoverVisible(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setPopoverVisible(false)}>
+          <View
+            style={[
+              styles.popover,
+              {
+                top: buttonLayout.y + buttonLayout.height - spacing.sm,
+                left: buttonLayout.x + (buttonLayout.width * 0.6),
+                width: buttonLayout.width * 0.4,
+              },
+            ]}
+          >
+            <TouchableOpacity onPress={handleUnfollowConfirm} style={styles.popoverButton}>
+              <Text variant="sm" color={colors.text.primary}>
+                언팔로우하기
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 };
 
@@ -157,28 +172,36 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginHorizontal: spacing.xs,
   },
-
   buttonRow: {
     marginTop: 8,
     flexDirection: 'row',
     gap: spacing.sm,
   },
-
-  buttonStyle: {
-    flex: 1,
-    height: 40,
-    borderRadius: radius.md,
-  },
-
   singleButton: {
     flex: 1,
     width: '100%',
     height: 40,
     borderRadius: radius.md,
   },
-
-  iconOnlyButton: {
-    paddingVertical: 0,
-    paddingHorizontal: 0,
+  modalOverlay: {
+    flex: 1,
+  },
+  popover: {
+    position: 'absolute',
+    backgroundColor: 'white',
+    borderRadius: radius.sm,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  popoverButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
   },
 });
