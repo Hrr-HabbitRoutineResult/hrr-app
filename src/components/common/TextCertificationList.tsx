@@ -58,7 +58,7 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
               <Image source={item.thumbnail} style={styles.thumbnailImage} />
             ) : (
               <View style={styles.fallbackContainer}>
-                <TextIcon width={32} height={32} />
+                <TextIcon width="100%" height="100%" />
               </View>
             )}
             {/* 질문이 포함된 글일 때만 오버레이와 아이콘 표시 */}
