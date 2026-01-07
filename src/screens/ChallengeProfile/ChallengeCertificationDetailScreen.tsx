@@ -712,6 +712,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     onAdopt={handleAdoptComment}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
+                    canSelectComment={verification?.canSelectComment}
                     replyCount={children.length}
                   />
 
@@ -757,6 +758,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                             onAdopt={handleAdoptComment}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
+                            canSelectComment={verification?.canSelectComment}
                           />
                         );
                       })}

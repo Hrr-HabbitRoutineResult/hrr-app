@@ -28,6 +28,7 @@ interface CommentItemProps {
   isQuestion?: boolean;
   isResolved?: boolean;
   replyCount?: number;
+  canSelectComment?: boolean; // 게시글 작성자만 채택 가능
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -45,6 +46,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   isQuestion = false,
   isResolved = false,
   replyCount = 0,
+  canSelectComment = false,
 }) => {
 
   const formatDate = (dateString: string): string => {
@@ -178,7 +180,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             </TouchableOpacity>
           )}
 
-          {isQuestion && !isMine && (
+          {isQuestion && canSelectComment && !isMine && (
             <TouchableOpacity
               style={styles.actionButton}
               activeOpacity={0.7}
