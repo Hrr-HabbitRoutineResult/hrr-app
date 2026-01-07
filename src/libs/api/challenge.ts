@@ -913,6 +913,50 @@ export const getChallengeRounds = async (challengeId: number): Promise<RoundItem
 };
 
 /**
+ * 챌린지 연장 여부 결정 타입
+ */
+export type RoundDecisionIntent = 'CONTINUE' | 'STOP';
+
+/**
+ * 챌린지 연장 여부 결정 요청
+ */
+export interface RoundDecisionRequest {
+  intent: RoundDecisionIntent;
+}
+
+/**
+ * 챌린지 연장 여부 결정 응답
+ */
+export interface RoundDecisionResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: null;
+}
+
+/**
+ * 챌린지 연장 여부 결정
+ */
+export const submitRoundDecision = async (
+  challengeId: number,
+  intent: RoundDecisionIntent
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<RoundDecisionResponse>(
+      `/api/v1/challenges/${challengeId}/rounds/decision`,
+      { intent }
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '챌린지 연장 여부 제출에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
  * 인증 통계 정보
  */
 export interface VerificationStat {

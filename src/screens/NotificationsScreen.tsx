@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { scale, verticalScale } from '../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -12,6 +12,7 @@ import {
   markNotificationAsRead,
   NotificationItem as NotificationItemType
 } from '../libs/api/notification';
+import { submitRoundDecision } from '../libs/api/challenge';
 import LogoGray from '../../assets/images/logo-gray.svg';
 
 // 카테고리 매핑
@@ -53,7 +54,7 @@ const NotificationsScreen = () => {
       setHasNext(result.hasNext);
       setPage(pageNum);
     } catch (error) {
-      console.error('알림 목록 조회 실패:', error);
+      // 에러 무시
     } finally {
       setLoading(false);
     }
@@ -112,7 +113,7 @@ const NotificationsScreen = () => {
           );
         }
       } catch (error) {
-        console.error('알림 읽음 처리 실패:', error);
+        // 에러 무시
       }
     }
 
@@ -124,14 +125,32 @@ const NotificationsScreen = () => {
     }
   };
 
-  const handleYesPress = (id: number) => {
-    console.log('네 버튼 클릭:', id);
-    // TODO: 챌린지 연장 여부 제출 API 연동
+  const handleYesPress = async (id: number) => {
+    const notification = notifications.find(n => n.id === id);
+    if (!notification) return;
+
+    const challengeId = notification.targetId;
+
+    try {
+      await submitRoundDecision(challengeId, 'CONTINUE');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
+      Alert.alert('알림', errorMessage);
+    }
   };
 
-  const handleNoPress = (id: number) => {
-    console.log('아니오 버튼 클릭:', id);
-    // TODO: 챌린지 연장 여부 제출 API 연동
+  const handleNoPress = async (id: number) => {
+    const notification = notifications.find(n => n.id === id);
+    if (!notification) return;
+
+    const challengeId = notification.targetId;
+
+    try {
+      await submitRoundDecision(challengeId, 'STOP');
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
+      Alert.alert('알림', errorMessage);
+    }
   };
 
   const hasNotifications = notifications.length > 0;
