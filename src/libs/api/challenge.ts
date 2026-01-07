@@ -1230,9 +1230,9 @@ export interface CommentItem {
   commentId: number;
   parentId: number;
   verificationId: number;
-  userId: number;
+  userId: number | null;
   userName: string;
-  userProfileUrl: string;
+  userProfileUrl: string | null;
   depth: number;
   content: string;
   likesCount: number;
@@ -1240,6 +1240,7 @@ export interface CommentItem {
   updatedAt: string;
   anonymous: boolean;
   adopted: boolean;
+  myComment: boolean;
 }
 
 /**
@@ -1513,6 +1514,34 @@ export const reportUser = async (
 
     if (!response.data.isSuccess) {
       throw new Error(response.data.message || '사용자 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 댓글 작성자 차단 응답
+ */
+export interface BlockCommentResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: string;
+}
+
+/**
+ * 댓글 작성자 차단
+ */
+export const blockComment = async (commentId: number): Promise<void> => {
+  try {
+    const response = await apiClient.post<BlockCommentResponse>(
+      `/api/v1/comments/${commentId}/block`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '댓글 작성자 차단에 실패했습니다.');
     }
   } catch (error: any) {
     throw error;

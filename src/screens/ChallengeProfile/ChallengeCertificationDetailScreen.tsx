@@ -24,6 +24,7 @@ import {
   createComment,
   deleteComment,
   adoptComment,
+  blockComment,
   CommentItem as CommentItemType,
   GetCommentsResponse,
   reportVerificationPost,
@@ -142,7 +143,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       });
     } catch (error: any) {
-      Alert.alert('오류', error.message || '게시글을 불러오는데 실패했습니다.');
+      const errorMessage = error.response?.data?.message || error.message || '게시글을 불러오는데 실패했습니다.';
+      Alert.alert('오류', errorMessage);
       navigation.goBack();
     } finally {
       setIsLoading(false);
@@ -431,6 +433,27 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     }
   };
 
+  // 댓글 작성자 차단
+  const handleBlockUser = async (commentId: number) => {
+    try {
+      await blockComment(commentId);
+
+      Alert.alert('차단 완료', '해당 사용자가 차단되었습니다.');
+
+      // 댓글 목록 새로고침 (차단된 사용자 댓글이 마스킹 처리됨)
+      if (verification) {
+        const commentsResult = await getComments(verification.verificationId, {
+          page: 1,
+          size: 10,
+        });
+        setComments(commentsResult);
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || '사용자 차단에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
+    }
+  };
+
   // 답글 펼치기/접기 토글
   const toggleRepliesExpand = (commentId: number) => {
     setExpandedComments(prev => {
@@ -485,15 +508,20 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   };
 
-  // TODO: 백엔드 API 변경 후 수정 필요
-  const getUserRoleText = (role: string): string => {
-    switch (role) {
-      case 'OWNER':
-        return '방장';
+  const getUserLevelText = (level: string): string => {
+    switch (level) {
+      case 'BRONZE':
+        return '브론즈';
+      case 'SILVER':
+        return '실버';
+      case 'GOLD':
+        return '골드';
+      case 'MASTER':
+        return '마스터';
       case 'CHALLENGER':
         return '챌린저';
       default:
-        return '챌린저';
+        return '브론즈';
     }
   };
 
@@ -552,7 +580,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                {getUserRoleText(verification.user.level)}
+                {getUserLevelText(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -681,8 +709,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             }}
           >
             {getCommentTree().map(({ parent, children }, index) => {
-              const isMineParent = parent.userId === verification?.user.userId;
-
               return (
                 <View
                   key={parent.commentId}
@@ -694,7 +720,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   {/* 부모 댓글 */}
                   <CommentItem
                     comment={parent}
-                    isMine={isMineParent}
+                    isMine={parent.myComment}
                     currentUserNickname={verification?.user.nickname}
                     isMenuOpen={openMenuCommentId === parent.commentId}
                     onMenuToggle={handleMenuToggle}
@@ -709,9 +735,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     }}
                     onReply={() => handleReplyToComment(parent)}
                     onDelete={handleDeleteComment}
+                    onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
+                    canSelectComment={verification?.canSelectComment}
                     replyCount={children.length}
                   />
 
@@ -735,12 +763,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   {expandedComments.has(parent.commentId) && (
                     <>
                       {children.map((child) => {
-                        const isMineChild = child.userId === verification?.user.userId;
                         return (
                           <CommentItem
                             key={child.commentId}
                             comment={child}
-                            isMine={isMineChild}
+                            isMine={child.myComment}
                             currentUserNickname={verification?.user.nickname}
                             isMenuOpen={openMenuCommentId === child.commentId}
                             onMenuToggle={handleMenuToggle}
@@ -754,9 +781,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                               // TODO: 댓글 좋아요 처리
                             }}
                             onDelete={handleDeleteComment}
+                            onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
+                            canSelectComment={verification?.canSelectComment}
                           />
                         );
                       })}
