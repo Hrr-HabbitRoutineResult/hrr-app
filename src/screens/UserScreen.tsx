@@ -33,6 +33,7 @@ import MoreIcon from '../../assets/icons/more.svg';
 import { BlockUserBottomSheet } from '../components/user/BlockUserBottomSheet';
 import { UnblockUserBottomSheet } from '../components/user/UnblockUserBottomSheet';
 import { ToastNotification } from '../components/common/ToastNotification';
+import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { ReportUserBottomSheet } from '../components/MyPage/ReportUserBottomSheet';
 
 const SHEET_ANIM_MS = 220;
@@ -55,6 +56,7 @@ const UserScreen = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [certificationViewMode, setCertificationViewMode] = useState('grid');
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
   
   const [sheetVisible, setSheetVisible] = useState(false);
   const [isBlockSheetVisible, setIsBlockSheetVisible] = useState(false);
@@ -113,9 +115,13 @@ const UserScreen = () => {
       if (historyData.verifications) {
         setVerificationHistory(historyData.verifications.content);
       }
-    } catch (error) {
-      Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
-      navigation.goBack();
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        setErrorModalVisible(true);
+      } else {
+        Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
+        navigation.goBack();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -384,6 +390,24 @@ const UserScreen = () => {
         visible={toast.visible}
         message={toast.message}
         onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
+      />
+      <ConfirmationModal
+        visible={errorModalVisible}
+        onClose={() => {
+          setErrorModalVisible(false);
+          navigation.goBack();
+        }}
+        title=""
+        description="오류가 발생했습니다."
+        buttons={[
+          {
+            text: '확인',
+            onPress: () => {
+              setErrorModalVisible(false);
+              navigation.goBack();
+            },
+          },
+        ]}
       />
     </SafeAreaView>
   );
