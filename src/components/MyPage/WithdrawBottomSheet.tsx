@@ -55,11 +55,12 @@ export const WithdrawBottomSheet: React.FC<WithdrawBottomSheetProps> = ({
           회원 탈퇴를 하시겠어요?
         </Text>
         <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
-          회원 탈퇴 시 챌린지 현황을 비롯한 모든 정보와 계정이 삭제되며 한 번 삭제된 계정은 되돌릴 수 없습니다.{'\n'}
+          계정은 즉시 비활성화되며, {'\n'}30일 동안 로그인하지 않으면 모든 정보가 완전히 삭제돼요.{'\n'}
         </Text>
         <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
-                  회원 탈퇴 후 재가입은 1개월이 지나야 가능합니다.{'\n'}
-                  그래도 탈퇴를 진행하시겠어요?
+                  30일 이내 다시 로그인하면
+                  {'\n'}
+                  계정과 기록을 그대로 복구할 수 있어요.
                 </Text>
       </View>
     </BottomSheet>

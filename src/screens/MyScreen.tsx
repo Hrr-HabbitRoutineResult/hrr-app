@@ -11,6 +11,8 @@ import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/use
 
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
+import { Level } from '../libs/api/user/types';
+
 import ParticipatingChallengeSection, {
   ParticipatingChallengeItem,
 } from '../components/MyPage/ParticipatingChallengeSection';
@@ -62,14 +64,14 @@ const MyScreen = () => {
 
   const userProfile = useMemo(() => {
     if (!userInfo) {
-      return { nickname: '...', avatarUrl: '', followerCount: 0, followingCount: 0, isChallenger: false };
+      return { nickname: '...', avatarUrl: '', followerCount: 0, followingCount: 0, level: Level.BRONZE };
     }
     return {
       nickname: userInfo.nickname,
       avatarUrl: userInfo.profileImage,
       followerCount: userInfo.followerCount,
       followingCount: userInfo.followingCount,
-      isChallenger: userInfo.level !== 'BRONZE',
+      level: userInfo.level, // 스토어에서 이미 enum으로 변환됨
     };
   }, [userInfo]);
 

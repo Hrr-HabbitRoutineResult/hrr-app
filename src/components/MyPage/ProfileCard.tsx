@@ -1,4 +1,3 @@
-// src/components/profile/ProfileCard.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../../design/tokens';
@@ -7,13 +6,14 @@ import CommentIcon from '../../../assets/icons/comment-color.svg';
 import { Text } from '../common/Text';
 import { ProfileHeader } from './ProfileHeader';
 import { BadgeRow } from './BadgeRow';
+import { Level, levelToDisplayString } from '../../libs/api/user/types';
 
 interface UserProfile {
   nickname: string;
   avatarUrl?: string;
   followerCount: number;
   followingCount: number;
-  isChallenger?: boolean;
+  level?: Level;
 }
 
 interface ProfileCardProps {
@@ -43,7 +43,7 @@ const ProfileCard = ({
   onPressFollow,
   onPressBlock,
 }: ProfileCardProps) => {
-  const { nickname, avatarUrl, followerCount, followingCount, isChallenger } = user;
+  const { nickname, avatarUrl, followerCount, followingCount, level = Level.CHALLENGER } = user;
 
   const isOther = variant === 'other';
 
@@ -78,6 +78,7 @@ const ProfileCard = ({
     }
 
     if (isFollowing) {
+      /*
       return (
         <View style={styles.buttonRow}>
           <Button
@@ -93,6 +94,21 @@ const ProfileCard = ({
             variant="outlinePrimary"
             size="small"
             style={styles.buttonStyle}
+            onPress={onPressFollow}
+          >
+            <Text variant="sm" color={colors.primary.main}>
+              팔로잉
+            </Text>
+          </Button>
+        </View>
+      );
+      */
+      return (
+        <View style={styles.buttonRow}>
+          <Button
+            variant="gray"
+            size="small"
+            style={styles.singleButton}
             onPress={onPressFollow}
           >
             <Text variant="sm" color={colors.primary.main}>
@@ -121,7 +137,7 @@ const ProfileCard = ({
         avatarUrl={avatarUrl}
         followerCount={followerCount}
         followingCount={followingCount}
-        profileTypeText={isChallenger ? '챌린저' : '챌린저'}
+        profileTypeText={levelToDisplayString[level]}
         onPressFollowers={onPressFollowers}
         onPressFollowing={onPressFollowing}
       />

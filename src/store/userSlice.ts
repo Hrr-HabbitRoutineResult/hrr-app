@@ -14,11 +14,17 @@ import {
   updateUserProfile,
   UpdateUserProfileRequest,
 } from '../libs/api/user';
+import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
+
+// 스토어에서 사용할 사용자 정보 타입. level을 enum으로 관리
+export type UserInfo = Omit<UserMe, 'level'> & {
+  level: Level;
+};
 
 type UserState = {
   nickname: string | null;
   randomMissionCompleted: boolean;
-  userInfo: UserMe | null;
+  userInfo: UserInfo | null;
   isLoadingUserInfo: boolean;
   errorUserInfo: string | null;
   myOngoingChallenges: OngoingChallengeItem[];
@@ -91,7 +97,12 @@ export const useUserStore = create<UserState>((set, get) => ({
   fetchUserInfo: async () => {
     set({ isLoadingUserInfo: true, errorUserInfo: null });
     try {
-      const userInfo = await getUserMe();
+      const rawUserInfo = await getUserMe();
+      // API에서 받은 level(string)을 enum으로 변환
+      const userInfo: UserInfo = {
+        ...rawUserInfo,
+        level: mapLevelStringToEnum(rawUserInfo.level),
+      };
       set({ userInfo, nickname: userInfo.nickname, isLoadingUserInfo: false });
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || error?.message || '사용자 정보를 불러오는데 실패했습니다.';

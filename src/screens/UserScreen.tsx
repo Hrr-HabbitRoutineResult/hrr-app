@@ -22,6 +22,7 @@ import {
   reportUserById,
   ReportReason,
 } from '../libs/api/user';
+import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
 import { Header } from '../components/common/Header';
 import ProfileCard from '../components/MyPage/ProfileCard';
 import ParticipatingChallengeSection, { ParticipatingChallengeItem } from '../components/MyPage/ParticipatingChallengeSection';
@@ -38,13 +39,17 @@ const SHEET_ANIM_MS = 220;
 
 type UserScreenRouteProp = RouteProp<RootStackParamList, 'User'>;
 
+type UserInfo = Omit<OtherUser, 'level'> & {
+  level: Level;
+};
+
 const UserScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<UserScreenRouteProp>();
   const { userId } = route.params;
 
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<OtherUser | null>(null);
+  const [user, setUser] = useState<UserInfo | null>(null);
   const [ongoingChallenges, setOngoingChallenges] = useState<OngoingChallengeItem[]>([]);
   const [verificationHistory, setVerificationHistory] = useState<VerificationHistoryItem[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -67,7 +72,6 @@ const UserScreen = () => {
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
-    console.log('sheetAnim value after start:', sheetAnim.__getValue());
   };
 
   const closeSheet = (callback?: () => void) => {
@@ -88,7 +92,11 @@ const UserScreen = () => {
     setIsLoading(true);
     try {
       const userData = await getUserById(userId);
-      setUser(userData);
+      const transformedUser: UserInfo = {
+        ...userData,
+        level: mapLevelStringToEnum(userData.level),
+      };
+      setUser(transformedUser);
       setIsFollowing(userData.isFollowing);
       setIsBlocked(userData.isBlocked);
 
@@ -196,14 +204,14 @@ const UserScreen = () => {
 
   const userProfile = useMemo(() => {
     if (!user) {
-      return { nickname: '...', avatarUrl: '', followerCount: 0, followingCount: 0, isChallenger: false };
+      return { nickname: '...', avatarUrl: '', followerCount: 0, followingCount: 0, level: Level.BRONZE };
     }
     return {
       nickname: user.nickname,
       avatarUrl: user.profileImage,
       followerCount: user.followerCount,
       followingCount: user.followingCount,
-      isChallenger: user.level !== 'BRONZE',
+      level: user.level, 
     };
   }, [user]);
 

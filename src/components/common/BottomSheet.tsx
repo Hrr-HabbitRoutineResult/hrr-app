@@ -16,7 +16,7 @@ interface BottomSheetProps {
   children: React.ReactNode;
   height?: number;
   scrollEnabled?: boolean;
-  footer?: React.ReactNode; // New prop for fixed footer content
+  footer?: React.ReactNode;
 }
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -28,7 +28,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
   height,
   scrollEnabled = true,
-  footer, // Destructure new prop
+  footer,
 }) => {
   const sheetHeight = height ? verticalScale(height) : DEFAULT_SHEET_HEIGHT;
 
@@ -40,10 +40,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        {/* Backdrop: 시트 밖 영역 터치 시 닫기 (시트와 분리하여 내부 스크롤 제스처 방해 방지) */}
         <Pressable style={styles.backdrop} onPress={onClose} />
 
-        {/* Bottom Sheet 본체 */}
         <View style={[styles.bottomSheet, { height: sheetHeight }]}>
           <View style={styles.handleContainer}>
             <View style={styles.handle} />
@@ -63,7 +61,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             </View>
           )}
 
-          {footer && <View>{footer}</View>} // Render footer if provided
+          {footer && <View>{footer}</View>}
         </View>
       </View>
     </Modal>
@@ -102,7 +100,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(24), // Reduced from 32
+    paddingTop: verticalScale(24),
     paddingBottom: verticalScale(40),
   },
 });

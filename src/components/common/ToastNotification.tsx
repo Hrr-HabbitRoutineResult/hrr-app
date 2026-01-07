@@ -5,12 +5,14 @@ import { Text } from './Text';
 import { colors, spacing, radius, typography } from '../../design/tokens';
 import LockIcon from '../../../assets/icons/lock.svg';
 import BlockIcon from '../../../assets/icons/ic_block.svg';
+import CheckboxFilterCheckedIcon from '../../../assets/icons/checkbox-filter-checked.svg';
 
 interface ToastNotificationProps {
   visible: boolean;
   message: string;
   duration?: number;
   onHide: () => void;
+  iconType?: 'block' | 'lock' | 'success'; // New prop
 }
 
 const ANIMATION_DURATION = 300;
@@ -20,6 +22,7 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
   message,
   duration = 2000, // Disappears after 2 seconds
   onHide,
+  iconType, // New prop
 }) => {
   const insets = useSafeAreaInsets();
   const animValue = useRef(new Animated.Value(0)).current;
@@ -62,7 +65,17 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
     outputRange: [0, 0.8, 1],
   });
 
-  const isBlockMessage = message.includes('차단');
+  // Determine the icon to render based on iconType prop or message content
+  const IconComponent =
+    iconType === 'block'
+      ? BlockIcon
+      : iconType === 'success'
+      ? CheckboxFilterCheckedIcon
+      : iconType === 'lock'
+      ? LockIcon
+      : message.includes('차단')
+      ? BlockIcon
+      : LockIcon;
 
   return (
     <Animated.View
@@ -75,11 +88,7 @@ export const ToastNotification: React.FC<ToastNotificationProps> = ({
         },
       ]}
     >
-      {isBlockMessage ? (
-        <BlockIcon width={16} height={16} style={styles.icon} />
-      ) : (
-        <LockIcon width={16} height={16} style={styles.icon} />
-      )}
+      {IconComponent && <IconComponent width={16} height={16} style={styles.icon} />}
       <Text variant="smReg" color={colors.text.primary}>
         {message}
       </Text>

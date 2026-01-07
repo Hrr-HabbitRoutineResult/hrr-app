@@ -24,7 +24,8 @@ import { extractS3Key, getS3ImageUrl } from '../libs/s3';
 import { colors as Color } from '../design/tokens';
 import ProfileImageWithEdit from '../components/common/ProfileImageWithEdit';
 import { Text } from '../components/common/Text';
-import { useUserStore } from '../store/userSlice'; // useUserStore 임포트
+import { useUserStore } from '../store/userSlice';
+import { ToastNotification } from '../components/common/ToastNotification';
 
 type ProfileEditScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -35,7 +36,7 @@ const SHEET_ANIM_MS = 220;
 
 const ProfileEditScreen: React.FC = () => {
   const navigation = useNavigation<ProfileEditScreenNavigationProp>();
-  const { updateUserInfo } = useUserStore(); // updateUserInfo 액션 사용
+  const { updateUserInfo } = useUserStore();
 
   const [originalUser, setOriginalUser] = useState<UserMe | null>(null);
   const [nickname, setNickname] = useState<string>('');
@@ -43,6 +44,14 @@ const ProfileEditScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isNicknameValid, setIsNicknameValid] = useState<boolean>(true);
   const [nicknameError, setNicknameError] = useState<string>('');
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    message: string;
+    iconType?: 'block' | 'lock' | 'success';
+  }>({
+    visible: false,
+    message: '',
+  });
 
   // ✅ 커스텀 바텀시트 상태
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -141,11 +150,10 @@ const ProfileEditScreen: React.FC = () => {
         updatePayload.profileImageKey = profileImage;
       }
 
-      // 전역 사용자 상태 업데이트 (이제 API 호출도 여기서 처리)
       await updateUserInfo(updatePayload);
 
-      Alert.alert('성공', '프로필이 성공적으로 업데이트되었습니다.');
-      navigation.goBack();
+      setToast({ visible: true, message: '프로필이 성공적으로 업데이트되었습니다.', iconType: 'success' });
+      setTimeout(() => navigation.goBack(), 2000);
     } catch (error: any) {
       console.error('프로필 업데이트 실패:', error?.message);
       Alert.alert(
@@ -157,7 +165,6 @@ const ProfileEditScreen: React.FC = () => {
     }
   };
 
-  // ✅ 이제 Alert.alert 대신 커스텀 시트를 띄웁니다
   const handleImagePick = () => {
     openSheet();
   };
@@ -195,19 +202,15 @@ const ProfileEditScreen: React.FC = () => {
     try {
       const userId = originalUser?.userId || 'unknown';
       
-      // --- 수정 시작 ---
       let originalFileName = selectedAsset.fileName || '';
-      // 파일 이름에 쿼리 문자열이 있는 경우 제거
       const queryIndex = originalFileName.indexOf('?');
       if (queryIndex !== -1) {
         originalFileName = originalFileName.substring(0, queryIndex);
       }
       const fileExtension = originalFileName.split('.').pop() || 'jpeg';
-      // --- 수정 끝 ---
 
       const fileName = `profile-${userId}-${Date.now()}.${fileExtension}`;
 
-      // API 응답의 s3Key를 직접 사용
       const { presignedUrl, s3Key: returnedS3Key } = await getPresignedUrl(fileName);
       const contentType = selectedAsset.type || 'image/jpeg';
 
@@ -216,16 +219,15 @@ const ProfileEditScreen: React.FC = () => {
         presignedUrl,
         {
           'Content-Type': contentType,
-          'x-amz-acl': 'public-read', // 객체 ACL을 public-read로 설정
+          'x-amz-acl': 'public-read',
         },
         RNFetchBlob.wrap(selectedAsset.uri.replace('file://', ''))
       );
 
-      // API 응답의 returnedS3Key를 직접 사용
       if (!returnedS3Key) throw new Error('S3 이미지 키를 API 응답에서 받지 못했습니다.');
 
       setProfileImage(returnedS3Key);
-      Alert.alert('성공', '업로드 완료. 완료를 눌러 저장하세요.');
+      setToast({ visible: true, message: '업로드 완료. 완료를 눌러 저장하세요.', iconType: 'success' });
     } catch (error: any) {
       console.error('이미지 업로드 실패:', error);
       Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error?.message || ''}`);
@@ -239,7 +241,6 @@ const ProfileEditScreen: React.FC = () => {
     setProfileImage(undefined);
   };
 
-  // 애니메이션 값
   const backdropOpacity = sheetAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 0.35],
@@ -252,7 +253,6 @@ const ProfileEditScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
           <Text style={[styles.headerButtonText, { color: Color.primary.main }]}>취소</Text>
@@ -286,7 +286,6 @@ const ProfileEditScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* 프로필 이미지 영역 */}
       <View style={styles.profileImageContainer}>
         <ProfileImageWithEdit
           profileImageUrl={profileImage ? getS3ImageUrl(profileImage) : undefined}
@@ -294,7 +293,6 @@ const ProfileEditScreen: React.FC = () => {
         />
       </View>
 
-      {/* 닉네임 입력 */}
       <View style={styles.inputSection}>
         <TextInput
           style={[styles.textInput, !isNicknameValid && styles.inputError]}
@@ -310,7 +308,6 @@ const ProfileEditScreen: React.FC = () => {
         ) : null}
       </View>
 
-      {/* ✅ 커스텀 액션시트 */}
       <Modal
         transparent
         visible={sheetVisible}
@@ -352,6 +349,12 @@ const ProfileEditScreen: React.FC = () => {
           </Animated.View>
         </View>
       </Modal>
+      <ToastNotification
+        visible={toast.visible}
+        message={toast.message}
+        iconType={toast.iconType}
+        onHide={() => setToast({ visible: false, message: '', iconType: undefined })}
+      />
     </SafeAreaView>
   );
 };
