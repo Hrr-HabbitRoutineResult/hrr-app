@@ -24,6 +24,7 @@ import {
   createComment,
   deleteComment,
   adoptComment,
+  blockComment,
   CommentItem as CommentItemType,
   GetCommentsResponse,
   reportVerificationPost,
@@ -142,7 +143,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       });
     } catch (error: any) {
-      Alert.alert('오류', error.message || '게시글을 불러오는데 실패했습니다.');
+      const errorMessage = error.response?.data?.message || error.message || '게시글을 불러오는데 실패했습니다.';
+      Alert.alert('오류', errorMessage);
       navigation.goBack();
     } finally {
       setIsLoading(false);
@@ -431,6 +433,27 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     }
   };
 
+  // 댓글 작성자 차단
+  const handleBlockUser = async (commentId: number) => {
+    try {
+      await blockComment(commentId);
+
+      Alert.alert('차단 완료', '해당 사용자가 차단되었습니다.');
+
+      // 댓글 목록 새로고침 (차단된 사용자 댓글이 마스킹 처리됨)
+      if (verification) {
+        const commentsResult = await getComments(verification.verificationId, {
+          page: 1,
+          size: 10,
+        });
+        setComments(commentsResult);
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || '사용자 차단에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
+    }
+  };
+
   // 답글 펼치기/접기 토글
   const toggleRepliesExpand = (commentId: number) => {
     setExpandedComments(prev => {
@@ -707,6 +730,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     }}
                     onReply={() => handleReplyToComment(parent)}
                     onDelete={handleDeleteComment}
+                    onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
@@ -752,6 +776,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                               // TODO: 댓글 좋아요 처리
                             }}
                             onDelete={handleDeleteComment}
+                            onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}

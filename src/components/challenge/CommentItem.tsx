@@ -19,6 +19,7 @@ interface CommentItemProps {
   onReply?: () => void;
   onDelete?: (commentId: number) => void;
   onAdopt?: (commentId: number) => void;
+  onBlock?: (commentId: number) => void; // 댓글 작성자 차단
   isLiked?: boolean;
   isMine?: boolean;
   currentUserNickname?: string;
@@ -37,6 +38,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onReply,
   onDelete,
   onAdopt,
+  onBlock,
   isLiked = false,
   isMine = false,
   currentUserNickname,
@@ -104,6 +106,22 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     );
   };
 
+  const handleBlock = () => {
+    onMenuToggle?.(comment.commentId);
+    Alert.alert(
+      '차단',
+      '이 댓글 작성자를 차단하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '차단',
+          style: 'destructive',
+          onPress: () => onBlock?.(comment.commentId),
+        },
+      ]
+    );
+  };
+
   return (
     <View
       onLayout={(event) => {
@@ -151,7 +169,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   </>
                 )}
               </View>
-              {isMine && !isMasked && (
+              {!isMasked && (
                 <TouchableOpacity
                   onPress={() => onMenuToggle?.(comment.commentId)}
                   activeOpacity={0.7}
@@ -174,9 +192,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           </>
         )}
 
-        {/* 마스킹되지 않은 댓글만 액션 버튼 표시 */}
-        {!isMasked && (
-          <View style={styles.actionsRow}>
+        {/* 액션 버튼 */}
+        <View style={styles.actionsRow}>
+          {/* 좋아요: 1차 런칭 제외 */}
+          {/* TODO: 2차 런칭 시 좋아요 기능 추가 */}
+          {/* {!isMasked && (
             <TouchableOpacity
               style={styles.actionButton}
               activeOpacity={0.7}
@@ -191,36 +211,38 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 {comment.likesCount || 0}
               </Text>
             </TouchableOpacity>
+          )} */}
 
-            {!isReply && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                activeOpacity={0.7}
-                onPress={onReply}
-              >
-                <CommentIcon width={12} height={12} />
-                <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
-                  {replyCount}
-                </Text>
-              </TouchableOpacity>
-            )}
+          {/* 답글: 항상 표시 */}
+          {!isReply && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              activeOpacity={0.7}
+              onPress={onReply}
+            >
+              <CommentIcon width={12} height={12} />
+              <Text variant="xxs" color={colors.text.tertiary} style={styles.actionText}>
+                {replyCount}
+              </Text>
+            </TouchableOpacity>
+          )}
 
-            {isQuestion && (comment.adopted || (canSelectComment && !isMine)) && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                activeOpacity={0.7}
-                onPress={() => onAdopt?.(comment.commentId)}
-                disabled={comment.adopted || isResolved}
-              >
-                {comment.adopted ? (
-                  <AdoptedIcon width={52} height={20} />
-                ) : (
-                  <AdoptableIcon width={52} height={20} />
-                )}
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+          {/* 채택: 마스킹되지 않은 경우만 */}
+          {!isMasked && isQuestion && (comment.adopted || (canSelectComment && !isMine)) && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              activeOpacity={0.7}
+              onPress={() => onAdopt?.(comment.commentId)}
+              disabled={comment.adopted || isResolved}
+            >
+              {comment.adopted ? (
+                <AdoptedIcon width={52} height={20} />
+              ) : (
+                <AdoptableIcon width={52} height={20} />
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* 더보기 메뉴 */}
@@ -234,7 +256,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
           <View style={[
             styles.moreMenuContainer,
-            isMine && styles.singleMenuContainer
+            styles.singleMenuContainer
           ]}>
             {isMine ? (
               // 내가 쓴 댓글인 경우 삭제만
@@ -248,36 +270,16 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 </Text>
               </TouchableOpacity>
             ) : (
-              // 남이 쓴 댓글인 경우 채팅하기/차단
-              <>
-                <TouchableOpacity
-                  style={styles.menuButton}
-                  activeOpacity={0.9}
-                  onPress={() => {
-                    onMenuToggle?.(comment.commentId);
-                    // TODO: 채팅하기 기능
-                  }}
-                >
-                  <Text variant="md" color={colors.text.primary}>
-                    채팅하기
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.menuDivider} />
-
-                <TouchableOpacity
-                  style={styles.menuButton}
-                  activeOpacity={0.9}
-                  onPress={() => {
-                    onMenuToggle?.(comment.commentId);
-                    // TODO: 차단 기능
-                  }}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    차단
-                  </Text>
-                </TouchableOpacity>
-              </>
+              // 남이 쓴 댓글인 경우 차단만
+              <TouchableOpacity
+                style={styles.singleMenuButton}
+                activeOpacity={0.9}
+                onPress={handleBlock}
+              >
+                <Text variant="md" color={colors.primary.sub}>
+                  차단
+                </Text>
+              </TouchableOpacity>
             )}
           </View>
         </>
@@ -358,7 +360,7 @@ const styles = StyleSheet.create({
   moreMenuContainer: {
     position: 'absolute',
     right: scale(0),
-    top: scale(24),
+    top: scale(32),
     width: scale(160),
     height: verticalScale(92),
     backgroundColor: colors.white,
