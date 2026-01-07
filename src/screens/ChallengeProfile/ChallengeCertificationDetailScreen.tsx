@@ -508,15 +508,20 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   };
 
-  // TODO: 백엔드 API 변경 후 수정 필요
-  const getUserRoleText = (role: string): string => {
-    switch (role) {
-      case 'OWNER':
-        return '방장';
+  const getUserLevelText = (level: string): string => {
+    switch (level) {
+      case 'BRONZE':
+        return '브론즈';
+      case 'SILVER':
+        return '실버';
+      case 'GOLD':
+        return '골드';
+      case 'MASTER':
+        return '마스터';
       case 'CHALLENGER':
         return '챌린저';
       default:
-        return '챌린저';
+        return '브론즈';
     }
   };
 
@@ -575,7 +580,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                {getUserRoleText(verification.user.level)}
+                {getUserLevelText(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
