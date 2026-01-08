@@ -118,15 +118,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...typography.header4,
     color: colors.text.primary,
-    marginRight: spacing.xxs,
     lineHeight: verticalScale(20),
   },
 
   iconContainer: {
-    width: scale(36),
-    height: verticalScale(36),
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: verticalScale(13),
+    paddingBottom: verticalScale(13),
+    paddingLeft: scale(15),
+    paddingRight: scale(16),
   },
   emptyContainer: {
     width: '100%',
