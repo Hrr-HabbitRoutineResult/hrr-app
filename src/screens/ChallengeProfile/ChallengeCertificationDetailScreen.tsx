@@ -668,38 +668,40 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 좋아요, 댓글, 스크랩 */}
         <View style={styles.engagementSection}>
-          <TouchableOpacity
-            style={styles.engagementItem}
-            activeOpacity={0.7}
-            onPress={() => setIsLiked(!isLiked)}
-          >
-            <View style={styles.iconContainer}>
+          {/* 런칭 시 좋아요 기능 제외 */}
+          {/* <View style={styles.engagementItem}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              activeOpacity={0.7}
+              onPress={() => setIsLiked(!isLiked)}
+            >
               {isLiked ? (
                 <LikeSelectedIcon width={20} height={18} />
               ) : (
                 <LikeUnselectedIcon width={20} height={18} />
               )}
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               0
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.engagementItem} activeOpacity={0.7}>
-            <View style={styles.iconContainer}>
+          </View> */}
+          <View style={styles.engagementItem}>
+            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
               <CommentIcon width={18} height={18} />
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               {comments?.totalParentElements || 0}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.engagementItem} activeOpacity={0.7}>
-            <View style={styles.iconContainer}>
+          </View>
+          {/* 런칭 시 스크랩 기능 제외 */}
+          {/* <View style={styles.engagementItem}>
+            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
               <ScrapIcon width={14} height={18} />
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               0
             </Text>
-          </TouchableOpacity>
+          </View> */}
         </View>
 
         {/* 댓글 목록 */}
