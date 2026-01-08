@@ -762,8 +762,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     </TouchableOpacity>
                   )}
 
-                  {/* 자식 댓글 (대댓글) */}
-                  {expandedComments.has(parent.commentId) && (
+                  {/* 자식 댓글 (대댓글) -> 자식이 실제로 있을 때만 표시 */}
+                  {expandedComments.has(parent.commentId) && children.length > 0 && (
                     <>
                       {children.map((child) => {
                         return (
