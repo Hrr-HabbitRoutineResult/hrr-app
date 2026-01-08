@@ -53,7 +53,7 @@ export const OnboardingQ3: React.FC<OnboardingQ3Props> = ({
   const isNextEnabled = selectedCategories.length > 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         onBack={onBack}

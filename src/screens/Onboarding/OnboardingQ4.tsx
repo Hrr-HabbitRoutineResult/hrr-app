@@ -105,7 +105,7 @@ export const OnboardingQ4: React.FC<OnboardingQ4Props> = ({
   const isNextEnabled = selectedGoal !== '';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         onBack={onBack}
@@ -257,12 +257,11 @@ const styles = StyleSheet.create({
   buttonDivider: {
     height: verticalScale(1),
     backgroundColor: colors.line,
-    marginBottom: verticalScale(12),
-    width: '100%',
   },
   buttonContainer: {
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
+    paddingTop: verticalScale(12),
     alignItems: 'center',
   },
 });

@@ -24,7 +24,7 @@ export const OnboardingIntro: React.FC<OnboardingIntroProps> = ({
   onStart,
 }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 배경 블러 효과들 */}
       <View style={styles.backgroundBlur1}>
         <BackgroundBlur1Svg width={280} height={280} />
