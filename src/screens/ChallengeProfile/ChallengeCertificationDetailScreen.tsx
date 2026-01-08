@@ -841,29 +841,40 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             onChangeText={setCommentText}
             editable={!isSubmittingComment}
             leftIcon={
-              <TouchableOpacity
-                onPress={() => setIsCommentLocked(!isCommentLocked)}
-                activeOpacity={0.7}
-              >
-                {isCommentLocked ? (
-                  <LockIcon width={10} height={12} />
-                ) : (
-                  <UnlockIcon width={10} height={12} />
-                )}
-              </TouchableOpacity>
+              <View style={styles.lockIconContainer}>
+                <TouchableOpacity
+                  onPress={() => setIsCommentLocked(!isCommentLocked)}
+                  activeOpacity={0.7}
+                  style={styles.lockIconButton}
+                >
+                  {isCommentLocked ? (
+                    <LockIcon width={10} height={12} />
+                  ) : (
+                    <UnlockIcon width={10} height={12} />
+                  )}
+                </TouchableOpacity>
+              </View>
             }
             onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
             rightIcon={
-              <View style={styles.sendButton}>
-                {isSubmittingComment ? (
-                  <ActivityIndicator size="small" color={colors.primary.main} />
-                ) : (
-                  <SendIcon width={30} height={30} />
-                )}
+              <View style={styles.sendIconContainer}>
+                <TouchableOpacity
+                  onPress={handleSubmitComment}
+                  activeOpacity={0.7}
+                  style={styles.sendIconButton}
+                  disabled={isSubmittingComment}
+                >
+                  {isSubmittingComment ? (
+                    <ActivityIndicator size="small" color={colors.primary.main} />
+                  ) : (
+                    <SendIcon width={30} height={30} />
+                  )}
+                </TouchableOpacity>
               </View>
             }
             onRightIconPress={handleSubmitComment}
             containerStyle={styles.textFieldContainer}
+            inputContainerStyle={styles.commentInputField}
           />
         </View>
       </KeyboardAvoidingView>
@@ -1209,7 +1220,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   commentInputContainer: {
-    paddingHorizontal: scale(20),
+    paddingHorizontal: scale(12),
     paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
@@ -1221,7 +1232,26 @@ const styles = StyleSheet.create({
   textFieldContainer: {
     marginTop: verticalScale(16),
   },
-  sendButton: {
+  commentInputField: {
+    height: verticalScale(44),
+    paddingLeft: scale(4),
+    paddingRight: scale(3),
+  },
+  lockIconContainer: {
+    marginRight: scale(-8), // TextField의 기본 iconContainer marginRight(8) 상쇄
+  },
+  lockIconButton: {
+    width: scale(36),
+    height: verticalScale(36),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendIconContainer: {
+    marginRight: scale(-8),
+  },
+  sendIconButton: {
+    width: scale(40),
+    height: verticalScale(40),
     justifyContent: 'center',
     alignItems: 'center',
   },
