@@ -255,12 +255,14 @@ const UserScreen = () => {
           onPressHeader={() => navigation.navigate('ParticipatingChallenge', { userId: userId })}
           onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
         />
-        <ViewModeHeader
-          title="인증 기록"
-          initialMode={certificationViewMode}
-          onViewModeChange={(mode) => setCertificationViewMode(mode)}
-          onPressTitle={() => navigation.navigate('CertificationHistory', { userId: userId })}
-        />
+        <View style={{ marginTop: spacing.xxxl }}>
+          <ViewModeHeader
+            title="인증 기록"
+            initialMode={certificationViewMode}
+            onViewModeChange={(mode) => setCertificationViewMode(mode)}
+            onPressTitle={() => navigation.navigate('CertificationHistory', { userId: userId })}
+          />
+        </View>
         {certificationItems.length === 0 ? (
           <View style={styles.emptyCertificationContainer}>
             <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
