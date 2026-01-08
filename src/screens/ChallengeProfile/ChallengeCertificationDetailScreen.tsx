@@ -614,7 +614,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 이미지 */}
         {(() => {
-          const images = verification.textImages || [];
+          // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
+          const images = verification.type === 'TEXT'
+            ? (verification.textImages || [])
+            : (verification.photoUrl ? [verification.photoUrl] : []);
 
           if (images.length === 0) return null;
 
@@ -1002,7 +1005,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       >
         <ImageViewer
           imageUrls={(() => {
-            const images = verification?.textImages || [];
+            // 사진 인증 게시물의 경우 photoUrl 사용, 텍스트 인증 게시물의 경우 textImages 사용
+            const images = verification?.type === 'TEXT'
+              ? (verification?.textImages || [])
+              : (verification?.photoUrl ? [verification.photoUrl] : []);
 
             return images.map(url => ({ url: url as string }));
           })()}
@@ -1030,7 +1036,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             </View>
           )}
           renderFooter={() => {
-            const totalImages = verification?.textImages?.length || 0;
+            // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
+            const images = verification?.type === 'TEXT'
+              ? (verification?.textImages || [])
+              : (verification?.photoUrl ? [verification.photoUrl] : []);
+            const totalImages = images.length;
             if (totalImages <= 1) return <View />;
 
             return (
