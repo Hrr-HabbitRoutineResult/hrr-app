@@ -667,7 +667,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         )}
 
         {/* 좋아요, 댓글, 스크랩 */}
-        <View style={styles.engagementSection}>
+        <View style={[
+          styles.engagementSection,
+          !(comments && (comments.adoptedParent || comments.comments.length > 0)) && styles.engagementSectionNoComments
+        ]}>
           {/* 런칭 시 좋아요 기능 제외 */}
           {/* <View style={styles.engagementItem}>
             <TouchableOpacity
@@ -1172,6 +1175,9 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: colors.background,
+  },
+  engagementSectionNoComments: {
+    marginBottom: verticalScale(65),
   },
   engagementItem: {
     flexDirection: 'row',
