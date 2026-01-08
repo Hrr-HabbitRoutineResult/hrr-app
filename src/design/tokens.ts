@@ -59,7 +59,7 @@ export const typography = {
     fontWeight: '600' as const,
     fontFamily: 'Pretendard-SemiBold',
     letterSpacing: -0.3,
-    lineHeight: moderateScale(22),
+    lineHeight: moderateScale(24),
   },
   // hrr/Md size
   md: {
@@ -67,7 +67,7 @@ export const typography = {
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
-    lineHeight: moderateScale(22),
+    lineHeight: moderateScale(24),
   },
   // hrr/Sm size (Md)
   smMd: {
@@ -91,7 +91,7 @@ export const typography = {
     fontWeight: '500' as const,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.3,
-    lineHeight: moderateScale(18),
+    lineHeight: moderateScale(19),
   },
   // hrr/Xs size (Reg)
   xsReg: {
@@ -99,7 +99,7 @@ export const typography = {
     fontWeight: '400' as const,
     fontFamily: 'Pretendard-Regular',
     letterSpacing: -0.3,
-    lineHeight: moderateScale(18),
+    lineHeight: moderateScale(19),
   },
   // hrr/Xxs size
   xxs: {
