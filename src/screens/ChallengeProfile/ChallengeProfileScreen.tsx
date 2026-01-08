@@ -1418,16 +1418,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background,
     borderRadius: scale(10),
-    marginTop: verticalScale(12),
   },
   emptyFeedContainerPadding: {
-    paddingVertical: verticalScale(40),
+    paddingVertical: verticalScale(30),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
     borderRadius: scale(10),
     marginHorizontal: scale(24),
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(-12),
   },
   textFeedSection: {
     marginTop: verticalScale(-20),
