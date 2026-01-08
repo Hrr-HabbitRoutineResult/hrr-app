@@ -13,6 +13,7 @@ import CategorySearchScreen from '../screens/CategorySearchScreen';
 import SearchScreen from '../screens/SearchScreen';
 import ChatScreen from '../screens/ChatScreen';
 import MyScreen from '../screens/MyScreen';
+import UserScreen from '../screens/UserScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
 import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/ChallengeCertificationScreen';
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
@@ -28,6 +29,16 @@ import { CreateChallengeQ3 } from '../screens/CreateChallenge/CreateChallengeQ3'
 import { CreateChallengeQ4 } from '../screens/CreateChallenge/CreateChallengeQ4';
 import { CreateChallengeProvider } from '../contexts/CreateChallengeContext';
 import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
+import ParticipatingChallengeScreen from '../screens/ParticipatingChallengeScreen';
+import CertificationHistoryScreen from '../screens/CertificationHistoryScreen';
+import FollowerListScreen from '../screens/FollowerListScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import AccountSettingsScreen from '../screens/AccountSettingsScreen';
+import ProfileEditScreen from '../screens/ProfileEditScreen';
+import LikedChallengeScreen from '../screens/LikedChallengeScreen';
+import CompletedChallengeScreen from '../screens/CompletedChallengeScreen';
+import BlockedUserScreen from '../screens/BlockedUserScreen';
+import ErrorScreen from '../screens/ErrorScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -62,7 +73,7 @@ const HomeTabs = () => (
   >
     <Tab.Screen name="홈" component={HomeScreen} />
     <Tab.Screen name="검색" component={SearchScreen} />
-    <Tab.Screen name="채팅" component={ChatScreen} />
+    {/* <Tab.Screen name="채팅" component={ChatScreen} /> */}
     <Tab.Screen name="마이" component={MyScreen} />
   </Tab.Navigator>
 );
@@ -100,9 +111,21 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />
         <Stack.Screen name="CreateChallengeQ4" component={CreateChallengeQ4} options={{ headerShown: false }} />
         <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
+        <Stack.Screen name="ParticipatingChallenge" component={ParticipatingChallengeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CertificationHistory" component={CertificationHistoryScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="FollowerList" component={FollowerListScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="User" component={UserScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="LikedChallenge" component={LikedChallengeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CompletedChallenge" component={CompletedChallengeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="ErrorScreen" component={ErrorScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>
 );
+
 
 export default RootNavigator;

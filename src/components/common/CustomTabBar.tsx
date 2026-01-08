@@ -15,7 +15,6 @@ import ChatIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_chat.svg'
 import MyIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_my_color.svg';
 import MyIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_my.svg';
 
-const screenWidth = Dimensions.get('window').width;
 const iconSize = scale(24);
 
 /**
@@ -53,21 +52,10 @@ const renderTabIcon = (routeName: keyof HomeTabParamList, focused: boolean) => {
 };
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-  const containerSize = scale(48);
-  const itemSpacing = scale(32);
-  const initialLeftMargin = scale(51);
-  const topMargin = verticalScale(4);
-
-  const getLeftPosition = (index: number) => {
-    return initialLeftMargin + index * (containerSize + itemSpacing);
-  };
-
   return (
     <View style={styles.tabBarContainer}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
-        // 사용되지 않아 주석 처리
-        // const tabBarOptions = options as any;
         const isFocused = state.index === index;
 
         const onPress = () => {
@@ -89,34 +77,21 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
           });
         };
 
-        // 기존 라벨 로직 주석 처리
-        // 항상 route.name을 사용하므로 불필요한 분기 처리 제거
-        // const label =
-        //   options.tabBarLabel !== undefined
-        //     ? options.tabBarLabel
-        //     : options.title !== undefined
-        //     ? options.title
-        //     : route.name;
-
         return (
           <TouchableOpacity
             key={route.key}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
-            // testID={tabBarOptions.tabBarTestID}
             onPress={onPress}
             onLongPress={onLongPress}
-            style={[styles.tabItem, { left: getLeftPosition(index) }]}
+            style={styles.tabItem}
           >
-            {/* 아이콘+글자 컨테이너 */}
             <View style={styles.iconLabelContainer}>
-              {/* 탭 아이콘 */}
               <View>{renderTabIcon(route.name as keyof HomeTabParamList, isFocused)}</View>
-              {/* 탭 이름 라벨 */}
               <View style={styles.labelContainer}>
                 <Text style={{
-                  color: colors.text.primary,
+                  color: isFocused ? colors.text.primary : colors.text.secondary,
                   fontSize: typography.xxs.fontSize,
                   fontFamily: typography.xxs.fontFamily,
                 }}>
@@ -134,6 +109,8 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-around', // Distribute items evenly
+    alignItems: 'center', // Center items vertically
     backgroundColor: colors.white,
     height: verticalScale(84),
     position: 'absolute',
@@ -142,21 +119,18 @@ const styles = StyleSheet.create({
     right: 0,
     borderTopWidth: scale(1),
     borderTopColor: colors.line,
+    paddingHorizontal: scale(10), // Add some horizontal padding
   },
   tabItem: {
-    position: 'absolute',
-    top: verticalScale(4),
-    width: scale(48),
-    height: verticalScale(48),
+    flex: 1, // Each item takes equal space
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
   },
   iconLabelContainer: {
-    width: scale(48),
-    height: verticalScale(48),
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: verticalScale(4.5),
+    transform: [{ translateY: -verticalScale(8) }],
   },
   labelContainer: {
     marginTop: verticalScale(5),

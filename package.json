@@ -35,6 +35,8 @@
     "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-inappbrowser-reborn": "^3.7.0",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-reanimated": "^4.2.1",
+    "react-native-safe-area-context": "^5.6.2",
     "react-native-link-preview": "^1.4.2",
     "react-native-safe-area-context": "^5.6.1",
     "react-native-screens": "^4.18.0",
@@ -44,6 +46,7 @@
     "react-native-svg": "^15.14.0",
     "react-native-view-shot": "^4.0.3",
     "react-native-web": "^0.21.2",
+    "react-native-worklets": "^0.7.1",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -55,12 +58,15 @@
     "@react-native-community/cli": "^20.0.0",
     "@react-native-community/cli-platform-android": "20.0.0",
     "@react-native-community/cli-platform-ios": "20.0.0",
-    "@react-native/babel-preset": "^0.82.0",
+    "@react-native/babel-preset": "^0.82.1",
     "@react-native/eslint-config": "0.82.0",
     "@react-native/gradle-plugin": "^0.82.0",
     "@react-native/metro-config": "0.82.0",
     "@react-native/typescript-config": "0.82.0",
-    "@storybook/react-webpack5": "^9.1.13",
+    "@storybook/addon-essentials": "8.6.15",
+    "@storybook/react-webpack5": "8.6.15",
+    "@storybook/test": "8.6.15",
+    "@svgr/webpack": "^8.1.0",
     "@types/jest": "^29.5.13",
     "@types/react": "19.2.2",
     "babel-loader": "^10.0.0",
@@ -69,7 +75,7 @@
     "prettier": "2.8.8",
     "react-native-svg-transformer": "^1.5.2",
     "react-test-renderer": "19.1.1",
-    "storybook": "^9.1.13",
+    "storybook": "8.6.15",
     "typescript": "^5.8.3"
   },
   "engines": {

@@ -121,10 +121,12 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     try {
       setIsLoading(true);
 
+
       // 백엔드 로그인 API 호출
       const response = await handleKakaoLoginWithToken(kakaoAccessToken);
       await processLogin(response);
     } catch (error) {
+      console.error('processKakaoLogin: error', error); // 에러 로그 추가
       Alert.alert('오류', '카카오 로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);

@@ -3,6 +3,7 @@ import { View, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-nat
 import { scale, verticalScale } from '../../utils/scaling';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
 import ResolvedCircleIcon from '../../../assets/icons/challenge-profile/resolved-circle.svg';
+import TextIcon from '../../../assets/icons/text.svg';
 
 export interface PhotoCertificationItem {
   id: number;      // 인증 아이템 고유 ID
@@ -38,7 +39,13 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
           onPress={() => onItemPress?.(item)}
           activeOpacity={0.8}
         >
-          <Image source={item.thumbnail} style={styles.gridImage} />
+          {item.thumbnail && item.thumbnail.uri ? (
+            <Image source={item.thumbnail} style={styles.gridImage} />
+          ) : (
+            <View style={styles.fallbackContainer}>
+              <TextIcon width="100%" height="100%" />
+            </View>
+          )}
           {/* 질문 아이콘 표시 (showOverlay가 true이고 item이 질문일 때만) */}
           {showOverlay && item.isQuestion && (
             <View style={styles.questionMarkContainer}>
@@ -64,10 +71,20 @@ const styles = StyleSheet.create({
   gridItem: {
     overflow: 'hidden',
     position: 'relative',
+    backgroundColor: '#f0f0f0', // Fallback background color
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   gridImage: {
     width: '100%',
     height: '100%',
+  },
+  fallbackContainer: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E9E9E9', // A light grey background for the fallback
   },
   questionMarkContainer: {
     position: 'absolute',

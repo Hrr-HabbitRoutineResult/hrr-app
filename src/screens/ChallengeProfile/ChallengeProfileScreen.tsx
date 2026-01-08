@@ -36,6 +36,7 @@ import {
   VerificationStat,
   VerificationFeedItem,
 } from '../../libs/api/challenge';
+import { useUserStore } from '../../store/userSlice';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -62,6 +63,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
+  const { fetchMyOngoingChallenges, userInfo } = useUserStore();
 
   const [data, setData] = useState<ChallengeDetail | null>(null);
   const [profile, setProfile] = useState<ChallengeProfile | null>(null);
@@ -74,8 +76,9 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | undefined>(undefined);
   const [showCertificationTooltip, setShowCertificationTooltip] = useState(false);
-  const [isParticipated, setIsParticipated] = useState(false);
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
+  const [certificationType, setCertificationType] = useState<'text' | 'image'>('image');
+  const [isParticipated, setIsParticipated] = useState(false);
 
   const [rounds, setRounds] = useState<RoundItem[]>([]);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
@@ -304,7 +307,13 @@ export const ChallengeProfileScreen: React.FC = () => {
   };
 
   const handleHostProfile = () => {
-    // TODO: 방장 프로필 화면으로 이동
+    if (data?.owner.id) {
+      if (data.owner.id === userInfo?.userId) {
+        navigation.navigate('HomeTabs', { screen: '마이' });
+      } else {
+        navigation.navigate('User', { userId: data.owner.id });
+      }
+    }
   };
 
   const handleParticipate = () => {
@@ -485,7 +494,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       if (isPasswordMode) {
         // 비공개 챌린지 - 비밀번호와 함께 참가
         await joinChallenge(challengeId, password);
-
+        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsPasswordMode(false);
         setPassword('');
@@ -504,7 +513,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       } else {
         // 공개 챌린지 - 비밀번호 없이 참가
         await joinChallenge(challengeId);
-
+        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsParticipated(true);
 
@@ -513,7 +522,7 @@ export const ChallengeProfileScreen: React.FC = () => {
           const profileResult = await getChallengeProfile(challengeId);
           processProfileData(profileResult);
         } catch (profileError) {
-          // 프로필 조회 실패 시 무시
+          console.warn('프로필 정보 조회 실패:', profileError);
         }
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
@@ -523,9 +532,7 @@ export const ChallengeProfileScreen: React.FC = () => {
       if (isPasswordMode && error.message?.includes('비밀번호')) {
         setPasswordError('비밀번호를 다시 확인해 주세요');
       } else {
-        // 챌린지 참가 실패 에러 메시지 표시
-        const errorMessage = error.response?.data?.message || error.message || '챌린지 참가에 실패했습니다.';
-        Alert.alert('오류', errorMessage);
+        Alert.alert('오류', error.message || '챌린지 참가에 실패했습니다.');
       }
     }
   };
@@ -543,6 +550,9 @@ export const ChallengeProfileScreen: React.FC = () => {
     setPassword(numericText);
     setPasswordError(undefined); // 입력 시 에러 메시지 초기화
   };
+
+  const isMyProfile = data?.owner.id === userInfo?.userId;
+  const hostProfileImage = isMyProfile ? userInfo?.profileImage : data?.owner.profileImageUrl;
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
@@ -638,9 +648,9 @@ export const ChallengeProfileScreen: React.FC = () => {
           onPress={handleHostProfile}
           activeOpacity={0.7}
         >
-          {data.owner.profileImageUrl ? (
+          {hostProfileImage ? (
             <Image
-              source={{ uri: data.owner.profileImageUrl.replace('http://', 'https://') }}
+              source={{ uri: hostProfileImage.replace('http://', 'https://') }}
               style={{ width: scale(40), height: verticalScale(40), borderRadius: 20 }}
             />
           ) : (
@@ -1408,16 +1418,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background,
     borderRadius: scale(10),
-    marginTop: verticalScale(12),
   },
   emptyFeedContainerPadding: {
-    paddingVertical: verticalScale(40),
+    paddingVertical: verticalScale(30),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
     borderRadius: scale(10),
     marginHorizontal: scale(24),
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(-12),
   },
   textFeedSection: {
     marginTop: verticalScale(-20),
@@ -1529,11 +1538,13 @@ const styles = StyleSheet.create({
   modalButtonsWithPassword: {
     marginTop: -16, // 비밀번호 모드일 때 타이틀과 텍스트 필드 사이 간격
   },
-  modalButton: {
-    width: scale(60),
-    height: verticalScale(48),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    modalButton: {
+      paddingHorizontal: scale(16),
+      paddingVertical: verticalScale(12),
+      minWidth: scale(60),
+      height: verticalScale(48),
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 });
 

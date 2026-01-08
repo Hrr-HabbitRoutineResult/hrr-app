@@ -107,12 +107,21 @@ android {
         }
 
         release {
-            storeFile file(MYAPP_UPLOAD_STORE_FILE)
-            storePassword MYAPP_UPLOAD_STORE_PASSWORD
-            keyAlias MYAPP_UPLOAD_KEY_ALIAS
-            keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            def storeFilePath = project.env.get("MYAPP_UPLOAD_STORE_FILE")
+            def storePassword = project.env.get("MYAPP_UPLOAD_STORE_PASSWORD")
+            def keyAlias = project.env.get("MYAPP_UPLOAD_KEY_ALIAS")
+            def keyPassword = project.env.get("MYAPP_UPLOAD_KEY_PASSWORD")
+
+            // 값이 전부 있을 때만 release 서명 세팅
+            if (storeFilePath && storePassword && keyAlias && keyPassword) {
+                storeFile file(storeFilePath)
+                storePassword storePassword
+                keyAlias keyAlias
+                keyPassword keyPassword
+            }
         }
     }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

@@ -9,29 +9,31 @@ import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 
-// 버튼 variant 타입
-type ButtonVariant = 'black' | 'primary' | 'white' | 'gray';
-
-// 버튼 사이즈 타입
+type ButtonVariant = 'black' | 'primary' | 'white' | 'gray' | 'outlinePrimary';
 type ButtonSize = 'small' | 'medium';
 
+type ButtonTextVariant = string; // As noted in the file, can be refined
+
 interface ButtonProps extends TouchableOpacityProps {
-    variant?: ButtonVariant;        // 버튼 스타일 종류
-    size?: ButtonSize;              // 버튼 크기
-    disabled?: boolean;             // 비활성화 여부
-    onPress: () => void;            // 클릭 이벤트
-    children: string;               // 버튼 텍스트
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  disabled?: boolean;
+  onPress: () => void;
+  children: React.ReactNode;
+  textVariant?: ButtonTextVariant;
+  textColor?: string;
 }
 
-// 공통 Button 컴포넌트
 export const Button: React.FC<ButtonProps> = ({
-    variant = 'primary',
-    size = 'medium',
-    disabled = false,
-    onPress,
-    children,
-    style,
-    ...rest
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+  onPress,
+  children,
+  style,
+  textVariant = 'md',
+  textColor,
+  ...rest
 }) => {
     // variant에 따른 스타일 결정
     const getVariantStyle = (): ViewStyle => {
@@ -42,31 +44,29 @@ export const Button: React.FC<ButtonProps> = ({
             };
         }
 
-        switch (variant) {
-            case 'black':
-                return {
-                    backgroundColor: colors.text.primary
-                };
-            case 'primary':
-                return {
-                    backgroundColor: colors.primary.main
-                };
-            case 'white':
-                return {
-                    backgroundColor: colors.white,
-                    borderWidth: 1.5,
-                    borderColor: colors.line,
-                };
-            case 'gray':
-                return {
-                    backgroundColor: colors.line,
-                };
-            default:
-                return {
-                    backgroundColor: colors.primary.main
-                };
-        }
-    };
+    switch (variant) {
+      case 'black':
+        return { backgroundColor: colors.text.primary };
+      case 'primary':
+        return { backgroundColor: colors.primary.main };
+      case 'white':
+        return {
+          backgroundColor: colors.white,
+          borderWidth: 1.5,
+          borderColor: colors.line,
+        };
+      case 'gray':
+        return { backgroundColor: colors.line };
+      case 'outlinePrimary':
+        return {
+          backgroundColor: colors.white,
+          borderWidth: 1.5,
+          borderColor: colors.primary.main,
+        };
+      default:
+        return { backgroundColor: colors.primary.main };
+    }
+  };
 
     // variant에 따른 텍스트 색상 결정
     const getTextColor = (): string => {
@@ -75,44 +75,51 @@ export const Button: React.FC<ButtonProps> = ({
             return colors.icon.gray;
         }
 
-        switch (variant) {
-            case 'black':
-                return colors.white;
-            case 'primary':
-                return colors.white;
-            case 'white':
-                return colors.text.tertiary;
-            case 'gray':
-                return colors.icon.gray;
-            default:
-                return colors.white;
-        }
-    };
+    switch (variant) {
+      case 'black':
+      case 'primary':
+        return colors.white;
+      case 'white':
+        return colors.text.tertiary;
+      case 'gray':
+        return colors.icon.gray;
+      case 'outlinePrimary':
+        return colors.primary.main;
+      default:
+        return colors.white;
+    }
+  };
 
-    // size에 따른 maxWidth 결정 (medium: 350px, small: 170px)
-    const getMaxWidth = (): number => {
-        return size === 'medium' ? scale(350) : scale(170);
-    };
+  const getWidth = (): number => {
+    return size === 'medium' ? scale(350) : scale(170);
+  };
 
-    // 렌더링
-    return (
-        <TouchableOpacity
-            style={[
-                styles.button,         // 기본 스타일 적용 (높이, borderRadius 등)
-                getVariantStyle(),     // variant에 따른 버튼 색상
-                { maxWidth: getMaxWidth() }, // 사이즈에 따른 maxWidth
-                style,                 // 사용자가 입력한 스타일 (우선 적용)
-            ]}
-            onPress={onPress}
-            disabled={disabled}        // true면 버튼 비활성화
-            activeOpacity={0.9}        // 터치 시 투명도
-            {...rest}                  // 나머지 Props 전달
-        >
-            <Text variant="md" color={getTextColor()}>
-                {children}
-            </Text>
-        </TouchableOpacity>
-    );
+  const getPaddingVertical = (): number => {
+    return size === 'small' ? 8 : 14; // Changed from 12 to 8 for small size
+  };
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        getVariantStyle(),
+        { width: getWidth(), paddingVertical: getPaddingVertical() },
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.9}
+      {...rest}
+    >
+      {typeof children === 'string' ? (
+        <Text variant={textVariant} color={textColor ?? getTextColor()}>
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
+    </TouchableOpacity>
+  );
 };
 
 const styles = StyleSheet.create({

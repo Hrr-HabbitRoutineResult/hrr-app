@@ -17,7 +17,7 @@ function CircleIcon({ size = 18, color = colors.icon.gray, style }: { size?: num
 }
 
 const meta: Meta<typeof TextField> = {
-  title: 'Components/TextField',
+  title: 'Components/Common/TextField',
   component: TextField,
   parameters: { layout: 'centered', controls: { expanded: true } },
   argTypes: {
