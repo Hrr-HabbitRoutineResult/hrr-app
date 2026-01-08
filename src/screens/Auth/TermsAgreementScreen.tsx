@@ -143,7 +143,7 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
 
     try {
       setIsSubmitting(true);
-      
+
       // 약관 동의 API 호출
       const response = await agreeTerms(accessToken, agreedTermIds);
 
@@ -169,7 +169,7 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         title="회원가입"

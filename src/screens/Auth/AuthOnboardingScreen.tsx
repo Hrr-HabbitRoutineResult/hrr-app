@@ -348,7 +348,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.contentWrapper}>
         {/* 1) 이미지 슬라이드 영역 */}
         <View style={styles.fullWidthSliderWrapper}>

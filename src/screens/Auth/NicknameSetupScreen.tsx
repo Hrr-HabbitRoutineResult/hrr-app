@@ -111,9 +111,9 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
       }
     } catch (error: any) {
       // 서버에서 오는 에러 메시지가 있으면 우선 표시, 없으면 기본 메시지
-      const errorMessage = error?.response?.data?.message || 
-                          error?.response?.data?.error || 
-                          '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
+      const errorMessage = error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -121,7 +121,7 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         title="회원가입"
