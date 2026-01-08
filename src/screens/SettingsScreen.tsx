@@ -66,6 +66,7 @@ const SettingsScreen = () => {
         title="설정"
         onBack={() => navigation.goBack()}
         useSafeArea 
+        showDivider={true}
       />
       <ScrollView style={styles.content}>
         {settingsData.map((section, sectionIndex) => (

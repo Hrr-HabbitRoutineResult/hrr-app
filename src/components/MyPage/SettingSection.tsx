@@ -32,7 +32,7 @@ export default SettingSection;
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
   },
 
   contentWrapper: {

@@ -198,7 +198,7 @@ export interface FollowListResponse {
 /**
  * 내 팔로워 목록 조회
  */
-export const getFollowers = async (page: number = 0, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowers = async (page: number = 1, size: number = 20): Promise<FollowItem[]> => {
   try {
     const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followers', { params: { page, size } });
     if (response.data.isSuccess) {
@@ -213,7 +213,7 @@ export const getFollowers = async (page: number = 0, size: number = 20): Promise
 /**
  * 내 팔로잉 목록 조회
  */
-export const getFollowings = async (page: number = 0, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowings = async (page: number = 1, size: number = 20): Promise<FollowItem[]> => {
   try {
     const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followings', { params: { page, size } });
     if (response.data.isSuccess) {
@@ -246,6 +246,37 @@ export const unfollowUser = async (unfollowedUserId: number): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * 특정 사용자의 팔로워 목록 조회
+ */
+export const getFollowersByUserId = async (userId: number, page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+  try {
+    const response = await apiClient.get<FollowListResponse>(`/api/v1/follow/${userId}/followers`, { params: { page, size } });
+    if (response.data.isSuccess) {
+      return response.data.result.content;
+    }
+    throw new Error(response.data.message || '특정 사용자의 팔로워 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 특정 사용자의 팔로잉 목록 조회
+ */
+export const getFollowingsByUserId = async (userId: number, page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+  try {
+    const response = await apiClient.get<FollowListResponse>(`/api/v1/follow/${userId}/followings`, { params: { page, size } });
+    if (response.data.isSuccess) {
+      return response.data.result.content;
+    }
+    throw new Error(response.data.message || '특정 사용자의 팔로잉 목록을 불러오는데 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
 
 /**
  * 사용자 프로필 업데이트 요청 타입

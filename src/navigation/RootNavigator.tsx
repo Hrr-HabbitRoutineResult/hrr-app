@@ -73,7 +73,7 @@ const HomeTabs = () => (
   >
     <Tab.Screen name="홈" component={HomeScreen} />
     <Tab.Screen name="검색" component={SearchScreen} />
-    <Tab.Screen name="채팅" component={ChatScreen} />
+    {/* <Tab.Screen name="채팅" component={ChatScreen} /> */}
     <Tab.Screen name="마이" component={MyScreen} />
   </Tab.Navigator>
 );

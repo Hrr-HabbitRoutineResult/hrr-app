@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, GestureResponderEvent } from 'react-native';
 import { Avatar } from '../MyPage/Avatar';
 import { Text } from './Text';
 import { Button } from './Button';
@@ -10,40 +10,18 @@ interface PersonListItemProps {
     nickname: string;
     tier?: string;
     isFollowing?: boolean;
-    onPressFollow?: () => void;
+    onPressFollow?: (event: GestureResponderEvent) => void;
+    showFollowButton?: boolean;
 }
 
-const PersonListItem = ({ avatarUrl, nickname, tier, isFollowing = false, onPressFollow }: PersonListItemProps) => {
-    const [isConfirmingUnfollow, setIsConfirmingUnfollow] = useState(false);
-
-    const handlePress = () => {
-        if (isFollowing && !isConfirmingUnfollow) {
-            setIsConfirmingUnfollow(true);
-        } else {
-            onPressFollow?.();
-            setIsConfirmingUnfollow(false);
-        }
-    };
+const PersonListItem = ({ avatarUrl, nickname, tier, isFollowing = false, onPressFollow, showFollowButton = true }: PersonListItemProps) => {
 
     const renderButton = () => {
-        if (isConfirmingUnfollow) {
-            return (
-                <Button 
-                    size="small" 
-                    variant="white"
-                    onPress={handlePress}
-                    style={[styles.followButton, { borderRadius: radius.xl }]}
-                >
-                    <Text variant="xxs" color={colors.primary.sub}>언팔로잉</Text>
-                </Button>
-            );
-        }
-
         return (
-            <Button 
-                size="small" 
+            <Button
+                size="small"
                 variant={isFollowing ? 'outlinePrimary' : 'primary'}
-                onPress={handlePress}
+                onPress={onPressFollow}
                 style={[styles.followButton, { borderRadius: radius.xl }]}
             >
                 <Text variant="xxs" color={isFollowing ? colors.primary.main : colors.white}>
@@ -61,7 +39,7 @@ const PersonListItem = ({ avatarUrl, nickname, tier, isFollowing = false, onPres
                 {tier && <View style={styles.dot} />}
                 {tier && <Text variant="xsReg" color={colors.text.tertiary} style={styles.tierText}>{tier}</Text>}
             </View>
-            {renderButton()}
+            {showFollowButton && renderButton()}
         </View>
     );
 };
@@ -84,8 +62,8 @@ const styles = StyleSheet.create({
         // typography.xsReg and color is already set via props
     },
     followButton: {
-        width: 100,
-        height: 32,
+        width: 120,
+        height: 40,
     },
     dot: {
         width: 2,
