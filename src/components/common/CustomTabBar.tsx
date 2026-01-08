@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
   iconLabelContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    transform: [{ translateY: -verticalScale(8) }],
   },
   labelContainer: {
     marginTop: verticalScale(5),
