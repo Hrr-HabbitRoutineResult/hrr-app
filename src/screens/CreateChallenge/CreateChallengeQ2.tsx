@@ -308,7 +308,10 @@ export const CreateChallengeQ2 = () => {
         {/* 카메라 이미지 박스 */}
         <TouchableOpacity
           style={styles.imageBox}
-          onPress={handleImagePicker}
+          onPress={() => {
+            Keyboard.dismiss();
+            handleImagePicker();
+          }}
           activeOpacity={0.7}
           disabled={isUploading}
         >
@@ -364,7 +367,10 @@ export const CreateChallengeQ2 = () => {
           {/* 인증수단 */}
           <TouchableOpacity
             style={[styles.selectionRow, styles.selectionRowDivider]}
-            onPress={() => setShowMethodSheet(true)}
+            onPress={() => {
+              Keyboard.dismiss();
+              setShowMethodSheet(true);
+            }}
             activeOpacity={0.7}
           >
             <Text variant="smReg" color={colors.text.tertiary}>
@@ -384,7 +390,10 @@ export const CreateChallengeQ2 = () => {
           {/* 인증요일 */}
           <TouchableOpacity
             style={[styles.selectionRow, styles.selectionRowDivider]}
-            onPress={() => setShowDaysSheet(true)}
+            onPress={() => {
+              Keyboard.dismiss();
+              setShowDaysSheet(true);
+            }}
             activeOpacity={0.7}
           >
             <Text variant="smReg" color={colors.text.tertiary}>
@@ -408,6 +417,7 @@ export const CreateChallengeQ2 = () => {
               !isTimeExpanded && styles.selectionRowDivider,
             ]}
             onPress={() => {
+              Keyboard.dismiss();
               if (startTime && endTime) {
                 setIsTimeExpanded(!isTimeExpanded);
               } else {
@@ -433,7 +443,10 @@ export const CreateChallengeQ2 = () => {
               <View style={styles.timeDisplayContainer}>
                 <TouchableOpacity
                   style={styles.timeBox}
-                  onPress={() => setShowTimeSheet('start')}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setShowTimeSheet('start');
+                  }}
                   activeOpacity={0.7}
                 >
                   <Text variant="smMd" color={colors.text.secondary}>
@@ -442,7 +455,10 @@ export const CreateChallengeQ2 = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.timeBox}
-                  onPress={() => setShowTimeSheet('end')}
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    setShowTimeSheet('end');
+                  }}
                   activeOpacity={0.7}
                 >
                   <Text variant="smMd" color={colors.text.secondary}>
@@ -561,32 +577,44 @@ export const CreateChallengeQ2 = () => {
       {/* 바텀시트들 */}
       <VerificationMethodSheet
         visible={showMethodSheet}
-        onClose={() => setShowMethodSheet(false)}
+        onClose={() => {
+          Keyboard.dismiss();
+          setShowMethodSheet(false);
+        }}
         selectedMethod={verificationMethod}
         onSelect={(method) => {
           setVerificationMethod(method);
           updateData({ verificationMethod: method });
+          Keyboard.dismiss();
         }}
       />
 
       <VerificationDaysSheet
         visible={showDaysSheet}
-        onClose={() => setShowDaysSheet(false)}
+        onClose={() => {
+          Keyboard.dismiss();
+          setShowDaysSheet(false);
+        }}
         selectedDays={verificationDays}
         onConfirm={(days) => {
           setVerificationDays(days);
           updateData({ verificationDays: days });
+          Keyboard.dismiss();
         }}
       />
 
       <TimePickerSheet
         visible={showTimeSheet === 'start'}
-        onClose={() => setShowTimeSheet(null)}
+        onClose={() => {
+          Keyboard.dismiss();
+          setShowTimeSheet(null);
+        }}
         title="시작 시간을 선택해 주세요"
         initialTime={startTime || { period: 'AM', hour: '12', minute: '00' }}
         onConfirm={(time) => {
           setStartTime(time);
           updateData({ startTime: time });
+          Keyboard.dismiss();
           // 약간의 딜레이를 주어 부드러운 전환
           setTimeout(() => {
             setShowTimeSheet('end');
@@ -596,12 +624,16 @@ export const CreateChallengeQ2 = () => {
 
       <TimePickerSheet
         visible={showTimeSheet === 'end'}
-        onClose={() => setShowTimeSheet(null)}
+        onClose={() => {
+          Keyboard.dismiss();
+          setShowTimeSheet(null);
+        }}
         title="마감 시간을 선택해 주세요"
         initialTime={endTime || { period: 'PM', hour: '11', minute: '50' }}
         onConfirm={(time) => {
           setEndTime(time);
           updateData({ endTime: time });
+          Keyboard.dismiss();
         }}
       />
     </SafeAreaView>
