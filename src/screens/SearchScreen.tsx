@@ -179,14 +179,26 @@ const SearchScreen = () => {
           // 검색 카운트 증가 실패 (검색 기능은 정상적으로 동작)
         });
 
-      const searchParams = {
-        title: trimmedQuery,
-        page: 1,
-        size: 20,
-      };
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let allChallenges: ChallengeInfo[] = [];
+      let currentPage = 1;
+      let hasNext = true;
 
-      const result = await getChallenges(searchParams);
-      setSearchResults(result.content);
+      while (hasNext) {
+        const searchParams = {
+          title: trimmedQuery,
+          page: currentPage,
+          size: 20,
+        };
+
+        const result = await getChallenges(searchParams);
+        allChallenges = [...allChallenges, ...result.content];
+
+        hasNext = result.hasNext;
+        currentPage++;
+      }
+
+      setSearchResults(allChallenges);
 
       // 최근 검색어 저장
       const updated = [trimmedQuery, ...recentSearches.filter(s => s !== trimmedQuery)].slice(0, MAX_RECENT_SEARCHES);

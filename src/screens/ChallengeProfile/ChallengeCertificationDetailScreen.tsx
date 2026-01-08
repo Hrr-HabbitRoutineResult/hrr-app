@@ -114,22 +114,67 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       setVerification(result);
 
-      // 댓글 조회
-      const commentsResult = await getComments(verificationId, {
-        page: commentPage,
-        size: 10,
-      });
+      // 댓글 조회 (모든 페이지)
+      let allComments: CommentItemType[] = [];
+      let allAdoptedChildren: CommentItemType[] = [];
+      let adoptedParent: CommentItemType | null = null;
+      let currentPage = 1;
+      let isLastPage = false;
+      let commentsResult: GetCommentsResponse['result'];
+
+      // 모든 페이지 순회
+      do {
+        const pageResult = await getComments(verificationId, {
+          page: currentPage,
+          size: 10,
+        });
+
+        // 첫 페이지 결과 저장 (메타데이터용)
+        if (currentPage === 1) {
+          commentsResult = pageResult;
+        }
+
+        // adoptedParent는 null이 아닌 첫 번째 것을 사용
+        if (pageResult.adoptedParent && !adoptedParent) {
+          adoptedParent = pageResult.adoptedParent;
+        }
+
+        // adoptedChildren 수집 (중복 제거)
+        if (pageResult.adoptedChildren && pageResult.adoptedChildren.length > 0) {
+          pageResult.adoptedChildren.forEach(child => {
+            if (!allAdoptedChildren.find(c => c.commentId === child.commentId)) {
+              allAdoptedChildren.push(child);
+            }
+          });
+        }
+
+        // 일반 댓글 수집
+        allComments = [...allComments, ...pageResult.comments];
+
+        isLastPage = pageResult.last;
+        currentPage++;
+      } while (!isLastPage);
+
+      // 최종 결과 설정
+      commentsResult = {
+        ...commentsResult!,
+        adoptedParent,
+        adoptedChildren: allAdoptedChildren,
+        comments: allComments,
+        last: true,
+      };
+
       setComments(commentsResult);
 
       // 채택된 댓글이 있는 부모 댓글을 찾아서 기본적으로 펼쳐진 상태로 설정
-      const allComments = [
+      const allCommentsForExpanded = [
         ...(commentsResult.adoptedParent ? [commentsResult.adoptedParent] : []),
         ...commentsResult.adoptedChildren,
         ...commentsResult.comments,
       ];
 
-      const parentComments = allComments.filter(c => c.depth === 0);
-      const childComments = allComments.filter(c => c.depth > 0);
+      const parentComments = allCommentsForExpanded.filter(c => c.depth === 0);
+      const childComments = allCommentsForExpanded.filter(c => c.depth > 0);
 
       parentComments.forEach(parent => {
         const children = childComments.filter(child => child.parentId === parent.commentId);

@@ -124,14 +124,26 @@ const CategorySearchScreen = () => {
     setHasSearched(true);
 
     try {
-      const searchParams = {
-        title: trimmedQuery,
-        page: 1,
-        size: 20,
-      };
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let allChallenges: ChallengeInfo[] = [];
+      let currentPage = 1;
+      let hasNext = true;
 
-      const result = await getChallenges(searchParams);
-      setSearchResults(result.content);
+      while (hasNext) {
+        const searchParams = {
+          title: trimmedQuery,
+          page: currentPage,
+          size: 20,
+        };
+
+        const result = await getChallenges(searchParams);
+        allChallenges = [...allChallenges, ...result.content];
+
+        hasNext = result.hasNext;
+        currentPage++;
+      }
+
+      setSearchResults(allChallenges);
 
       // 최근 검색어에 추가 (중복 제거, 최신순 유지)
       const updated = [

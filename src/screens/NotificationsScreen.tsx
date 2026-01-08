@@ -36,23 +36,31 @@ const NotificationsScreen = () => {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
 
-  // 알림 목록 조회
-  const fetchNotifications = async (category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE', pageNum: number = 1) => {
+  // 알림 목록 조회 (모든 페이지)
+  const fetchNotifications = async (category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE') => {
     try {
       setLoading(true);
-      const result = await getNotifications({
-        category,
-        page: pageNum,
-        size: 10,
-      });
 
-      if (pageNum === 1) {
-        setNotifications(result.content);
-      } else {
-        setNotifications(prev => [...prev, ...result.content]);
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let allNotifications: NotificationItemType[] = [];
+      let currentPage = 1;
+      let hasNext = true;
+
+      while (hasNext) {
+        const result = await getNotifications({
+          category,
+          page: currentPage,
+          size: 10,
+        });
+
+        allNotifications = [...allNotifications, ...result.content];
+        hasNext = result.hasNext;
+        currentPage++;
       }
-      setHasNext(result.hasNext);
-      setPage(pageNum);
+
+      setNotifications(allNotifications);
+      setHasNext(false);
+      setPage(currentPage - 1);
     } catch (error) {
       // 에러 무시
     } finally {
@@ -62,13 +70,13 @@ const NotificationsScreen = () => {
 
   // 카테고리 변경 시 알림 목록 재조회
   useEffect(() => {
-    fetchNotifications(activeCategory, 1);
+    fetchNotifications(activeCategory);
   }, [activeCategory]);
 
   // 화면 포커스 시 알림 목록 새로고침
   useFocusEffect(
     React.useCallback(() => {
-      fetchNotifications(activeCategory, 1);
+      fetchNotifications(activeCategory);
     }, [activeCategory])
   );
 
@@ -157,7 +165,7 @@ const NotificationsScreen = () => {
 
       // 성공 시 알림 목록 새로고침하여 새 알림 반영
       setTimeout(() => {
-        fetchNotifications(activeCategory, 1);
+        fetchNotifications(activeCategory);
       }, 1000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
@@ -190,7 +198,7 @@ const NotificationsScreen = () => {
 
       // 성공 시 알림 목록 새로고침하여 새 알림 반영
       setTimeout(() => {
-        fetchNotifications(activeCategory, 1);
+        fetchNotifications(activeCategory);
       }, 1000);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
