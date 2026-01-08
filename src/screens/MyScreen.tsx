@@ -126,12 +126,14 @@ const MyScreen = () => {
                 onPressEmpty={() => navigation.navigate('ChallengeList')}
             />
 
-            <ViewModeHeader
-                title="인증 기록"
-                initialMode={certificationViewMode}
-                onViewModeChange={(mode) => setCertificationViewMode(mode)}
-                onPressTitle={() => navigation.navigate('CertificationHistory')}
-            />
+            <View style={{ marginTop: spacing.xxxl }}>
+              <ViewModeHeader
+                  title="인증 기록"
+                  initialMode={certificationViewMode}
+                  onViewModeChange={(mode) => setCertificationViewMode(mode)}
+                  onPressTitle={() => navigation.navigate('CertificationHistory')}
+              />
+            </View>
             {isHistoryLoading ? (
               <ActivityIndicator style={styles.loadingIndicator} />
             ) : certificationItems.length === 0 ? (
