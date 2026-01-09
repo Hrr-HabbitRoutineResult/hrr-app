@@ -10,18 +10,11 @@ import { useUserStore } from '../store/userSlice';
 import { getOngoingChallengesById, OngoingChallengeItem as ApiChallengeItem } from '../libs/api/user';
 import PlusIcon from '../../assets/icons/plus.svg';
 
-export type ParticipatingChallengeItem = {
-  id: string;
-  title: string;
-  subtitle: string;
-  imageUrl: string;
-  roundText: string;
-};
+import { ChallengeCard, ChallengeCardItem } from '../components/challenge/ChallengeCard';
 
 const CARD_MARGIN = spacing.md;
 const CARD_PADDING = spacing.xs;
 const { width: screenWidth } = Dimensions.get('window');
-const CARD_WIDTH = (screenWidth - (CARD_MARGIN * 2) - CARD_PADDING) / 2;
 
 type ParticipatingChallengeScreenRouteProp = RouteProp<RootStackParamList, 'ParticipatingChallenge'>;
 
@@ -63,7 +56,7 @@ const ParticipatingChallengeScreen = () => {
 
   const challengesSource = isMe ? myOngoingChallenges : otherUserChallenges;
 
-  const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => {
+  const participatingChallenges: ChallengeCardItem[] = useMemo(() => {
     return (challengesSource || []).map((item) => ({
       id: String(item.challengeId),
       title: item.title,
@@ -73,46 +66,12 @@ const ParticipatingChallengeScreen = () => {
     }));
   }, [challengesSource]);
 
-  const renderParticipatingChallengeItem = ({ item }: ListRenderItemInfo<ParticipatingChallengeItem>) => {
+  const renderParticipatingChallengeItem = ({ item }: ListRenderItemInfo<ChallengeCardItem>) => {
     return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.card}
+      <ChallengeCard
+        item={item}
         onPress={() => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
-      >
-        <ImageBackground
-          source={{ uri: item.imageUrl }}
-          style={styles.cardImage}
-          imageStyle={styles.cardImageStyle}
-        >
-          <View style={styles.overlay} />
-
-          <View style={styles.cardTextArea}>
-            <Text
-              variant="smReg"
-              color={colors.white}
-              style={styles.cardTitle}
-              numberOfLines={1}
-            >
-              {item.title}
-            </Text>
-            <Text
-              variant="xsReg"
-              color={colors.white}
-              style={styles.cardSubtitle}
-              numberOfLines={1}
-            >
-              {item.subtitle}
-            </Text>
-          </View>
-
-          <View style={styles.pill}>
-            <Text variant="xsReg" color={colors.white} style={styles.pillText} numberOfLines={1}>
-              {item.roundText}
-            </Text>
-          </View>
-        </ImageBackground>
-      </TouchableOpacity>
+      />
     );
   };
 
@@ -167,14 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.xs,
   },
-  card: {
-    width: CARD_WIDTH,
-    height: 148,
-    borderRadius: 16,
-    overflow: 'hidden',
-    opacity: 1,
-    top: 0.5,
-  },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -193,46 +144,5 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.text.secondary,
   },
-  cardImage: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  cardImageStyle: {
-    borderRadius: 16,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-  cardTextArea: {
-    paddingHorizontal: spacing.sm,
-    paddingTop: 24,
-    left: 8,
-  },
-  cardTitle: {
-    fontSize: 15,
-    lineHeight: 18,
-  },
-  cardSubtitle: {
-    marginTop: 4,
-    fontSize: 12,
-    lineHeight: 16,
-    opacity: 0.9,
-  },
-  pill: {
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-    width: 148,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillText: {
-    ...typography.xsReg,
-    textAlign: 'center',
-  },
 });
-
 export default ParticipatingChallengeScreen;

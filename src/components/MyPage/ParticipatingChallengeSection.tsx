@@ -4,7 +4,6 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  ImageBackground,
   FlatList,
   ListRenderItemInfo,
 } from 'react-native';
@@ -12,14 +11,9 @@ import { colors, radius, spacing, typography } from '../../design/tokens';
 import { Text } from '../common/Text';
 import ComponentHeader from '../common/ComponentHeader';
 import PlusIcon from '../../../assets/icons/plus.svg';
+import { ChallengeCard, ChallengeCardItem } from '../challenge/ChallengeCard';
 
-export type ParticipatingChallengeItem = {
-  id: string;
-  title: string;
-  subtitle: string;
-  imageUrl: string;
-  roundText: string; // 예: "6R째 진행 중"
-};
+export type ParticipatingChallengeItem = ChallengeCardItem;
 
 type Props = {
   title?: string; // 기본: "참가중인 챌린지"
@@ -37,36 +31,7 @@ const ParticipatingChallengeSection = ({
   onPressEmpty,
 }: Props) => {
   const renderItem = ({ item }: ListRenderItemInfo<ParticipatingChallengeItem>) => {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.card}
-        onPress={() => onPressItem?.(item)}
-      >
-        <ImageBackground
-          source={{ uri: item.imageUrl }}
-          style={styles.cardImage}
-          imageStyle={styles.cardImageStyle}
-        >
-          <View style={styles.overlay} />
-
-          <View style={styles.cardTextArea}>
-            <Text variant="smMd" color={colors.white} style={styles.cardTitle}>
-              {item.title}
-            </Text>
-            <Text variant="xsReg" color={colors.white} style={styles.cardSubtitle} numberOfLines={1}>
-              {item.subtitle}
-            </Text>
-          </View>
-
-          <View style={styles.pill}>
-            <Text variant="xsReg" color={colors.white} style={styles.pillText}>
-              {item.roundText}
-            </Text>
-          </View>
-        </ImageBackground>
-      </TouchableOpacity>
-    );
+    return <ChallengeCard item={item} onPress={onPressItem} />;
   };
 
   const renderEmptyState = () => (
@@ -103,7 +68,6 @@ const ParticipatingChallengeSection = ({
 
 export default ParticipatingChallengeSection;
 
-const CARD_W = 171;
 const CARD_H = 148;
 
 const styles = StyleSheet.create({
@@ -114,13 +78,6 @@ const styles = StyleSheet.create({
 
   listContent: {
     // paddingHorizontal is now handled by the main container
-  },
-
-  card: {
-    width: CARD_W,
-    height: CARD_H,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
   },
 
   emptyCard: {
@@ -139,47 +96,6 @@ const styles = StyleSheet.create({
 
   emptyText: {
     color: colors.text.secondary,
-  },
-
-  cardImage: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-
-  cardImageStyle: {
-    borderRadius: radius.lg,
-  },
-
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-  },
-
-  cardTextArea: {
-    paddingTop: spacing.sm,
-    paddingHorizontal: spacing.sm,
-  },
-
-  cardTitle: {
-    ...typography.smMd,
-  },
-
-  cardSubtitle: {
-    marginTop: 4,
-    opacity: 0.9,
-  },
-
-  pill: {
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-    paddingHorizontal: 18,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,0,0,0.55)',
-  },
-
-  pillText: {
-    ...typography.xsReg,
   },
 });
 
