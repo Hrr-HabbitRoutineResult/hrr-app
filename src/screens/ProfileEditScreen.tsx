@@ -11,6 +11,7 @@ import {
   Animated,
   Easing,
   Platform,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -18,10 +19,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import * as ImagePicker from 'react-native-image-picker';
 import RNFetchBlob from 'react-native-blob-util';
 import { RootStackParamList } from '../navigation/types';
-import { UserMe, getUserMe, updateUserProfile } from '../libs/api/user';
+import { UserMe, getUserMe, UpdateUserProfileRequest } from '../libs/api/user';
 import { getPresignedUrl } from '../libs/api/challenge';
-import { extractS3Key, getS3ImageUrl } from '../libs/s3';
-import { colors as Color } from '../design/tokens';
+import { getS3ImageUrl } from '../libs/s3';
+import { colors as Color, spacing } from '../design/tokens';
 import ProfileImageWithEdit from '../components/common/ProfileImageWithEdit';
 import { Text } from '../components/common/Text';
 import { useUserStore } from '../store/userSlice';
@@ -41,6 +42,7 @@ const ProfileEditScreen: React.FC = () => {
   const [originalUser, setOriginalUser] = useState<UserMe | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
+  const [isPublic, setIsPublic] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isNicknameValid, setIsNicknameValid] = useState<boolean>(true);
   const [nicknameError, setNicknameError] = useState<string>('');
@@ -87,6 +89,7 @@ const ProfileEditScreen: React.FC = () => {
           setOriginalUser(user);
           setNickname(user.nickname);
           setProfileImage(user.profileImage || undefined);
+          setIsPublic(user.isPublic);
         } catch (error) {
           console.error('프로필 데이터 불러오기 실패:', error);
           Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
@@ -118,9 +121,10 @@ const ProfileEditScreen: React.FC = () => {
     const isNicknameChanged = nickname !== originalUser.nickname;
     const isProfileImageChanged =
       String(profileImage || '') !== String(originalUser.profileImage || '');
+    const isPublicChanged = isPublic !== originalUser.isPublic;
 
-    return isNicknameChanged || isProfileImageChanged;
-  }, [nickname, profileImage, originalUser]);
+    return isNicknameChanged || isProfileImageChanged || isPublicChanged;
+  }, [nickname, profileImage, isPublic, originalUser]);
 
   const handleCancel = () => navigation.goBack();
 
@@ -138,16 +142,22 @@ const ProfileEditScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const updatePayload: {
-        nickname?: string;
-        profileImageKey?: string;
-      } = {};
+      const isNicknameChanged = nickname !== originalUser?.nickname;
+      const isProfileImageChanged =
+        String(profileImage || '') !== String(originalUser?.profileImage || '');
 
-      if (nickname !== originalUser?.nickname) {
+      const updatePayload: UpdateUserProfileRequest = {
+        isPublic: isPublic,
+      };
+
+      if (isNicknameChanged) {
         updatePayload.nickname = nickname;
+        updatePayload.isNicknameChanged = true;
       }
-      if (String(profileImage || '') !== String(originalUser?.profileImage || '')) {
+
+      if (isProfileImageChanged) {
         updatePayload.profileImageKey = profileImage;
+        updatePayload.isProfileImageChanged = true;
       }
 
       await updateUserInfo(updatePayload);
@@ -308,6 +318,17 @@ const ProfileEditScreen: React.FC = () => {
         ) : null}
       </View>
 
+      <View style={styles.publicToggleSection}>
+        <Text style={styles.publicToggleLabel}>프로필 공개</Text>
+        <Switch
+          trackColor={{ false: Color.button, true: Color.primary.main }}
+          thumbColor={Color.white}
+          ios_backgroundColor={Color.button}
+          onValueChange={setIsPublic}
+          value={isPublic}
+        />
+      </View>
+
       <Modal
         transparent
         visible={sheetVisible}
@@ -410,6 +431,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Color.primary.main,
     marginTop: 4,
+  },
+  publicToggleSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginTop: spacing.sm,
+  },
+  publicToggleLabel: {
+    fontSize: 16,
+    color: Color.text.primary,
   },
 
   // ✅ 시트 스타일
