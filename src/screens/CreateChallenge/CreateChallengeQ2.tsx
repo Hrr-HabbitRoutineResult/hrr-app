@@ -90,6 +90,7 @@ export const CreateChallengeQ2 = () => {
 
   // 모든 필드가 채워졌는지 확인
   const isNextEnabled =
+    thumbnailImage !== null &&
     challengeName.trim() !== '' &&
     oneLiner.trim() !== '' &&
     verificationMethod !== '' &&
@@ -715,7 +716,7 @@ const styles = StyleSheet.create({
   selectionRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
+    gap: scale(12),
   },
   chevronContainer: {
     transform: [{ rotate: '0deg' }],
