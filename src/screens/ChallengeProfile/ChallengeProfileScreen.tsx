@@ -323,12 +323,15 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleShare = async () => {
     try {
-      const shareMessage =
-        `🔥 ${data.title} 챌린지에 참여해요!
-       
-        현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
-        혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪`;
+      const deepLink = `hrr://challenge/${challengeId}`;
+      const shareMessage = 
+`🔥 ${data.title} 챌린지에 참여해요!
 
+현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
+혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪
+
+${deepLink}`;
+      
       await Share.share({
         message: shareMessage,
         title: `${data.title} 챌린지에 참여해요!`,

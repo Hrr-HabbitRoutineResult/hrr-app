@@ -46,6 +46,27 @@ import CustomTabBar from '../components/common/CustomTabBar';
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
+// Deep Link 설정
+// TODO: 도메인 배포 후 prefixes에 도메인 추가
+const linking = {
+  prefixes: ['hrr://'],
+  config: {
+    screens: {
+      HomeTabs: 'home',
+      ChallengeProfile: 'challenge/:challengeId',
+      User: 'user/:userId',
+      ChallengeCertificationDetail: 'verification/:verificationId',
+      Notifications: 'notifications',
+      ChallengeList: 'challenges',
+      PopularChallenge: 'popular',
+      ParticipatingChallenge: 'participating',
+      CertificationHistory: 'history',
+      LikedChallenge: 'liked',
+      CompletedChallenge: 'completed',
+    },
+  },
+};
+
 const OnboardingScreenWrapper = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
@@ -85,6 +106,7 @@ const HomeTabs = () => (
 const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: boolean }) => (
   <CreateChallengeProvider>
     <NavigationContainer
+      linking={linking}
       onReady={() => {
         // 네비가 준비되면 스플래시를 숨김
         RNBootSplash.hide({ fade: true });

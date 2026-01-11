@@ -77,6 +77,16 @@
 				<string>com.umc.hrrapp</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>hrr</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hrr</string>
+			</array>
+		</dict>
 	</array>
 	<key>KAKAO_APP_KEY</key>
 	<string>b06209dc6556d7eb3e91a03887487d56</string>
