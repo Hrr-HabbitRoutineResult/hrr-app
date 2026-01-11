@@ -85,6 +85,14 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     currentStepRef.current = currentOnboardingStep;
   }, [currentOnboardingStep]);
 
+  // step이 onboarding으로 변경될 때 온보딩 상태 초기화하기
+  useEffect(() => {
+    if (step === 'onboarding') {
+      setCurrentOnboardingStep(1);
+      slideAnim.setValue(0);
+    }
+  }, [step, slideAnim]);
+
   // 소셜 로그인 공통 처리 (카카오/네이버/애플)
   const processLogin = useCallback(async (response: SocialLoginResponse) => {
     if (response.isSuccess) {
