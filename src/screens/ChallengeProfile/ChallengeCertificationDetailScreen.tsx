@@ -616,7 +616,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 사용자 정보 */}
         <View style={styles.userSection}>
           <View style={styles.userAvatar}>
-            <DefaultProfileIcon width={40} height={40} />
+            {verification.user.profileImageUrl ? (
+              <Image
+                source={{ uri: verification.user.profileImageUrl.replace('http://', 'https://') }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <DefaultProfileIcon width={40} height={40} />
+            )}
           </View>
           <View style={styles.userInfo}>
             <View style={styles.userNameRow}>
@@ -1156,7 +1163,6 @@ const styles = StyleSheet.create({
   userAvatar: {
     width: scale(40),
     height: verticalScale(40),
-    borderRadius: scale(20),
     marginRight: scale(12),
     overflow: 'hidden',
   },

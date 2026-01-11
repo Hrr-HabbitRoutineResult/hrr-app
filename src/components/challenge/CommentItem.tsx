@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, Alert, Image } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
@@ -81,13 +81,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // 대댓글인 경우 왼쪽 여백 추가
   const isReply = comment.depth > 0;
 
-  // 마스킹된 댓글 여부 및 타입 확인
+  // 마스킹된 댓글 여부 (userId가 null이면 차단/삭제/탈퇴 중 하나)
   const isMasked = comment.userId === null;
-  const isDeleted = comment.userName === "삭제";
-  const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
-  const isInactive = comment.content === "탈퇴한 사용자의 댓글입니다.";
 
-  // 프로필 이미지 표시 여부 (모든 마스킹 케이스에서 숨김)
+  // 차단된 사용자 여부 (userName 표시 안 해도 됨)
+  const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
+
+  // 프로필 이미지 표시 여부
   const showProfile = !isMasked;
 
   const handleDelete = () => {
@@ -133,7 +133,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {/* 프로필 이미지 - 삭제/탈퇴는 숨김 */}
       {showProfile && (
         <View style={styles.profileContainer}>
-          <DefaultProfileIcon width={32} height={32} />
+          {comment.userProfileUrl ? (
+            <Image
+              source={{ uri: comment.userProfileUrl.replace('http://', 'https://') }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <DefaultProfileIcon width={32} height={32} />
+          )}
         </View>
       )}
 
@@ -304,6 +311,11 @@ const styles = StyleSheet.create({
     marginRight: scale(8),
     overflow: 'hidden',
   },
+  profileImage: {
+    width: scale(32),
+    height: verticalScale(32),
+    borderRadius: scale(16),
+  },
   contentContainer: {
     flex: 1,
   },
@@ -336,6 +348,7 @@ const styles = StyleSheet.create({
   },
   commentText: {
     marginBottom: verticalScale(12),
+    lineHeight: verticalScale(18),
   },
   actionsRow: {
     flexDirection: 'row',
