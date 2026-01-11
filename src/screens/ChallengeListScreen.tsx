@@ -214,7 +214,9 @@ const ChallengeListScreen = ({ route }: Props) => {
           ) : (
             <CheckboxFilterUnchecked width={24} height={24} />
           )}
-          <Text style={styles.checkboxLabel}>곧 시작하는 챌린지만</Text>
+          <Text style={styles.checkboxLabel}>
+            곧{'\u00A0'}시작하는{'\u00A0'}챌린지만
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.filterButtonsContainer}>
