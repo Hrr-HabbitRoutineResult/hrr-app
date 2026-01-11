@@ -69,14 +69,19 @@ const ProfileEditScreen: React.FC = () => {
     }).start();
   };
 
-  const closeSheet = () => {
+  const closeSheet = (callback?: () => void) => {
     Animated.timing(sheetAnim, {
       toValue: 0,
       duration: SHEET_ANIM_MS,
       easing: Easing.in(Easing.cubic),
       useNativeDriver: true,
     }).start(({ finished }) => {
-      if (finished) setSheetVisible(false);
+      if (finished) {
+        setSheetVisible(false);
+        if (callback) {
+          setTimeout(callback, 50);
+        }
+      }
     });
   };
 
@@ -179,71 +184,72 @@ const ProfileEditScreen: React.FC = () => {
     openSheet();
   };
 
-  const pickImage = async (type: 'gallery' | 'camera') => {
-    closeSheet();
+  const pickImage = (type: 'gallery' | 'camera') => {
+    closeSheet(async () => {
+      const options: ImagePicker.ImagePickerOptions = {
+        mediaType: 'photo',
+        quality: 0.7,
+        maxWidth: 1000,
+        maxHeight: 1000,
+        includeBase64: false,
+        selectionLimit: 1,
+      };
 
-    const options: ImagePicker.ImagePickerOptions = {
-      mediaType: 'photo',
-      quality: 0.7,
-      maxWidth: 1000,
-      maxHeight: 1000,
-      includeBase64: false,
-    };
+      const result =
+        type === 'gallery'
+          ? await ImagePicker.launchImageLibrary(options)
+          : await ImagePicker.launchCamera(options);
 
-    const result =
-      type === 'gallery'
-        ? await ImagePicker.launchImageLibrary(options)
-        : await ImagePicker.launchCamera(options);
+      if (result.didCancel) return;
 
-    if (result.didCancel) return;
-
-    if (result.errorCode) {
-      console.error('ImagePicker Error: ', result.errorMessage);
-      Alert.alert('오류', '이미지 선택에 실패했습니다.');
-      return;
-    }
-
-    if (!result.assets?.length) return;
-
-    const selectedAsset = result.assets[0];
-    if (!selectedAsset.uri) return;
-
-    setIsLoading(true);
-    try {
-      const userId = originalUser?.userId || 'unknown';
-      
-      let originalFileName = selectedAsset.fileName || '';
-      const queryIndex = originalFileName.indexOf('?');
-      if (queryIndex !== -1) {
-        originalFileName = originalFileName.substring(0, queryIndex);
+      if (result.errorCode) {
+        console.error('ImagePicker Error: ', result.errorMessage);
+        Alert.alert('오류', '이미지 선택에 실패했습니다.');
+        return;
       }
-      const fileExtension = originalFileName.split('.').pop() || 'jpeg';
 
-      const fileName = `profile-${userId}-${Date.now()}.${fileExtension}`;
+      if (!result.assets?.length) return;
 
-      const { presignedUrl, s3Key: returnedS3Key } = await getPresignedUrl(fileName);
-      const contentType = selectedAsset.type || 'image/jpeg';
+      const selectedAsset = result.assets[0];
+      if (!selectedAsset.uri) return;
 
-      await RNFetchBlob.fetch(
-        'PUT',
-        presignedUrl,
-        {
-          'Content-Type': contentType,
-          'x-amz-acl': 'public-read',
-        },
-        RNFetchBlob.wrap(selectedAsset.uri.replace('file://', ''))
-      );
+      setIsLoading(true);
+      try {
+        const userId = originalUser?.userId || 'unknown';
 
-      if (!returnedS3Key) throw new Error('S3 이미지 키를 API 응답에서 받지 못했습니다.');
+        let originalFileName = selectedAsset.fileName || '';
+        const queryIndex = originalFileName.indexOf('?');
+        if (queryIndex !== -1) {
+          originalFileName = originalFileName.substring(0, queryIndex);
+        }
+        const fileExtension = originalFileName.split('.').pop() || 'jpeg';
 
-      setProfileImage(returnedS3Key);
-      setToast({ visible: true, message: '업로드 완료. 완료를 눌러 저장하세요.', iconType: 'success' });
-    } catch (error: any) {
-      console.error('이미지 업로드 실패:', error);
-      Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error?.message || ''}`);
-    } finally {
-      setIsLoading(false);
-    }
+        const fileName = `profile-${userId}-${Date.now()}.${fileExtension}`;
+
+        const { presignedUrl, s3Key: returnedS3Key } = await getPresignedUrl(fileName);
+        const contentType = selectedAsset.type || 'image/jpeg';
+
+        await RNFetchBlob.fetch(
+          'PUT',
+          presignedUrl,
+          {
+            'Content-Type': contentType,
+            'x-amz-acl': 'public-read',
+          },
+          RNFetchBlob.wrap(selectedAsset.uri.replace('file://', ''))
+        );
+
+        if (!returnedS3Key) throw new Error('S3 이미지 키를 API 응답에서 받지 못했습니다.');
+
+        setProfileImage(returnedS3Key);
+        setToast({ visible: true, message: '업로드 완료. 완료를 눌러 저장하세요.', iconType: 'success' });
+      } catch (error: any) {
+        console.error('이미지 업로드 실패:', error);
+        Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error?.message || ''}`);
+      } finally {
+        setIsLoading(false);
+      }
+    });
   };
 
   const handleDeletePhoto = () => {
