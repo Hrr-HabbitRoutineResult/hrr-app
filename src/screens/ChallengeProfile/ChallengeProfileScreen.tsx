@@ -187,6 +187,37 @@ export const ChallengeProfileScreen: React.FC = () => {
     }
   };
 
+  // 전체 데이터 새로고침 함수
+  const refreshAllData = async () => {
+    try {
+      // 챌린지 기본 정보 조회
+      const detailResult = await getChallengeDetail(challengeId);
+      setData(detailResult);
+      setIsLiked(detailResult.isLiked);
+      setIsParticipated(detailResult.isParticipant);
+
+      // 챌린지 프로필 정보 조회
+      try {
+        const profileResult = await getChallengeProfile(challengeId);
+        processProfileData(profileResult);
+      } catch (profileError: any) {
+        setProfile(null);
+      }
+
+      // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
+      if (detailResult.isObserverMode || detailResult.isParticipant) {
+        await fetchRoundsAndStats();
+
+        // 선택된 라운드가 있으면 피드도 새로고침
+        if (selectedRound !== null) {
+          await fetchVerificationFeed(selectedRound);
+        }
+      }
+    } catch (error: any) {
+      console.error('데이터 새로고침 실패:', error);
+    }
+  };
+
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
@@ -515,13 +546,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         setPasswordError(undefined);
         setIsParticipated(true);
 
-        // 참가 후 프로필 정보 다시 불러오기
-        try {
-          const profileResult = await getChallengeProfile(challengeId);
-          processProfileData(profileResult);
-        } catch (profileError) {
-          // 프로필 조회 실패 시 무시
-        }
+        // 참가 후 전체 데이터 새로고침 (버튼 상태 업데이트를 위함)
+        await refreshAllData();
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
       } else {
@@ -530,13 +556,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         setShowParticipateModal(false);
         setIsParticipated(true);
 
-        // 참가 후 프로필 정보 다시 불러오기
-        try {
-          const profileResult = await getChallengeProfile(challengeId);
-          processProfileData(profileResult);
-        } catch (profileError) {
-          console.warn('프로필 정보 조회 실패:', profileError);
-        }
+        // 참가 후 전체 데이터 새로고침 (버튼 상태 업데이트를 위함)
+        await refreshAllData();
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
       }
