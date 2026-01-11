@@ -428,11 +428,15 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    // startDate와 현재 날짜 비교
+    // 날짜만 비교 (타임존 이슈 방지)
     const now = new Date();
-    const startDate = new Date(data.startDate);
+    const [year, month, day] = data.startDate.split('-').map(Number);
+    const startDate = new Date(year, month - 1, day); // 로컬 타임존으로 파싱
 
-    // 시작일이 현재보다 이전이거나 같으면 시작된 것
+    // 시간 부분 제거하고 날짜만 비교
+    now.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0);
+
     return startDate <= now;
   };
 
