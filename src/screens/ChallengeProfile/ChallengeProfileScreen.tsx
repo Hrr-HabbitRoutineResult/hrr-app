@@ -764,6 +764,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                 style={styles.sectionTitleRow}
                 activeOpacity={0.7}
                 onPress={() => {
+                  if (!isParticipated) {
+                    Alert.alert('알림', '챌린지에 참여하면 인증 현황을 확인할 수 있어요.');
+                    return;
+                  }
                   navigation.navigate('ChallengeCertification', { challengeId });
                 }}
               >
@@ -806,6 +810,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           }))}
                         containerPadding={scale(24)}
                         onItemPress={(item) => {
+                          if (!isParticipated) {
+                            Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                            return;
+                          }
                           navigation.navigate('ChallengeCertificationDetail', {
                             verificationId: item.id,
                           });
@@ -826,6 +834,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           isResolved: item.isResolved,
                         }))}
                       onItemPress={(item) => {
+                        if (!isParticipated) {
+                          Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                          return;
+                        }
                         navigation.navigate('ChallengeCertificationDetail', {
                           verificationId: item.id,
                         });
