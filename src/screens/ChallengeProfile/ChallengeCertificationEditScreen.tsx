@@ -26,6 +26,11 @@ export const ChallengeCertificationEditScreen: React.FC = () => {
   const [imageError, setImageError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 원본 값과 비교하여 변경 여부 확인
+  const originalTitle = verification.title || '';
+  const originalContent = verification.content || '';
+  const hasChanges = title.trim() !== originalTitle.trim() || content.trim() !== originalContent.trim();
+
   const handleBack = () => {
     navigation.goBack();
   };
@@ -87,12 +92,12 @@ export const ChallengeCertificationEditScreen: React.FC = () => {
           <TouchableOpacity
             onPress={handleComplete}
             activeOpacity={0.7}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasChanges}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color={colors.icon.gray} />
             ) : (
-              <Text variant="smMd" color={colors.icon.gray}>
+              <Text variant="smMd" color={hasChanges ? colors.text.primary : colors.icon.gray}>
                 완료
               </Text>
             )}
