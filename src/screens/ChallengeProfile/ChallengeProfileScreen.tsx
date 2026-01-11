@@ -11,6 +11,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Alert,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -320,8 +321,24 @@ export const ChallengeProfileScreen: React.FC = () => {
     rules: profile?.rule || '',
   };
 
-  const handleShare = () => {
-    // TODO: 공유 기능 구현
+  const handleShare = async () => {
+    try {
+      const shareMessage =
+        `🔥 ${data.title} 챌린지에 참여해요!
+       
+        현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
+        혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪`;
+
+      await Share.share({
+        message: shareMessage,
+        title: `${data.title} 챌린지에 참여해요!`,
+      });
+    } catch (error: any) {
+      // 사용자가 공유를 취소한 경우는 에러로 처리하지 않음
+      if (error.message !== 'User did not share') {
+        Alert.alert('오류', '공유하기에 실패했습니다.');
+      }
+    }
   };
 
   const handleLike = async () => {
