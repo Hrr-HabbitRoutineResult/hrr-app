@@ -11,9 +11,7 @@ const KST_OFFSET_MINUTES = 9 * 60;
  * 디바이스 시각을 KST로 보정하여 UTC 기반 Date 객체로 반환
  */
 export function getKstDateAsUtcBase(now: Date = new Date()): Date {
-  // 로컬 시각을 UTC로 변환 후 KST 오프셋(+9h) 적용
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
-  const kstMs = utcMs + KST_OFFSET_MINUTES * 60_000;
+  const kstMs = now.getTime() + KST_OFFSET_MINUTES * 60_000;
   return new Date(kstMs);
 }
 
