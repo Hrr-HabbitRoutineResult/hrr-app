@@ -667,8 +667,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         {/* 구분선 */}
         <View style={styles.sectionDivider} />
 
-        {/* 프로필/인증현황 탭 (관찰자 모드가 지원되거나 참가 후 표시) */}
-        {(data.isObserverMode || isParticipated) && (
+        {/* 프로필/인증현황 탭 (챌린지 시작 이후 + (관찰자 모드가 지원되거나 참가한 경우) 표시) */}
+        {isChallengeStarted() && (data.isObserverMode || isParticipated) && (
           <TabBar
             tabs={[
               { key: 'profile', label: '프로필' },
@@ -682,7 +682,7 @@ export const ChallengeProfileScreen: React.FC = () => {
         )}
 
         {/* 프로필/인증현황 탭 내용 */}
-        {(data.isObserverMode || isParticipated) && activeTab === 'certification' ? (
+        {isChallengeStarted() && (data.isObserverMode || isParticipated) && activeTab === 'certification' ? (
           // 인증현황 탭
           <View style={styles.certificationSection}>
             {/* 라운드 캐러셀 */}
@@ -764,6 +764,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                 style={styles.sectionTitleRow}
                 activeOpacity={0.7}
                 onPress={() => {
+                  if (!isParticipated) {
+                    Alert.alert('알림', '챌린지에 참여하면 인증 현황을 확인할 수 있어요.');
+                    return;
+                  }
                   navigation.navigate('ChallengeCertification', { challengeId });
                 }}
               >
@@ -806,6 +810,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           }))}
                         containerPadding={scale(24)}
                         onItemPress={(item) => {
+                          if (!isParticipated) {
+                            Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                            return;
+                          }
                           navigation.navigate('ChallengeCertificationDetail', {
                             verificationId: item.id,
                           });
@@ -826,6 +834,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           isResolved: item.isResolved,
                         }))}
                       onItemPress={(item) => {
+                        if (!isParticipated) {
+                          Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                          return;
+                        }
                         navigation.navigate('ChallengeCertificationDetail', {
                           verificationId: item.id,
                         });
@@ -1538,13 +1550,13 @@ const styles = StyleSheet.create({
   modalButtonsWithPassword: {
     marginTop: -16, // 비밀번호 모드일 때 타이틀과 텍스트 필드 사이 간격
   },
-    modalButton: {
-      paddingHorizontal: scale(16),
-      paddingVertical: verticalScale(12),
-      minWidth: scale(60),
-      height: verticalScale(48),
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
+  modalButton: {
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(12),
+    minWidth: scale(60),
+    height: verticalScale(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 

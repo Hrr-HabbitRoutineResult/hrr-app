@@ -92,31 +92,46 @@ const ChallengeListScreen = ({ route }: Props) => {
 
       try {
         const apiCategory = mapCategoryToApi(activeTab);
-        const params: any = {
-          page: 1,
-          size: 20,
-        };
+        const baseParams: any = {};
 
         // category가 "ALL"이 아닐 때만 파라미터에 추가
         if (apiCategory !== 'ALL') {
-          params.category = apiCategory;
+          baseParams.category = apiCategory;
         }
 
         // 적용된 필터만 API에 전달
         if (appliedOnlyUpcoming) {
-          params.isUpcoming = true;
+          baseParams.isUpcoming = true;
         }
         if (appliedSelectedDays.length > 0) {
           // day는 배열로 전달
-          params.day = appliedSelectedDays;
+          baseParams.day = appliedSelectedDays;
         }
         if (appliedSelectedSort && appliedSelectedSort !== 'POPULAR') {
           // sortType: LATEST, OLDEST, POPULAR (기본값은 POPULAR이므로 POPULAR일 때는 보내지 않음)
-          params.sortType = appliedSelectedSort;
+          baseParams.sortType = appliedSelectedSort;
         }
 
-        const result = await getChallenges(params);
-        setChallenges(result.content);
+        // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+        let allChallenges: ChallengeInfo[] = [];
+        let currentPage = 1;
+        let hasNext = true;
+
+        while (hasNext) {
+          const params = {
+            ...baseParams,
+            page: currentPage,
+            size: 20,
+          };
+
+          const result = await getChallenges(params);
+          allChallenges = [...allChallenges, ...result.content];
+
+          hasNext = result.hasNext;
+          currentPage++;
+        }
+
+        setChallenges(allChallenges);
       } catch (err: any) {
         const errorMessage = err?.response?.data?.message || err?.message || '챌린지 목록을 불러오는데 실패했습니다.';
         setError(errorMessage);
@@ -199,7 +214,9 @@ const ChallengeListScreen = ({ route }: Props) => {
           ) : (
             <CheckboxFilterUnchecked width={24} height={24} />
           )}
-          <Text style={styles.checkboxLabel}>곧 시작하는 챌린지만</Text>
+          <Text style={styles.checkboxLabel}>
+            곧{'\u00A0'}시작하는{'\u00A0'}챌린지만
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.filterButtonsContainer}>

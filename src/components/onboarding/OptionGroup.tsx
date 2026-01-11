@@ -102,7 +102,10 @@ const GAP = scale(10); // 버튼 사이 간격
 const COLUMN_COUNT = 3; // 한 줄에 보여줄 버튼 개수
 
 // 전체 너비에서 패딩과 간격을 제외한 공간을 버튼 개수만큼 나누어 동적 너비 산출
-const BUTTON_WIDTH = (SCREEN_WIDTH - (H_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT;
+// Math.floor로 소수점 내림 + 안전 마진(0.5)으로 flexbox 줄바꿈 방지
+const BUTTON_WIDTH = Math.floor(
+  (SCREEN_WIDTH - (H_PADDING * 2) - (GAP * (COLUMN_COUNT - 1))) / COLUMN_COUNT - 0.5
+);
 
 const styles = StyleSheet.create({
   group: {

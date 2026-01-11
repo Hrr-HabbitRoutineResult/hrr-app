@@ -215,7 +215,7 @@ const RandomMissionScreen = () => {
   // 이미지가 선택된 경우 인증 화면 표시
   if (selectedImage) {
     return (
-      <SafeAreaView style={styles.certificationContainer}>
+      <SafeAreaView style={styles.certificationContainer} edges={['top', 'left', 'right']}>
         <View style={styles.certificationContent}>
           {/* 이미지 썸네일 */}
           <View style={styles.thumbnailContainer}>
@@ -266,14 +266,14 @@ const RandomMissionScreen = () => {
 
   // 기본 미션 화면
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header onBack={handleBack} title="랜덤미션" showDivider />
 
       <View style={styles.content}>
         <Text variant="header1" color={colors.text.primary} style={styles.mainTitle}>
           {randomMissionCompleted || missionData?.isCompleted
             ? '미션을 완료했어요!\n내일 새로운 미션으로 만나요'
-            : '미션에 참여하고\n플로우 스코어를 받아요!'}
+            : '미션에 참여하고\n오늘의 루틴을 완성해요!'}
         </Text>
 
         {/* 이미지 + 오버레이 + 텍스트 컨테이너 */}
@@ -321,11 +321,11 @@ const RandomMissionScreen = () => {
         </View>
 
         {/* 완료 상태 안내 텍스트 */}
-        {(randomMissionCompleted || missionData?.isCompleted) && (
+        {/* {(randomMissionCompleted || missionData?.isCompleted) && (
           <Text variant="xsReg" color={colors.text.secondary} style={styles.completeMessage}>
             인증 내용을 확인 후 플로우 스코어 1점을 드릴게요
           </Text>
-        )}
+        )} */}
       </View>
 
       {/* 하단 버튼 */}
@@ -414,7 +414,6 @@ const styles = StyleSheet.create({
     lineHeight: verticalScale(22),
   },
   buttonContainer: {
-    width: '100%',
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
     alignItems: 'center',
@@ -469,7 +468,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: scale(350),
     gap: verticalScale(10),
-    paddingTop: verticalScale(20),
+    paddingBottom: verticalScale(32),
   },
   retakeButton: {
     marginBottom: 0,

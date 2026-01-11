@@ -133,7 +133,7 @@ export const CreateChallengeQ1 = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         onBack={() => navigation.goBack()}

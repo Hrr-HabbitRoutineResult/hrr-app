@@ -201,7 +201,7 @@ export const CreateChallengeQ3 = () => {
   const canGoPrev = currentDate.getTime() > new Date(today.getFullYear(), today.getMonth(), 1).getTime();
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header
         onBack={() => navigation.goBack()}
         title="챌린지 개설"
@@ -361,5 +361,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
+    alignItems: 'center',
   },
 });

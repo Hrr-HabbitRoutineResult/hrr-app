@@ -114,22 +114,67 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       setVerification(result);
 
-      // 댓글 조회
-      const commentsResult = await getComments(verificationId, {
-        page: commentPage,
-        size: 10,
-      });
+      // 댓글 조회 (모든 페이지)
+      let allComments: CommentItemType[] = [];
+      let allAdoptedChildren: CommentItemType[] = [];
+      let adoptedParent: CommentItemType | null = null;
+      let currentPage = 1;
+      let isLastPage = false;
+      let commentsResult: GetCommentsResponse['result'];
+
+      // 모든 페이지 순회
+      do {
+        const pageResult = await getComments(verificationId, {
+          page: currentPage,
+          size: 10,
+        });
+
+        // 첫 페이지 결과 저장 (메타데이터용)
+        if (currentPage === 1) {
+          commentsResult = pageResult;
+        }
+
+        // adoptedParent는 null이 아닌 첫 번째 것을 사용
+        if (pageResult.adoptedParent && !adoptedParent) {
+          adoptedParent = pageResult.adoptedParent;
+        }
+
+        // adoptedChildren 수집 (중복 제거)
+        if (pageResult.adoptedChildren && pageResult.adoptedChildren.length > 0) {
+          pageResult.adoptedChildren.forEach(child => {
+            if (!allAdoptedChildren.find(c => c.commentId === child.commentId)) {
+              allAdoptedChildren.push(child);
+            }
+          });
+        }
+
+        // 일반 댓글 수집
+        allComments = [...allComments, ...pageResult.comments];
+
+        isLastPage = pageResult.last;
+        currentPage++;
+      } while (!isLastPage);
+
+      // 최종 결과 설정
+      commentsResult = {
+        ...commentsResult!,
+        adoptedParent,
+        adoptedChildren: allAdoptedChildren,
+        comments: allComments,
+        last: true,
+      };
+
       setComments(commentsResult);
 
       // 채택된 댓글이 있는 부모 댓글을 찾아서 기본적으로 펼쳐진 상태로 설정
-      const allComments = [
+      const allCommentsForExpanded = [
         ...(commentsResult.adoptedParent ? [commentsResult.adoptedParent] : []),
         ...commentsResult.adoptedChildren,
         ...commentsResult.comments,
       ];
 
-      const parentComments = allComments.filter(c => c.depth === 0);
-      const childComments = allComments.filter(c => c.depth > 0);
+      const parentComments = allCommentsForExpanded.filter(c => c.depth === 0);
+      const childComments = allCommentsForExpanded.filter(c => c.depth > 0);
 
       parentComments.forEach(parent => {
         const children = childComments.filter(child => child.parentId === parent.commentId);
@@ -571,7 +616,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 사용자 정보 */}
         <View style={styles.userSection}>
           <View style={styles.userAvatar}>
-            <DefaultProfileIcon width={40} height={40} />
+            {verification.user.profileImageUrl ? (
+              <Image
+                source={{ uri: verification.user.profileImageUrl.replace('http://', 'https://') }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <DefaultProfileIcon width={40} height={40} />
+            )}
           </View>
           <View style={styles.userInfo}>
             <View style={styles.userNameRow}>
@@ -614,7 +666,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 이미지 */}
         {(() => {
-          const images = verification.textImages || [];
+          // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
+          const images = verification.type === 'TEXT'
+            ? (verification.textImages || [])
+            : (verification.photoUrl ? [verification.photoUrl] : []);
 
           if (images.length === 0) return null;
 
@@ -664,39 +719,44 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         )}
 
         {/* 좋아요, 댓글, 스크랩 */}
-        <View style={styles.engagementSection}>
-          <TouchableOpacity
-            style={styles.engagementItem}
-            activeOpacity={0.7}
-            onPress={() => setIsLiked(!isLiked)}
-          >
-            <View style={styles.iconContainer}>
+        <View style={[
+          styles.engagementSection,
+          !(comments && (comments.adoptedParent || comments.comments.length > 0)) && styles.engagementSectionNoComments
+        ]}>
+          {/* 런칭 시 좋아요 기능 제외 */}
+          {/* <View style={styles.engagementItem}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              activeOpacity={0.7}
+              onPress={() => setIsLiked(!isLiked)}
+            >
               {isLiked ? (
                 <LikeSelectedIcon width={20} height={18} />
               ) : (
                 <LikeUnselectedIcon width={20} height={18} />
               )}
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               0
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.engagementItem} activeOpacity={0.7}>
-            <View style={styles.iconContainer}>
+          </View> */}
+          <View style={styles.engagementItem}>
+            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
               <CommentIcon width={18} height={18} />
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               {comments?.totalParentElements || 0}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.engagementItem} activeOpacity={0.7}>
-            <View style={styles.iconContainer}>
+          </View>
+          {/* 런칭 시 스크랩 기능 제외 */}
+          {/* <View style={styles.engagementItem}>
+            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
               <ScrapIcon width={14} height={18} />
-            </View>
+            </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
               0
             </Text>
-          </TouchableOpacity>
+          </View> */}
         </View>
 
         {/* 댓글 목록 */}
@@ -759,8 +819,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     </TouchableOpacity>
                   )}
 
-                  {/* 자식 댓글 (대댓글) */}
-                  {expandedComments.has(parent.commentId) && (
+                  {/* 자식 댓글 (대댓글) -> 자식이 실제로 있을 때만 표시 */}
+                  {expandedComments.has(parent.commentId) && children.length > 0 && (
                     <>
                       {children.map((child) => {
                         return (
@@ -833,29 +893,40 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             onChangeText={setCommentText}
             editable={!isSubmittingComment}
             leftIcon={
-              <TouchableOpacity
-                onPress={() => setIsCommentLocked(!isCommentLocked)}
-                activeOpacity={0.7}
-              >
-                {isCommentLocked ? (
-                  <LockIcon width={10} height={12} />
-                ) : (
-                  <UnlockIcon width={10} height={12} />
-                )}
-              </TouchableOpacity>
+              <View style={styles.lockIconContainer}>
+                <TouchableOpacity
+                  onPress={() => setIsCommentLocked(!isCommentLocked)}
+                  activeOpacity={0.7}
+                  style={styles.lockIconButton}
+                >
+                  {isCommentLocked ? (
+                    <LockIcon width={10} height={12} />
+                  ) : (
+                    <UnlockIcon width={10} height={12} />
+                  )}
+                </TouchableOpacity>
+              </View>
             }
             onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
             rightIcon={
-              <View style={styles.sendButton}>
-                {isSubmittingComment ? (
-                  <ActivityIndicator size="small" color={colors.primary.main} />
-                ) : (
-                  <SendIcon width={30} height={30} />
-                )}
+              <View style={styles.sendIconContainer}>
+                <TouchableOpacity
+                  onPress={handleSubmitComment}
+                  activeOpacity={0.7}
+                  style={styles.sendIconButton}
+                  disabled={isSubmittingComment}
+                >
+                  {isSubmittingComment ? (
+                    <ActivityIndicator size="small" color={colors.primary.main} />
+                  ) : (
+                    <SendIcon width={30} height={30} />
+                  )}
+                </TouchableOpacity>
               </View>
             }
             onRightIconPress={handleSubmitComment}
             containerStyle={styles.textFieldContainer}
+            inputContainerStyle={styles.commentInputField}
           />
         </View>
       </KeyboardAvoidingView>
@@ -1002,7 +1073,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       >
         <ImageViewer
           imageUrls={(() => {
-            const images = verification?.textImages || [];
+            // 사진 인증 게시물의 경우 photoUrl 사용, 텍스트 인증 게시물의 경우 textImages 사용
+            const images = verification?.type === 'TEXT'
+              ? (verification?.textImages || [])
+              : (verification?.photoUrl ? [verification.photoUrl] : []);
 
             return images.map(url => ({ url: url as string }));
           })()}
@@ -1030,7 +1104,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             </View>
           )}
           renderFooter={() => {
-            const totalImages = verification?.textImages?.length || 0;
+            // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
+            const images = verification?.type === 'TEXT'
+              ? (verification?.textImages || [])
+              : (verification?.photoUrl ? [verification.photoUrl] : []);
+            const totalImages = images.length;
             if (totalImages <= 1) return <View />;
 
             return (
@@ -1085,7 +1163,6 @@ const styles = StyleSheet.create({
   userAvatar: {
     width: scale(40),
     height: verticalScale(40),
-    borderRadius: scale(20),
     marginRight: scale(12),
     overflow: 'hidden',
   },
@@ -1161,6 +1238,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.background,
   },
+  engagementSectionNoComments: {
+    marginBottom: verticalScale(65),
+  },
   engagementItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1191,7 +1271,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   commentInputContainer: {
-    paddingHorizontal: scale(20),
+    paddingHorizontal: scale(12),
     paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
@@ -1203,7 +1283,26 @@ const styles = StyleSheet.create({
   textFieldContainer: {
     marginTop: verticalScale(16),
   },
-  sendButton: {
+  commentInputField: {
+    height: verticalScale(44),
+    paddingLeft: scale(4),
+    paddingRight: scale(3),
+  },
+  lockIconContainer: {
+    marginRight: scale(-8), // TextField의 기본 iconContainer marginRight(8) 상쇄
+  },
+  lockIconButton: {
+    width: scale(36),
+    height: verticalScale(36),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendIconContainer: {
+    marginRight: scale(-8),
+  },
+  sendIconButton: {
+    width: scale(40),
+    height: verticalScale(40),
     justifyContent: 'center',
     alignItems: 'center',
   },

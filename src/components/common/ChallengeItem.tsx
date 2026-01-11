@@ -59,7 +59,10 @@ const ChallengeItem: React.FC<ChallengeItemProps> = ({
           />
           {showDDayOverlay && (
             <View style={styles.dDayOverlay}>
-              <Text style={styles.dDayText}>D-{ddayUntilStart}</Text>
+              {/* D-5까지만 텍스트 표시, D-6 이상은 오버레이만 */}
+              {ddayUntilStart !== undefined && ddayUntilStart <= 5 && (
+                <Text style={styles.dDayText}>D-{ddayUntilStart}</Text>
+              )}
             </View>
           )}
         </View>
