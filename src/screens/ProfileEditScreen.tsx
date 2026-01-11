@@ -271,7 +271,7 @@ const ProfileEditScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
-          <Text style={[styles.headerButtonText, { color: Color.primary.main }]}>취소</Text>
+          <Text style={[styles.headerButtonText, { color: Color.text.primary }]}>취소</Text>
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}></Text>
@@ -289,7 +289,7 @@ const ProfileEditScreen: React.FC = () => {
                 styles.headerButtonText,
                 {
                   color: isLoading
-                    ? Color.text.secondary
+                    ? Color.text.tertiary
                     : hasChanges()
                     ? Color.text.primary
                     : Color.text.tertiary,
@@ -324,7 +324,7 @@ const ProfileEditScreen: React.FC = () => {
         ) : null}
       </View>
 
-      <View style={styles.publicToggleSection}>
+      {/* <View style={styles.publicToggleSection}>
         <Text style={styles.publicToggleLabel}>프로필 공개</Text>
         <Switch
           trackColor={{ false: Color.button, true: Color.primary.main }}
@@ -333,7 +333,7 @@ const ProfileEditScreen: React.FC = () => {
           onValueChange={setIsPublic}
           value={isPublic}
         />
-      </View>
+      </View> */}
 
       <Modal
         transparent
@@ -422,21 +422,25 @@ const styles = StyleSheet.create({
   textInput: {
     backgroundColor: Color.background,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12, // Taller
     fontSize: 16,
     color: Color.text.primary,
+    borderWidth: 1.5,
+    borderColor: Color.line,
+    marginHorizontal: 16, // Narrower
   },
   inputError: {},
   inputHintText: {
     fontSize: 12,
-    color: Color.text.secondary,
-    marginTop: 4,
+    color: Color.text.tertiary,
+    marginTop: 8,
+    marginLeft: 32,
   },
   errorText: {
     fontSize: 12,
     color: Color.primary.main,
-    marginTop: 4,
+    marginLeft: 32,
   },
   publicToggleSection: {
     flexDirection: 'row',
