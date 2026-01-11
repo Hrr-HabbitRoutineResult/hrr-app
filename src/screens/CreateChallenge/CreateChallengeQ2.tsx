@@ -716,7 +716,7 @@ const styles = StyleSheet.create({
   selectionRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
+    gap: scale(12),
   },
   chevronContainer: {
     transform: [{ rotate: '0deg' }],
