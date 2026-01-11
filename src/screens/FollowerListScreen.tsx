@@ -39,66 +39,74 @@ const FollowerListScreen = () => {
     const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
     const [selectedItem, setSelectedItem] = useState<FollowItem | null>(null);
 
+    const refetchData = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            if (targetUserId) {
+                const fetchedFollowers = await getFollowersByUserId(targetUserId);
+                const fetchedFollowings = await getFollowingsByUserId(targetUserId);
+                setOtherUserFollowers(fetchedFollowers);
+                setOtherUserFollowings(fetchedFollowings);
+            } else {
+                await fetchFollowers();
+                await fetchFollowings();
+            }
+        } catch (error) {
+            // Error is handled in the calling function
+        } finally {
+            setIsLoading(false);
+        }
+    }, [targetUserId, fetchFollowers, fetchFollowings]);
+
     // Fetch data based on targetUserId or current user
     useEffect(() => {
         const fetchData = async () => {
-            setIsLoading(true);
-            if (targetUserId) {
-                try {
-                    const fetchedFollowers = await getFollowersByUserId(targetUserId);
-                    const fetchedFollowings = await getFollowingsByUserId(targetUserId);
-                    setOtherUserFollowers(fetchedFollowers);
-                    setOtherUserFollowings(fetchedFollowings);
-                } catch (error) {
-                    Alert.alert('오류', '팔로우 목록을 불러오는데 실패했습니다.');
-                }
-            } else {
-                fetchFollowers();
-                fetchFollowings();
+            try {
+                await refetchData();
+            } catch {
+                Alert.alert('오류', '팔로우 목록을 불러오는데 실패했습니다.');
             }
-            setIsLoading(false);
         };
         fetchData();
-    }, [targetUserId, fetchFollowers, fetchFollowings]);
+    }, [refetchData]);
 
-    const handlePressFollow = (item: FollowItem, event: any) => {
-        const { currentTarget } = event;
-        currentTarget.measure((_fx: number, _fy: number, width: number, height: number, px: number, py: number) => {
-            setButtonLayout({ x: px, y: py, width, height });
-            setSelectedItem(item);
-            setPopoverVisible(true);
-        });
+    const handlePressFollow = async (item: FollowItem, event: any) => {
+        if (item.isFollowing) {
+            // For unfollow, show popover. Use measureInWindow for correct screen coordinates.
+            const { currentTarget } = event;
+            currentTarget.measureInWindow((x: number, y: number, width: number, height: number) => {
+                setButtonLayout({ x, y, width, height });
+                setSelectedItem(item);
+                setPopoverVisible(true);
+            });
+        } else {
+            // For follow, execute immediately.
+            try {
+                await followUser(item.id);
+                await refetchData();
+            } catch (error) {
+                Alert.alert('오류', '팔로우에 실패했습니다.');
+            }
+        }
     };
 
     const handleConfirmAction = useCallback(async () => {
         if (!selectedItem) return;
 
         const { id, isFollowing } = selectedItem;
-        try {
-            if (isFollowing) {
+        // This action is now only for unfollowing
+        if (isFollowing) {
+            try {
                 await unfollowUser(id);
-            } else {
-                await followUser(id);
+                await refetchData();
+            } catch (error) {
+                Alert.alert('오류', '언팔로우에 실패했습니다.');
             }
-            // Re-fetch lists after action
-            if (targetUserId) {
-                // If viewing another user's list, re-fetch that user's list
-                const fetchedFollowers = await getFollowersByUserId(targetUserId);
-                const fetchedFollowings = await getFollowingsByUserId(targetUserId);
-                setOtherUserFollowers(fetchedFollowers);
-                setOtherUserFollowings(fetchedFollowings);
-            } else {
-                // If viewing current user's list, use store actions to re-fetch
-                fetchFollowers();
-                fetchFollowings();
-            }
-        } catch (error) {
-            Alert.alert('오류', '작업에 실패했습니다.');
-        } finally {
-            setPopoverVisible(false);
-            setSelectedItem(null);
         }
-    }, [selectedItem, targetUserId, followUser, unfollowUser, fetchFollowers, fetchFollowings]);
+
+        setPopoverVisible(false);
+        setSelectedItem(null);
+    }, [selectedItem, unfollowUser, refetchData]);
 
 
     const tabs: TabItem[] = [
@@ -145,8 +153,8 @@ const FollowerListScreen = () => {
                         style={[
                             styles.popover,
                             {
-                                top: buttonLayout.y - spacing.sm,
-                                left: buttonLayout.x - (buttonLayout.width * 0.2), // Adjust left to align right edges
+                                top: buttonLayout.y + buttonLayout.height + spacing.xs,
+                                left: buttonLayout.x - spacing.sm,
                                 width: buttonLayout.width * 1.2, // 80% of 1.5 times, which is 1.2 times original button width
                             },
                         ]}
