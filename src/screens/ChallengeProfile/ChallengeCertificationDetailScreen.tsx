@@ -42,6 +42,7 @@ import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
 import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
+import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -557,7 +558,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       />
 
-      <ScrollView
+      <RefreshableScrollView
         ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={[
@@ -567,6 +568,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           }
         ]}
         showsVerticalScrollIndicator={false}
+        onRefresh={fetchVerificationDetail}
       >
         {/* 사용자 정보 */}
         <View style={styles.userSection}>
@@ -810,7 +812,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             })}
           </View>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
       <KeyboardAvoidingView

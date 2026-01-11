@@ -54,6 +54,7 @@ import InfoCircleIcon from '../../../assets/icons/challenge-profile/info-circle.
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
 import { TextCertificationList } from '../../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../../components/common/PhotoCertificationGrid';
+import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 
 type ChallengeProfileScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeProfile'>;
 type ChallengeProfileScreenNavigationProp = StackNavigationProp<
@@ -186,48 +187,48 @@ export const ChallengeProfileScreen: React.FC = () => {
     }
   };
 
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+
+      // 먼저 챌린지 기본 정보 조회
+      const detailResult = await getChallengeDetail(challengeId);
+      setData(detailResult);
+      setIsLiked(detailResult.isLiked);
+      setIsParticipated(detailResult.isParticipant);
+
+      // 챌린지 프로필 정보 조회 (참가 여부와 관계없이)
+      try {
+        const profileResult = await getChallengeProfile(challengeId);
+        processProfileData(profileResult);
+      } catch (profileError: any) {
+        // 프로필 조회 실패 시 무시 (참가하지 않은 경우 서버에서 에러를 반환할 수 있음)
+        setProfile(null);
+      }
+
+      // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
+      if (detailResult.isObserverMode || detailResult.isParticipant) {
+        await fetchRoundsAndStats();
+
+        // 선택된 라운드가 있으면 피드도 새로고침
+        if (selectedRound !== null) {
+          await fetchVerificationFeed(selectedRound);
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
+        { text: '확인', onPress: () => navigation.goBack() }
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [challengeId, navigation, selectedRound]);
+
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
-        try {
-          setIsLoading(true);
-
-          // 먼저 챌린지 기본 정보 조회
-          const detailResult = await getChallengeDetail(challengeId);
-          setData(detailResult);
-          setIsLiked(detailResult.isLiked);
-          setIsParticipated(detailResult.isParticipant);
-
-          // 챌린지 프로필 정보 조회 (참가 여부와 관계없이)
-          try {
-            const profileResult = await getChallengeProfile(challengeId);
-            processProfileData(profileResult);
-          } catch (profileError: any) {
-            // 프로필 조회 실패 시 무시 (참가하지 않은 경우 서버에서 에러를 반환할 수 있음)
-            setProfile(null);
-          }
-
-          // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
-          if (detailResult.isObserverMode || detailResult.isParticipant) {
-            await fetchRoundsAndStats();
-
-            // 선택된 라운드가 있으면 피드도 새로고침
-            if (selectedRound !== null) {
-              await fetchVerificationFeed(selectedRound);
-            }
-          }
-        } catch (error: any) {
-          Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
-            { text: '확인', onPress: () => navigation.goBack() }
-          ]);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       fetchData();
-    }, [challengeId, navigation, selectedRound])
+    }, [fetchData])
   );
 
   // 선택된 라운드 변경 시 피드 조회
@@ -584,10 +585,11 @@ export const ChallengeProfileScreen: React.FC = () => {
         }
       />
 
-      <ScrollView
+      <RefreshableScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onRefresh={fetchData}
       >
         {/* 히어로 섹션 */}
         <View style={styles.heroSection}>
@@ -1027,7 +1029,7 @@ export const ChallengeProfileScreen: React.FC = () => {
             )} */}
           </>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
 
       {/* 참가하기/인증하기 버튼 */}
       <View style={styles.buttonDivider} />

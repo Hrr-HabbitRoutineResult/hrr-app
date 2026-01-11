@@ -7,7 +7,7 @@ import { colors, typography, spacing } from '../design/tokens';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import { Challenge, getDailyMissionCompleted } from '../libs/api/challenge';
+import { getDailyMissionCompleted } from '../libs/api/challenge';
 import { handleLogout } from '../libs/auth/logout';
 
 import TopAppBar from '../components/home/TopAppBar';
@@ -16,6 +16,7 @@ import ChallengeCarousel from '../components/home/ChallengeCarousel';
 import CategoryChips from '../components/home/CategoryChips';
 import PopularList from '../components/home/PopularList';
 import RandomMissionBanner from '../components/home/RandomMissionBanner';
+import RefreshableScrollView from '../components/common/RefreshableScrollView';
 
 const HomeScreen = () => {
   const { dailyTop, isLoading, error, fetchDailyTop } = useChallengeStore();
@@ -37,23 +38,27 @@ const HomeScreen = () => {
     }));
   }, [myOngoingChallenges]);
 
+  const fetchData = useCallback(async () => {
+    try {
+      // 모든 데이터 페칭 프로미스를 배열로 만듭니다.
+      const promises = [
+        fetchDailyTop(),
+        fetchMyOngoingChallenges(),
+        fetchUserInfo(),
+        getDailyMissionCompleted().then(setRandomMissionCompleted)
+      ];
+      // 모든 프로미스가 완료될 때까지 기다립니다.
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Failed to fetch data on refresh:", error);
+      // 개별 에러 처리는 각 스토어/함수에서 처리하므로 여기서는 로깅만 합니다.
+    }
+  }, [fetchDailyTop, fetchMyOngoingChallenges, fetchUserInfo, setRandomMissionCompleted]);
+
   useFocusEffect(
     useCallback(() => {
-      fetchDailyTop();
-      fetchMyOngoingChallenges();
-      fetchUserInfo();
-
-      const fetchDailyMissionCompleted = async () => {
-        try {
-          const isCompleted = await getDailyMissionCompleted();
-          setRandomMissionCompleted(isCompleted);
-        } catch (error) {
-          // 에러가 나도 화면은 정상 동작하도록 함
-        }
-      };
-
-      fetchDailyMissionCompleted();
-    }, [fetchDailyTop, fetchMyOngoingChallenges, fetchUserInfo, setRandomMissionCompleted])
+      fetchData();
+    }, [fetchData])
   );
 
   const nickname = useMemo(() => userInfo?.nickname || '...', [userInfo]);
@@ -61,29 +66,16 @@ const HomeScreen = () => {
   return (
     <View style={styles.safeArea}>
       <TopAppBar />
-      <ScrollView style={styles.container}>
-        {/* 로딩 상태 */}
-        {isLoading && (
+      <RefreshableScrollView
+        style={styles.container}
+        onRefresh={fetchData} // Pass the data fetching function as onRefresh
+      >
+        {/* 초기 로딩 시에만 로딩 인디케이터를 표시합니다. */}
+        {isLoading && dailyTop.length === 0 ? (
           <View style={styles.centerBox}>
             <Text style={styles.loadingText}>로딩 중...</Text>
           </View>
-        )}
-
-        {/* 에러 상태 - 전체 화면을 가리지 않고 로그만 출력하거나 조용히 넘어감 */}
-        {/* {error && (
-        <View style={styles.centerBox}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Button
-            title="재시도"
-            onPress={() => {
-              fetchDailyTop();
-            }}
-          />
-        </View>
-      )} */}
-
-        {/* 정상 데이터 렌더링 (로딩 중이 아닐 때만 표시하거나, 로딩 중에도 스켈레톤 등을 표시) */}
-        {!isLoading && (
+        ) : (
           <>
             <View style={styles.welcomeContainer}>
               <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
@@ -121,7 +113,7 @@ const HomeScreen = () => {
             </View>
           </>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
     </View>
   );
 };
@@ -129,10 +121,10 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
   },
   container: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
   },
   centerBox: {
     flex: 1,

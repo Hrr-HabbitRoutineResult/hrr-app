@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../design/tokens';
@@ -13,7 +13,6 @@ import { verticalScale } from '../utils/scaling';
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
 import { Level } from '../libs/api/user/types';
-
 import ParticipatingChallengeSection, {
   ParticipatingChallengeItem,
 } from '../components/MyPage/ParticipatingChallengeSection';
@@ -21,9 +20,11 @@ import ViewModeHeader from '../components/MyPage/ViewModeHeader';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
+import RefreshableScrollView from '../components/common/RefreshableScrollView';
 
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
   const tabBarHeight = verticalScale(84);
 
   const {
@@ -37,32 +38,27 @@ const MyScreen = () => {
   const [myVerificationHistory, setMyVerificationHistory] = useState<VerificationHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
-  // 화면 포커스 시, 유저 정보와 진행중 챌린지는 스토어를 통해 호출
+  const fetchData = useCallback(async () => {
+    setIsHistoryLoading(true);
+    try {
+      await Promise.all([
+        fetchUserInfo(),
+        fetchMyOngoingChallenges(),
+        getVerificationHistory().then(setMyVerificationHistory),
+      ]);
+    } catch (error) {
+      console.error("Failed to fetch MyScreen data:", error);
+      setMyVerificationHistory([]);
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [fetchUserInfo, fetchMyOngoingChallenges]);
+
   useFocusEffect(
     useCallback(() => {
-      fetchMyOngoingChallenges();
-      fetchUserInfo();
-    }, [fetchMyOngoingChallenges, fetchUserInfo])
+      fetchData();
+    }, [fetchData])
   );
-
-  // userInfo가 로드된 후, 인증 기록을 직접 API로 호출
-  useEffect(() => {
-    if (userInfo) {
-      const fetchHistory = async () => {
-        setIsHistoryLoading(true);
-        try {
-          const history = await getVerificationHistory();
-          setMyVerificationHistory(history);
-        } catch (error) {
-          console.error("Failed to fetch verification history:", error);
-          setMyVerificationHistory([]); // 에러 발생 시 기록을 비웁니다.
-        } finally {
-          setIsHistoryLoading(false);
-        }
-      };
-      fetchHistory();
-    }
-  }, [userInfo]);
 
   const userProfile = useMemo(() => {
     if (!userInfo) {
@@ -73,7 +69,7 @@ const MyScreen = () => {
       avatarUrl: userInfo.profileImage,
       followerCount: userInfo.followerCount,
       followingCount: userInfo.followingCount,
-      level: userInfo.level, // 스토어에서 이미 enum으로 변환됨
+      level: userInfo.level,
     };
   }, [userInfo]);
 
@@ -111,62 +107,69 @@ const MyScreen = () => {
           </TouchableOpacity>
         }
       />
-      <ScrollView
+      <RefreshableScrollView
         style={styles.container}
-        contentContainerStyle={{ paddingBottom: tabBarHeight }}
+        onRefresh={fetchData}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + insets.bottom }}
       >
-        <ProfileCard
-          user={userProfile}
-          variant='me'
-          onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower', userId: userInfo?.userId })}
-          onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userInfo?.userId })}
-          onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
-        />
-        
-        <View style={styles.tabContentListWrapper}>
-            <ParticipatingChallengeSection
+        {isHistoryLoading && !userInfo ? (
+          <ActivityIndicator style={styles.loadingIndicator} />
+        ) : (
+          <>
+            <ProfileCard
+              user={userProfile}
+              variant='me'
+              onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower', userId: userInfo?.userId })}
+              onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userInfo?.userId })}
+              onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
+            />
+            
+            <View style={styles.tabContentListWrapper}>
+              <ParticipatingChallengeSection
                 items={participatingChallenges}
                 onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
                 onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
                 onPressEmpty={() => navigation.navigate('ChallengeList')}
-            />
+              />
 
-            <View style={{ marginTop: spacing.xxxl }}>
-              <ViewModeHeader
+              <View style={{ marginTop: spacing.xxxl }}>
+                <ViewModeHeader
                   title="인증 기록"
                   initialMode={certificationViewMode}
                   onViewModeChange={(mode) => setCertificationViewMode(mode)}
                   onPressTitle={() => navigation.navigate('CertificationHistory')}
-              />
+                />
+              </View>
+              {isHistoryLoading ? (
+                <ActivityIndicator style={styles.loadingIndicator} />
+              ) : certificationItems.length === 0 ? (
+                <View style={styles.emptyCertificationContainer}>
+                  <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+                </View>
+              ) : certificationViewMode === 'grid' ? (
+                <PhotoCertificationGrid
+                  items={certificationItems}
+                  showOverlay={false}
+                  onItemPress={(item) =>
+                    navigation.navigate('ChallengeCertificationDetail', {
+                      verificationId: item.id,
+                    })
+                  }
+                />
+              ) : (
+                <TextCertificationList
+                  items={certificationItems}
+                  onItemPress={(item) =>
+                    navigation.navigate('ChallengeCertificationDetail', {
+                      verificationId: item.id,
+                    })
+                  }
+                />
+              )}
             </View>
-            {isHistoryLoading ? (
-              <ActivityIndicator style={styles.loadingIndicator} />
-            ) : certificationItems.length === 0 ? (
-            <View style={styles.emptyCertificationContainer}>
-                <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
-            </View>
-            ) : certificationViewMode === 'grid' ? (
-            <PhotoCertificationGrid
-              items={certificationItems}
-              showOverlay={false}
-              onItemPress={(item) =>
-                navigation.navigate('ChallengeCertificationDetail', {
-                  verificationId: item.id,
-                })
-              }
-            />
-            ) : (
-            <TextCertificationList
-              items={certificationItems}
-              onItemPress={(item) =>
-                navigation.navigate('ChallengeCertificationDetail', {
-                  verificationId: item.id,
-                })
-              }
-            />
-            )}
-        </View>
-      </ScrollView>
+          </>
+        )}
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 };

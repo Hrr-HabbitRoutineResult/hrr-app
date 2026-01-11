@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, Pressable, Animated, Easing, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -34,6 +34,7 @@ import { BlockUserBottomSheet } from '../components/user/BlockUserBottomSheet';
 import { UnblockUserBottomSheet } from '../components/user/UnblockUserBottomSheet';
 import { ToastNotification } from '../components/common/ToastNotification';
 import { ReportUserBottomSheet } from '../components/MyPage/ReportUserBottomSheet';
+import RefreshableScrollView from '../components/common/RefreshableScrollView';
 
 const SHEET_ANIM_MS = 220;
 
@@ -326,7 +327,7 @@ const UserScreen = () => {
                 </TouchableOpacity>
             }
         />
-      <ScrollView style={styles.container}>
+      <RefreshableScrollView style={styles.container} onRefresh={fetchData}>
         <ProfileCard
           user={userProfile}
           variant='other'
@@ -338,7 +339,7 @@ const UserScreen = () => {
           onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userId })}
         />
         {renderTabContent()}
-      </ScrollView>
+      </RefreshableScrollView>
 
       <Modal
         transparent

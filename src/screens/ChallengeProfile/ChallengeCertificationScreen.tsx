@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,6 +24,7 @@ import {
   getVerificationFeed,
   VerificationFeedItem,
 } from '../../libs/api/challenge';
+import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 
 type ChallengeCertificationScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertification'>;
 type ChallengeCertificationScreenNavigationProp = StackNavigationProp<
@@ -140,6 +141,14 @@ export const ChallengeCertificationScreen: React.FC = () => {
     }
   };
 
+  const onRefresh = useCallback(async () => {
+    if (activeTab === 'my') {
+      await fetchMyVerifications();
+    } else {
+      await fetchChallengerData();
+    }
+  }, [activeTab, fetchMyVerifications, fetchChallengerData]);
+
   // 인증 타입 판별 (마이 탭)
   const myCertificationType = myData?.verifications?.content?.length && myData.verifications.content.length > 0
     ? myData.verifications.content[0].type === 'TEXT' ? 'text' : 'image'
@@ -182,7 +191,11 @@ export const ChallengeCertificationScreen: React.FC = () => {
         title="인증현황"
         onBack={() => navigation.goBack()}
       />
-      <View style={styles.container}>
+      <RefreshableScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        onRefresh={onRefresh}
+      >
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
@@ -195,7 +208,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
               <ActivityIndicator size="large" color={colors.primary.main} />
             </View>
           ) : myData ? (
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <View>
               {/* 프로필 영역 */}
               <View style={styles.profileSection}>
                 <DefaultProfileIcon width={100} height={100} />
@@ -237,7 +250,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
               {/* 인증 목록 */}
               {myData.verifications.content.length > 0 ? (
                 myCertificationType === 'text' ? (
-                  // 글 인증(리스트 형태)
                   <TextCertificationList
                     items={myData.verifications.content.map(item => ({
                       id: item.verificationId,
@@ -258,7 +270,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     }}
                   />
                 ) : (
-                  // 사진 인증(그리드 형태)
                   <View style={styles.gridContainer}>
                     <PhotoCertificationGrid
                       items={myData.verifications.content.map(item => ({
@@ -282,7 +293,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   </Text>
                 </View>
               )}
-            </ScrollView>
+            </View>
           ) : null
         ) : (
           isChallengerLoading ? (
@@ -290,12 +301,11 @@ export const ChallengeCertificationScreen: React.FC = () => {
               <ActivityIndicator size="large" color={colors.primary.main} />
             </View>
           ) : statData ? (
-            <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <View>
               {/* 원형 그래프 영역 */}
               <View style={styles.progressSection}>
                 <View style={styles.circularProgressContainer}>
                   <Svg width={size} height={size} style={styles.circularProgressSvg}>
-                    {/* 배경 원 */}
                     <Circle
                       cx={center}
                       cy={center}
@@ -304,7 +314,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       strokeWidth={10}
                       fill="none"
                     />
-                    {/* 진행 원 */}
                     <Circle
                       cx={center}
                       cy={center}
@@ -374,7 +383,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     const isFirst = isFirstRound(round);
                     const isSelected = selectedRound === round.roundNumber;
 
-                    // 참여하지 않은 라운드는 클릭 불가
                     if (!participated) {
                       return (
                         <View
@@ -388,7 +396,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       );
                     }
 
-                    // 맨 앞 라운드 (현재 진행 중인 라운드)
                     if (isFirst) {
                       return (
                         <TouchableOpacity
@@ -407,7 +414,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       );
                     }
 
-                    // 참여한 라운드 (선택 가능)
                     return (
                       <TouchableOpacity
                         key={round.roundNumber}
@@ -437,7 +443,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 </View>
               ) : challengerFeed.length > 0 ? (
                 challengerCertificationType === 'text' ? (
-                  // 글 인증(리스트 형태)
                   <TextCertificationList
                     items={challengerFeed.map(item => ({
                       id: item.verificationId,
@@ -458,7 +463,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     }}
                   />
                 ) : (
-                  // 사진 인증(그리드 형태)
                   <View style={styles.gridContainer}>
                     <PhotoCertificationGrid
                       items={challengerFeed.map(item => ({
@@ -482,10 +486,10 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   </Text>
                 </View>
               )}
-            </ScrollView>
+            </View>
           ) : null
         )}
-      </View>
+      </RefreshableScrollView>
     </SafeAreaView>
   );
 };
