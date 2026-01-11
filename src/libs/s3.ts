@@ -33,12 +33,12 @@ try {
  */
 export const getS3ImageUrl = (imageKey: string | null | undefined): string | null => {
   if (!imageKey) return null;
-  
-  // 이미 URL인 경우 그대로 반환
+
+  // 이미 URL인 경우 http를 https로 변환하여 반환
   if (imageKey.startsWith('http://') || imageKey.startsWith('https://')) {
-    return imageKey;
+    return imageKey.replace('http://', 'https://');
   }
-  
+
   // S3 키를 URL로 변환
   return `${S3_BASE_URL}/${imageKey}`;
 };

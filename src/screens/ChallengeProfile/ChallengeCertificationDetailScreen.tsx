@@ -31,6 +31,7 @@ import {
   reportUser,
   ReportReason
 } from '../../libs/api/challenge';
+import { getS3ImageUrl } from '../../libs/s3';
 import MoreIcon from '../../../assets/icons/more.svg';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
@@ -616,9 +617,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 사용자 정보 */}
         <View style={styles.userSection}>
           <View style={styles.userAvatar}>
-            {verification.user.profileImageUrl ? (
+            {getS3ImageUrl(verification.user.profileImageUrl) ? (
               <Image
-                source={{ uri: verification.user.profileImageUrl.replace('http://', 'https://') }}
+                source={{ uri: getS3ImageUrl(verification.user.profileImageUrl)! }}
                 style={styles.profileImage}
               />
             ) : (

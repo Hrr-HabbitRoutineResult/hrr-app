@@ -4,6 +4,7 @@ import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 import { CommentItem as CommentItemType } from '../../libs/api/challenge';
+import { getS3ImageUrl } from '../../libs/s3';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
@@ -133,9 +134,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {/* 프로필 이미지 - 삭제/탈퇴는 숨김 */}
       {showProfile && (
         <View style={styles.profileContainer}>
-          {comment.userProfileUrl ? (
+          {getS3ImageUrl(comment.userProfileUrl) ? (
             <Image
-              source={{ uri: comment.userProfileUrl.replace('http://', 'https://') }}
+              source={{ uri: getS3ImageUrl(comment.userProfileUrl)! }}
               style={styles.profileImage}
             />
           ) : (
@@ -148,7 +149,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       <View style={[styles.contentContainer, !showProfile && styles.contentContainerNoProfile]}>
         {isBlocked ? (
           /* 차단된 사용자 - userName 없이 content만 표시 */
-          <Text variant="xsReg" color={colors.text.tertiary} style={styles.commentText}>
+          <Text variant="xsReg" color={colors.text.secondary} style={styles.commentText}>
             {comment.content}
           </Text>
         ) : (
