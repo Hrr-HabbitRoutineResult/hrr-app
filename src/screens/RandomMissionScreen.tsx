@@ -273,7 +273,7 @@ const RandomMissionScreen = () => {
         <Text variant="header1" color={colors.text.primary} style={styles.mainTitle}>
           {randomMissionCompleted || missionData?.isCompleted
             ? '미션을 완료했어요!\n내일 새로운 미션으로 만나요'
-            : '미션에 참여하고\n플로우 스코어를 받아요!'}
+            : '미션에 참여하고\n오늘의 루틴을 완성해요!'}
         </Text>
 
         {/* 이미지 + 오버레이 + 텍스트 컨테이너 */}
@@ -321,11 +321,11 @@ const RandomMissionScreen = () => {
         </View>
 
         {/* 완료 상태 안내 텍스트 */}
-        {(randomMissionCompleted || missionData?.isCompleted) && (
+        {/* {(randomMissionCompleted || missionData?.isCompleted) && (
           <Text variant="xsReg" color={colors.text.secondary} style={styles.completeMessage}>
             인증 내용을 확인 후 플로우 스코어 1점을 드릴게요
           </Text>
-        )}
+        )} */}
       </View>
 
       {/* 하단 버튼 */}
