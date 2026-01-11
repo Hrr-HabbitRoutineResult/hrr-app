@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
+import { verticalScale } from '../utils/scaling';
 
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
@@ -23,6 +24,7 @@ import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
 
 const MyScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const tabBarHeight = verticalScale(84);
 
   const {
     userInfo,
@@ -109,7 +111,10 @@ const MyScreen = () => {
           </TouchableOpacity>
         }
       />
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: tabBarHeight }}
+      >
         <ProfileCard
           user={userProfile}
           variant='me'
