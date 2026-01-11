@@ -149,7 +149,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       <View style={[styles.contentContainer, !showProfile && styles.contentContainerNoProfile]}>
         {isBlocked ? (
           /* 차단된 사용자 - userName 없이 content만 표시 */
-          <Text variant="xsReg" color={colors.text.tertiary} style={styles.commentText}>
+          <Text variant="xsReg" color={colors.text.secondary} style={styles.commentText}>
             {comment.content}
           </Text>
         ) : (
