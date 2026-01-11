@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity, Alert } from 'react-native';
 import { scale, verticalScale } from '../utils/scaling';
 import { useChallengeStore } from '../store/challengeSlice';
 import { useUserStore } from '../store/userSlice';
 import { colors, typography, spacing } from '../design/tokens';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import { getUserMe } from '../libs/api/user';
 import { Challenge, getDailyMissionCompleted } from '../libs/api/challenge';
 import { handleLogout } from '../libs/auth/logout';
 
@@ -21,14 +20,15 @@ import RandomMissionBanner from '../components/home/RandomMissionBanner';
 const HomeScreen = () => {
   const { dailyTop, isLoading, error, fetchDailyTop } = useChallengeStore();
   const {
+    userInfo,
+    fetchUserInfo,
     setRandomMissionCompleted,
     myOngoingChallenges,
     fetchMyOngoingChallenges,
   } = useUserStore();
-  const [nickname, setNickname] = useState('');
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
-  const ongoingChallenges: Challenge[] = React.useMemo(() => {
+  const ongoingChallenges: Challenge[] = useMemo(() => {
     return myOngoingChallenges.map((item) => ({
       id: item.challengeId,
       thumbnail: item.image,
@@ -37,41 +37,26 @@ const HomeScreen = () => {
     }));
   }, [myOngoingChallenges]);
 
-  // const handleLogoutTest = async () => {
-  //   try {
-  //     await handleLogout();
-  //   } catch (error) {
-  //     alert('로그아웃 실패: ' + JSON.stringify(error));
-  //   }
-  // };
+  useFocusEffect(
+    useCallback(() => {
+      fetchDailyTop();
+      fetchMyOngoingChallenges();
+      fetchUserInfo();
 
-  useEffect(() => {
-    fetchDailyTop();
-    fetchMyOngoingChallenges();
+      const fetchDailyMissionCompleted = async () => {
+        try {
+          const isCompleted = await getDailyMissionCompleted();
+          setRandomMissionCompleted(isCompleted);
+        } catch (error) {
+          // 에러가 나도 화면은 정상 동작하도록 함
+        }
+      };
 
-    // 사용자 정보 조회
-    const fetchUserInfo = async () => {
-      try {
-        const userInfo = await getUserMe();
-        setNickname(userInfo.nickname);
-      } catch (error) {
-        // 에러가 나도 화면은 정상 동작하도록 함
-      }
-    };
+      fetchDailyMissionCompleted();
+    }, [fetchDailyTop, fetchMyOngoingChallenges, fetchUserInfo, setRandomMissionCompleted])
+  );
 
-    // 오늘의 랜덤미션 완료 여부 조회
-    const fetchDailyMissionCompleted = async () => {
-      try {
-        const isCompleted = await getDailyMissionCompleted();
-        setRandomMissionCompleted(isCompleted);
-      } catch (error) {
-        // 에러가 나도 화면은 정상 동작하도록 함
-      }
-    };
-
-    fetchUserInfo();
-    fetchDailyMissionCompleted();
-  }, [fetchDailyTop, fetchMyOngoingChallenges, setRandomMissionCompleted]);
+  const nickname = useMemo(() => userInfo?.nickname || '...', [userInfo]);
 
   return (
     <View style={styles.safeArea}>

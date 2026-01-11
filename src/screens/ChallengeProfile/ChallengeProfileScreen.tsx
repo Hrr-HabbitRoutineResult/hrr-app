@@ -37,6 +37,8 @@ import {
   VerificationFeedItem,
 } from '../../libs/api/challenge';
 import { useUserStore } from '../../store/userSlice';
+import { getS3ImageUrl } from '../../libs/s3';
+import Config from 'react-native-config';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
@@ -63,7 +65,7 @@ export const ChallengeProfileScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeProfileScreenNavigationProp>();
   const route = useRoute<ChallengeProfileScreenRouteProp>();
   const { challengeId } = route.params;
-  const { fetchMyOngoingChallenges, userInfo } = useUserStore();
+  const { userInfo } = useUserStore();
 
   const [data, setData] = useState<ChallengeDetail | null>(null);
   const [profile, setProfile] = useState<ChallengeProfile | null>(null);
@@ -494,7 +496,6 @@ export const ChallengeProfileScreen: React.FC = () => {
       if (isPasswordMode) {
         // 비공개 챌린지 - 비밀번호와 함께 참가
         await joinChallenge(challengeId, password);
-        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsPasswordMode(false);
         setPassword('');
@@ -513,7 +514,6 @@ export const ChallengeProfileScreen: React.FC = () => {
       } else {
         // 공개 챌린지 - 비밀번호 없이 참가
         await joinChallenge(challengeId);
-        await fetchMyOngoingChallenges(); // 목록 새로고침
         setShowParticipateModal(false);
         setIsParticipated(true);
 
@@ -551,8 +551,8 @@ export const ChallengeProfileScreen: React.FC = () => {
     setPasswordError(undefined); // 입력 시 에러 메시지 초기화
   };
 
-  const isMyProfile = data?.owner.id === userInfo?.userId;
-  const hostProfileImage = isMyProfile ? userInfo?.profileImage : data?.owner.profileImageUrl;
+  const hostProfileImage = data.owner.profileImageUrl;
+  const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
@@ -648,9 +648,9 @@ export const ChallengeProfileScreen: React.FC = () => {
           onPress={handleHostProfile}
           activeOpacity={0.7}
         >
-          {hostProfileImage ? (
+          {fullHostProfileImage ? (
             <Image
-              source={{ uri: hostProfileImage.replace('http://', 'https://') }}
+              source={{ uri: fullHostProfileImage }}
               style={{ width: scale(40), height: verticalScale(40), borderRadius: 20 }}
             />
           ) : (

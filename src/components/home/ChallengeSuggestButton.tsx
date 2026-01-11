@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: verticalScale(21),
     paddingBottom: verticalScale(20),
-    paddingLeft: scale(36),
+    paddingLeft: scale(24),
   },
   text: {
     ...typography.md,

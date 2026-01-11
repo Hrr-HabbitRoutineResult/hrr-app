@@ -19,6 +19,7 @@ export interface UserMe {
   followerCount: number;
   followingCount: number;
   points: number;
+  isPublic: boolean;
   role: string;
   status: string;
   alarmId: number;
@@ -205,7 +206,8 @@ export const getFollowers = async (page: number = 1, size: number = 20): Promise
       return response.data.result.content;
     }
     throw new Error(response.data.message || '팔로워 목록을 불러오는데 실패했습니다.');
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -220,7 +222,8 @@ export const getFollowings = async (page: number = 1, size: number = 20): Promis
       return response.data.result.content;
     }
     throw new Error(response.data.message || '팔로잉 목록을 불러오는데 실패했습니다.');
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -231,7 +234,8 @@ export const getFollowings = async (page: number = 1, size: number = 20): Promis
 export const followUser = async (followedUserId: number): Promise<void> => {
   try {
     await apiClient.post(`/api/v1/follow/${followedUserId}`);
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -242,7 +246,8 @@ export const followUser = async (followedUserId: number): Promise<void> => {
 export const unfollowUser = async (unfollowedUserId: number): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/follow/${unfollowedUserId}`);
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -257,7 +262,8 @@ export const getFollowersByUserId = async (userId: number, page: number = 1, siz
       return response.data.result.content;
     }
     throw new Error(response.data.message || '특정 사용자의 팔로워 목록을 불러오는데 실패했습니다.');
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -272,7 +278,8 @@ export const getFollowingsByUserId = async (userId: number, page: number = 1, si
       return response.data.result.content;
     }
     throw new Error(response.data.message || '특정 사용자의 팔로잉 목록을 불러오는데 실패했습니다.');
-  } catch (error: any) {
+  }
+  catch (error: any) {
     throw error;
   }
 };
@@ -283,24 +290,37 @@ export const getFollowingsByUserId = async (userId: number, page: number = 1, si
  */
 export interface UpdateUserProfileRequest {
   nickname?: string;
-  profileImageKey?: string; // 백엔드 요구사항에 맞춰 profileImage에서 profileImageKey로 변경됨
+  isNicknameChanged?: boolean;
+  profileImageKey?: string;
+  isProfileImageChanged?: boolean;
+  isPublic?: boolean;
 }
 
 /**
- * 사용자 프로필 업데이트 응답 타입 (UserMe와 동일)
+ * 사용자 프로필 업데이트 응답 결과 타입
+ */
+export interface UpdateUserProfileResult {
+  nickname: string;
+  profileImageUrl: string;
+  isPublic: boolean;
+  updatedAt: string;
+}
+
+/**
+ * 사용자 프로필 업데이트 응답 타입
  */
 export interface UpdateUserProfileResponse {
   isSuccess: boolean;
   status: string;
   code: string;
   message: string;
-  result: UserMe; // 업데이트된 UserMe 객체를 반환
+  result: UpdateUserProfileResult;
 }
 
 /**
  * 사용자 프로필 업데이트
  */
-export const updateUserProfile = async (data: UpdateUserProfileRequest): Promise<UserMe> => {
+export const updateUserProfile = async (data: UpdateUserProfileRequest): Promise<UpdateUserProfileResult> => {
   try {
     const response = await apiClient.patch<UpdateUserProfileResponse>('/api/v1/user/me', data);
     if (response.data.isSuccess && response.data.result) {
