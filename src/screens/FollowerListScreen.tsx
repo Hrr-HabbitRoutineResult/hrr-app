@@ -10,6 +10,7 @@ import { colors, radius, spacing } from '../design/tokens';
 import { useUserStore } from '../store/userSlice';
 import { FollowItem, getFollowersByUserId, getFollowingsByUserId } from '../libs/api/user';
 import { Text } from '../components/common/Text';
+import { format } from '../libs/format';
 
 type FollowerListScreenRouteProp = RouteProp<RootStackParamList, 'FollowerList'>;
 
@@ -137,7 +138,7 @@ const FollowerListScreen = () => {
                     <PersonListItem
                       avatarUrl={item.profilePhoto}
                       nickname={item.nickname}
-                      tier={item.level}
+                      tier={format.level(item.level)}
                       isFollowing={item.isFollowing}
                       onPressFollow={(event) => handlePressFollow(item, event)}
                       showFollowButton={item.id !== userInfo?.userId}
