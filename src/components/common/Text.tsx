@@ -3,7 +3,7 @@ import { Text as RNText, TextProps as RNTextProps } from 'react-native';
 import { typography, colors } from '../../design/tokens';
 
 // typography 객체의 키들만 타입으로 추출
-type TypographyVariant = keyof typeof typography;
+export type TypographyVariant = keyof typeof typography;
 
 // Text 컴포넌트가 받을 Props 정의
 interface TextProps extends RNTextProps {

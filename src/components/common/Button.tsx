@@ -1,18 +1,16 @@
 import React from 'react';
 import {
-    TouchableOpacity,
-    StyleSheet,
-    ViewStyle,
-    TouchableOpacityProps,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacityProps,
 } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
-import { Text } from './Text';
+import { Text, TypographyVariant } from './Text';
 import { colors } from '../../design/tokens';
 
 type ButtonVariant = 'black' | 'primary' | 'white' | 'gray' | 'outlinePrimary';
 type ButtonSize = 'small' | 'medium';
-
-type ButtonTextVariant = string; // As noted in the file, can be refined
 
 interface ButtonProps extends TouchableOpacityProps {
   variant?: ButtonVariant;
@@ -20,7 +18,7 @@ interface ButtonProps extends TouchableOpacityProps {
   disabled?: boolean;
   onPress: () => void;
   children: React.ReactNode;
-  textVariant?: ButtonTextVariant;
+  textVariant?: TypographyVariant;
   textColor?: string;
 }
 
@@ -35,20 +33,22 @@ export const Button: React.FC<ButtonProps> = ({
   textColor,
   ...rest
 }) => {
-    // variant에 따른 스타일 결정
-    const getVariantStyle = (): ViewStyle => {
-        // 버튼이 비활성화 상태일 경우 gray 스타일 적용
-        if (disabled) {
-            return {
-                backgroundColor: colors.line,
-            };
-        }
+  const getVariantStyle = (): ViewStyle => {
+    if (disabled) {
+      return {
+        backgroundColor: colors.line,
+      };
+    }
 
     switch (variant) {
       case 'black':
-        return { backgroundColor: colors.text.primary };
+        return {
+          backgroundColor: colors.text.primary
+        };
       case 'primary':
-        return { backgroundColor: colors.primary.main };
+        return {
+          backgroundColor: colors.primary.main
+        };
       case 'white':
         return {
           backgroundColor: colors.white,
@@ -56,7 +56,9 @@ export const Button: React.FC<ButtonProps> = ({
           borderColor: colors.line,
         };
       case 'gray':
-        return { backgroundColor: colors.line };
+        return {
+          backgroundColor: colors.line,
+        };
       case 'outlinePrimary':
         return {
           backgroundColor: colors.white,
@@ -64,19 +66,20 @@ export const Button: React.FC<ButtonProps> = ({
           borderColor: colors.primary.main,
         };
       default:
-        return { backgroundColor: colors.primary.main };
+        return {
+          backgroundColor: colors.primary.main
+        };
     }
   };
 
-    // variant에 따른 텍스트 색상 결정
-    const getTextColor = (): string => {
-        // 버튼이 비활성화 상태일 경우
-        if (disabled) {
-            return colors.icon.gray;
-        }
+  const getTextColor = (): string => {
+    if (disabled) {
+      return colors.icon.gray;
+    }
 
     switch (variant) {
       case 'black':
+        return colors.white;
       case 'primary':
         return colors.white;
       case 'white':
@@ -90,12 +93,8 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
-  const getWidth = (): number => {
+  const getMaxWidth = (): number => {
     return size === 'medium' ? scale(350) : scale(170);
-  };
-
-  const getPaddingVertical = (): number => {
-    return size === 'small' ? 8 : 14; // Changed from 12 to 8 for small size
   };
 
   return (
@@ -103,7 +102,7 @@ export const Button: React.FC<ButtonProps> = ({
       style={[
         styles.button,
         getVariantStyle(),
-        { width: getWidth(), paddingVertical: getPaddingVertical() },
+        { width: getMaxWidth() },
         style,
       ]}
       onPress={onPress}
@@ -123,13 +122,11 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-    button: {
-        width: '100%',            // 기본적으로 부모 컨테이너 너비를 따름
-        height: verticalScale(48),               // 고정 높이
-        borderRadius: scale(10),         // 모서리
-        // paddingVertical: verticalScale(14),      // 위아래 여백
-        // paddingHorizontal: scale(10),    // 좌우 여백
-        justifyContent: 'center', // 세로 중앙 정렬
-        alignItems: 'center',     // 가로 중앙 정렬
-    },
+  button: {
+    width: '100%',
+    height: verticalScale(48),
+    borderRadius: scale(10),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
