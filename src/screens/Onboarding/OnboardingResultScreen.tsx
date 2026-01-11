@@ -9,6 +9,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +26,7 @@ import ChevronRightIcon from '../../../assets/icons/chevron-right-primary.svg';
 import LikeSelectedIcon from '../../../assets/icons/like-selected-circle.svg';
 import LikeUnselectedIcon from '../../../assets/icons/like-unselected-circle.svg';
 import RefreshFabIcon from '../../../assets/icons/refresh-fab.svg';
-import { RecommendedChallenge, trackChallengeClick } from '../../libs/api/challenge';
+import { RecommendedChallenge, trackChallengeClick, likeChallenge, unlikeChallenge } from '../../libs/api/challenge';
 import { getS3ImageUrl } from '../../libs/s3';
 import { RootStackParamList } from '../../navigation/types';
 
@@ -62,14 +63,29 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
     setCurrentIndex(index);
   };
 
-  const handleLikeToggle = (challengeId: number) => {
-    const newLiked = new Set(likedChallenges);
-    if (newLiked.has(challengeId)) {
-      newLiked.delete(challengeId);
-    } else {
-      newLiked.add(challengeId);
+  const handleLikeToggle = async (challengeId: number) => {
+    const isLiked = likedChallenges.has(challengeId);
+
+    try {
+      if (isLiked) {
+        // 찜하기 취소
+        await unlikeChallenge(challengeId);
+      } else {
+        // 찜하기
+        await likeChallenge(challengeId);
+      }
+
+      // API 호출 성공 후 로컬 상태 업데이트
+      const newLiked = new Set(likedChallenges);
+      if (isLiked) {
+        newLiked.delete(challengeId);
+      } else {
+        newLiked.add(challengeId);
+      }
+      setLikedChallenges(newLiked);
+    } catch (error: any) {
+      Alert.alert('오류', error.message || '찜하기 처리에 실패했습니다.');
     }
-    setLikedChallenges(newLiked);
   };
 
   const handleRefresh = () => {
