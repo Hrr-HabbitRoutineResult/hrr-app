@@ -83,13 +83,15 @@ export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
         const userId = userInfo.userId;
 
 
-        // TODO: 시간대 다중 선택 지원 필요 -> 백엔드 API 확인 수정 필요
-        const firstTimeSlot = q2TimeSlots.size > 0 ? Array.from(q2TimeSlots)[0] : 'MORNING';
-        
-        // 카테고리 배열
-        const categories = q3Categories.length > 0 
-          ? q3Categories
-          : ['ALL'];
+        // 시간대 배열 (다중 선택 지원)
+        const timeSlots = q2TimeSlots.size > 0
+          ? Array.from(q2TimeSlots) as ('EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT')[]
+          : ['MORNING'] as ('EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT')[];
+
+        // 카테고리 배열 (다중 선택 지원)
+        const categories = q3Categories.length > 0
+          ? q3Categories as ('HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT')[]
+          : ['HEALTH'] as ('HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT')[];
 
         // API 요청 데이터 구성
         const request = {
@@ -97,17 +99,17 @@ export const OnboardingLoading: React.FC<OnboardingLoadingProps> = ({
           gender: q1Gender as 'MALE' | 'FEMALE',
           ageGroup: q1Age as 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS',
           job: q1Occupation as 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC',
-          availableTime: firstTimeSlot as 'EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT',
+          availableTime: timeSlots,
           category: categories,
           goal: q4Goal as 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING',
         };
 
         // API 호출
         const recommendations = await getChallengeRecommendations(request);
-        
+
         // 결과 저장
         onSetRecommendedChallenges(recommendations);
-        
+
         // 완료 처리
         onComplete();
       } catch (error) {

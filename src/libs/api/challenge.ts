@@ -577,9 +577,8 @@ export interface ChallengeRecommendationRequest {
   gender: 'MALE' | 'FEMALE';
   ageGroup: 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
   job: 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC';
-  // TODO: 시간대 다중 선택 지원 필요
-  availableTime: 'EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT';
-  category: string[];
+  availableTime: ('EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT')[];
+  category: ('HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT')[];
   goal: 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING';
 }
 
