@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getDayOfWeek_KST, getSecondsSinceMidnight_KST, getTodayYYYYMMDD_KST } from '../../utils/kst';
 import {
   View,
   StyleSheet,
@@ -324,12 +325,12 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    const today = new Date();
-    const startDate = new Date(data.startDate);
-    const endDate = new Date(data.endDate);
+    // 챌린지 일정 판단 (KST 기준)
+    const todayStr = getTodayYYYYMMDD_KST();
+
     const isFull = data.currentParticipantCount >= data.maxParticipantCount;
-    const isAfterEnd = today > endDate;
-    const hasStarted = today >= startDate;
+    const isAfterEnd = data.endDate < todayStr;
+    const hasStarted = data.startDate <= todayStr;
 
     // actionButtonStatus에 따라 처리
     if (data.actionButtonStatus === 'WAITLIST') {
@@ -382,9 +383,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    // JS Date 객체에서 현재 요일을 숫자로 가져옴
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
+    // 인증 요일 판단 (KST 기준)
+    const dayOfWeek = getDayOfWeek_KST(); // 0(일) ~ 6(토)
 
     // 숫자를 요일로 변환
     const dayMap: { [key: number]: string } = {
@@ -407,8 +407,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    const now = new Date();
-    const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    // 인증 시간대 판단 (KST 기준)
+    const currentTime = getSecondsSinceMidnight_KST();
 
     // "HH:MM:SS" 형식을 초 단위로 변환
     const parseTime = (timeStr: string): number => {
@@ -428,16 +428,10 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    // 날짜만 비교 (타임존 이슈 방지)
-    const now = new Date();
-    const [year, month, day] = data.startDate.split('-').map(Number);
-    const startDate = new Date(year, month - 1, day); // 로컬 타임존으로 파싱
+    // 챌린지 시작 여부 판단 (KST 기준)
+    const todayStr = getTodayYYYYMMDD_KST();
 
-    // 시간 부분 제거하고 날짜만 비교
-    now.setHours(0, 0, 0, 0);
-    startDate.setHours(0, 0, 0, 0);
-
-    return startDate <= now;
+    return data.startDate <= todayStr;
   };
 
   // 인증하기 버튼 활성화 여부 결정
