@@ -356,23 +356,25 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    /**
-     * actionButtonStatus 우선 순위에 따른 처리
-     */
-
-    // [1] DISABLED: 챌린지 종료
-    if (data.actionButtonStatus === 'DISABLED') {
+    // 챌린지 종료
+    if (data.actionButtonStatus === 'FINISHED') {
       Alert.alert('알림', '이미 종료된 챌린지입니다.');
       return;
     }
 
-    // [6] WAITLIST: 참가 전 + 정원 마감
-    if (data.actionButtonStatus === 'WAITLIST') {
-      Alert.alert('알림', '정원이 마감되어 대기자 신청만 가능합니다.');
+    // 참여 개수 초과
+    if (data.actionButtonStatus === 'MAX_LIMIT_EXCEEDED') {
+      Alert.alert('알림', '참여 가능한 챌린지 개수를 초과했습니다.');
       return;
     }
 
-    // [7] JOIN: 참가 전 + 모집 중
+    // 정원 마감
+    if (data.actionButtonStatus === 'WAITLIST') {
+      Alert.alert('알림', '정원이 마감되어 빈자리 알림 신청만 가능합니다.');
+      return;
+    }
+
+    // 모집 중
     if (data.actionButtonStatus === 'JOIN') {
       setShowParticipateModal(true);
       setIsPasswordMode(false);
@@ -458,8 +460,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return true;
     }
 
-    // button status가 CERTIFY_AVAILABLE일 때만 활성화
-    return data.actionButtonStatus !== 'CERTIFY_AVAILABLE';
+    // button status가 AVAILABLE일 때만 활성화
+    return data.actionButtonStatus !== 'AVAILABLE';
   };
 
   // 인증하기 버튼 클릭 핸들러
@@ -469,54 +471,38 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    const isStarted = isChallengeStarted();
-    const isDayValid = isTodayVerificationDay();
-
-    /**
-     * action button status 우선 순위에 따른 처리
-     */
-
-    // [1] DISABLED: 챌린지 종료
-    if (data.actionButtonStatus === 'DISABLED') {
+    // 챌린지 종료
+    if (data.actionButtonStatus === 'FINISHED') {
       Alert.alert('알림', '이미 종료된 챌린지입니다.');
       return;
     }
 
-    // [2, 3, 4] CERTIFIED: 백엔드가 CERTIFIED로 보내주는 경우 (상세 분기 필요)
-    if (data.actionButtonStatus === 'CERTIFIED') {
-      // [2] 라운드 시작 전 (오늘 < 시작일)
-      if (!isStarted) {
-        Alert.alert('알림', '라운드가 아직 시작되지 않았습니다.');
-        return;
-      }
-
-      // [3] 인증 요일이 아님
-      if (!isDayValid) {
-        Alert.alert('알림', '오늘은 인증 가능한 요일이 아닙니다.');
-        return;
-      }
-
-      // 오늘의 인증 완료 여부 확인을 위한 데이터 가공
-      const todayDayOfWeek = getDayOfWeek_KST();
-      const dayMap: { [key: number]: string } = {
-        0: 'SUNDAY', 1: 'MONDAY', 2: 'TUESDAY', 3: 'WEDNESDAY',
-        4: 'THURSDAY', 5: 'FRIDAY', 6: 'SATURDAY',
-      };
-      const todayDayName = dayMap[todayDayOfWeek];
-      const hasVerifiedToday = profile.verifiedDaysThisWeek?.includes(todayDayName) || false;
-
-      if (hasVerifiedToday) {
-        // [4] 인증 시간 내 + 이미 인증함
-        Alert.alert('알림', '오늘의 인증을 이미 완료했습니다.');
-      } else {
-        // [4] 인증 시간대가 아님 (인증 시간 내 + 미인증 상태가 아님)
-        Alert.alert('알림', '지금은 인증 가능한 시간대가 아닙니다.');
-      }
+    // 라운드 시작 전
+    if (data.actionButtonStatus === 'UPCOMING') {
+      Alert.alert('알림', '라운드가 아직 시작되지 않았습니다.');
       return;
     }
 
-    // [5] CERTIFY_AVAILABLE: 인증 시간 내 + 아직 인증 전
-    if (data.actionButtonStatus === 'CERTIFY_AVAILABLE') {
+    // 인증 요일이 아님
+    if (data.actionButtonStatus === 'NOT_DAY') {
+      Alert.alert('알림', '오늘은 인증 가능한 요일이 아닙니다.');
+      return;
+    }
+
+    // 인증 시간대가 아님
+    if (data.actionButtonStatus === 'NOT_TIME') {
+      Alert.alert('알림', '지금은 인증 가능한 시간대가 아닙니다.');
+      return;
+    }
+
+    // 인증 완료
+    if (data.actionButtonStatus === 'DONE') {
+      Alert.alert('알림', '오늘의 인증을 이미 완료했습니다.');
+      return;
+    }
+
+    // 인증하기
+    if (data.actionButtonStatus === 'AVAILABLE') {
       if (data.verificationType === 'PHOTO') {
         navigation.navigate('ChallengeCertificationCamera', { challengeId });
       } else if (data.verificationType === 'TEXT') {
