@@ -746,7 +746,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               <CommentIcon width={18} height={18} />
             </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
-              {comments?.totalParentElements || 0}
+              {comments?.totalCount || 0}
             </Text>
           </View>
           {/* 런칭 시 스크랩 기능 제외 */}

@@ -776,7 +776,7 @@ export interface CommentsData {
   comments: Comment[];
   currentPage: number;
   totalPages: number;
-  totalParentElements: number;
+  totalCount: number;
   size: number;
   first: boolean;
   last: boolean;
@@ -1264,7 +1264,7 @@ export interface GetCommentsResponse {
     comments: CommentItem[];
     currentPage: number;
     totalPages: number;
-    totalParentElements: number;
+    totalCount: number;
     size: number;
     first: boolean;
     last: boolean;
