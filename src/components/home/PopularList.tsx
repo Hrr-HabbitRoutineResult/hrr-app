@@ -1,14 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { DailyTopChallengeItem, trackChallengeClick } from '../../libs/api/challenge';
-import ChevronRightIcGrey from '../../../assets/icons/chevron-right-ic-grey.svg';
 import EmptyPopularChallenge from '../../../assets/images/empty-popular-challenge.svg';
 import ChallengeItem from '../common/ChallengeItem';
+import ComponentHeader from '../common/ComponentHeader';
 
 interface PopularListProps {
   challenges: DailyTopChallengeItem[];
@@ -53,12 +53,7 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={handleSeeMore} style={styles.header}>
-        <Text style={styles.headerTitle}>오늘의 인기 챌린지</Text>
-        <View style={styles.iconContainer}>
-          <ChevronRightIcGrey width={5} height={10} />
-        </View>
-      </TouchableOpacity>
+      <ComponentHeader title="오늘의 인기 챌린지" onPress={handleSeeMore} />
 
       {challenges.length === 0 ? (
         <View style={styles.emptyContainer}>
@@ -107,32 +102,12 @@ const styles = StyleSheet.create({
   container: {
 
   },
-
-  header: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: verticalScale(2),
-  },
-
-  headerTitle: {
-    ...typography.header4,
-    color: colors.text.primary,
-    marginRight: spacing.xxs,
-    lineHeight: verticalScale(20),
-  },
-
-  iconContainer: {
-    width: scale(36),
-    height: verticalScale(36),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   emptyContainer: {
     width: '100%',
     height: verticalScale(80),
     overflow: 'hidden',
     position: 'relative',
+    marginTop: spacing.sm,
   },
   emptyBackground: {
     position: 'absolute',
@@ -157,3 +132,4 @@ const styles = StyleSheet.create({
 });
 
 export default PopularList;
+
