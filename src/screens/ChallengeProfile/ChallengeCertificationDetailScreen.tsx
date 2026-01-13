@@ -1168,7 +1168,10 @@ const styles = StyleSheet.create({
     width: scale(40),
     height: verticalScale(40),
     marginRight: scale(12),
+    borderRadius: scale(20),
     overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileImage: {
     width: scale(40),
@@ -1190,7 +1193,7 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(4),
   },
   timeSpacing: {
-    height: verticalScale(4),
+    height: verticalScale(1),
   },
   questionTag: {
     alignSelf: 'flex-start',
