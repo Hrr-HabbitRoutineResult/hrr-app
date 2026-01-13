@@ -1,6 +1,7 @@
 import { StatusBar, StyleSheet, useColorScheme, View, AppState, DeviceEventEmitter } from 'react-native';
 import {
   SafeAreaProvider,
+  SafeAreaView,
 } from 'react-native-safe-area-context';
 import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
@@ -30,8 +31,10 @@ function App() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <AppContent />
+        <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppContent />
+        </SafeAreaView>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
