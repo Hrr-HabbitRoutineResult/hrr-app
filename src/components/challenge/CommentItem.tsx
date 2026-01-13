@@ -299,11 +299,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingVertical: verticalScale(12),
+    paddingVertical: verticalScale(6),
     position: 'relative',
   },
   replyContainer: {
     marginLeft: scale(40),
+    paddingVertical: verticalScale(8), // 대댓글들끼리의 간격 조정
   },
   profileContainer: {
     width: scale(32),
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.text.primary,
   },
   commentText: {
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(4),
     lineHeight: verticalScale(18),
   },
   actionsRow: {
@@ -358,7 +359,9 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: scale(4),
+    height: verticalScale(30),
   },
   actionText: {
     marginLeft: scale(2),

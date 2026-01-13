@@ -811,7 +811,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                       activeOpacity={0.7}
                       onPress={() => toggleRepliesExpand(parent.commentId)}
                     >
-                      <View>
+                      <View style={styles.chevronContainer}>
                         <ChevronDownIcon width={9} height={5} />
                       </View>
                       <Text variant="xsReg" color={colors.text.tertiary}>
@@ -853,11 +853,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
                       {/* 답글 숨기기 버튼 */}
                       <TouchableOpacity
-                        style={styles.toggleRepliesButton}
+                        style={[
+                          styles.toggleRepliesButton,
+                          styles.toggleRepliesButtonHide
+                        ]}
                         activeOpacity={0.7}
                         onPress={() => toggleRepliesExpand(parent.commentId)}
                       >
-                        <View style={{ transform: [{ rotate: '180deg' }] }}>
+                        <View style={[styles.chevronContainer, { transform: [{ rotate: '180deg' }] }]}>
                           <ChevronDownIcon width={9} height={5} />
                         </View>
                         <Text variant="xsReg" color={colors.text.tertiary}>
@@ -1235,9 +1238,10 @@ const styles = StyleSheet.create({
   engagementSection: {
     flexDirection: 'row',
     gap: scale(12),
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(24),
+    paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
-    borderBottomColor: colors.background,
+    borderBottomColor: colors.line,
   },
   engagementSectionNoComments: {
     marginBottom: verticalScale(65),
@@ -1256,14 +1260,23 @@ const styles = StyleSheet.create({
     marginLeft: scale(0),
   },
   commentsSection: {
-    paddingTop: verticalScale(1),
+    // paddingTop: verticalScale(1),
   },
   toggleRepliesButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    paddingLeft: scale(52),
-    paddingVertical: verticalScale(8),
+    gap: 0,
+    paddingLeft: scale(30),
+    marginBottom: verticalScale(8),
+  },
+  toggleRepliesButtonHide: {
+    marginBottom: verticalScale(8), // 다음 댓글과의 간격
+  },
+  chevronContainer: {
+    width: scale(28),
+    height: verticalScale(28),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   keyboardAvoidingView: {
     position: 'absolute',
