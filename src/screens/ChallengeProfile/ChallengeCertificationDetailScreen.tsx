@@ -281,7 +281,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 Alert.alert('성공', '게시글이 삭제되었습니다.');
               }, 100);
             } catch (error: any) {
-              Alert.alert('오류', error.message || '게시글 삭제에 실패했습니다.');
+              const errorMessage = error.response?.data?.message || error.message || '게시글 삭제에 실패했습니다.';
+              Alert.alert('오류', errorMessage);
             } finally {
               setIsLoading(false);
             }
@@ -443,7 +444,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       Alert.alert('성공', '댓글이 삭제되었습니다.');
     } catch (error: any) {
-      Alert.alert('오류', error.message || '댓글 삭제에 실패했습니다.');
+      const errorMessage = error.response?.data?.message || error.message || '댓글 삭제에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
     }
   };
 
