@@ -1,4 +1,4 @@
-import { StatusBar, StyleSheet, useColorScheme, View, AppState, DeviceEventEmitter } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, View, AppState, DeviceEventEmitter, Platform } from 'react-native';
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -31,7 +31,10 @@ function App() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+        <SafeAreaView
+          style={{ flex: 1 }}
+          edges={Platform.OS === 'android' ? ['bottom'] : []}
+        >
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           <AppContent />
         </SafeAreaView>

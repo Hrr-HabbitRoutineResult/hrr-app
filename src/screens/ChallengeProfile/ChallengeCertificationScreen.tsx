@@ -289,9 +289,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       title: item.title,
                       description: item.content,
                       date: item.createdDate,
-                      thumbnail: item.imageUrl
-                        ? { uri: item.imageUrl }
-                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
@@ -308,7 +306,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={myData.verifications.content.map(item => ({
                         id: item.verificationId,
-                        thumbnail: { uri: item.imageUrl },
+                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                         isQuestion: item.isQuestion,
                         isResolved: item.isResolved,
                       }))}
@@ -489,9 +487,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       title: item.title,
                       description: item.content,
                       date: item.createdDate,
-                      thumbnail: item.imageUrl
-                        ? { uri: item.imageUrl }
-                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
@@ -508,7 +504,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={challengerFeed.map(item => ({
                         id: item.verificationId,
-                        thumbnail: { uri: item.imageUrl },
+                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                         isQuestion: item.isQuestion,
                         isResolved: item.isResolved,
                       }))}
@@ -590,6 +586,7 @@ const styles = StyleSheet.create({
   sectionDivider: {
     height: verticalScale(8),
     backgroundColor: colors.background,
+    marginBottom: verticalScale(12),
   },
   // 챌린저 탭 - 원형 그래프 영역
   progressSection: {

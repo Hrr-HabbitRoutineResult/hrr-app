@@ -281,7 +281,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 Alert.alert('성공', '게시글이 삭제되었습니다.');
               }, 100);
             } catch (error: any) {
-              Alert.alert('오류', error.message || '게시글 삭제에 실패했습니다.');
+              const errorMessage = error.response?.data?.message || error.message || '게시글 삭제에 실패했습니다.';
+              Alert.alert('오류', errorMessage);
             } finally {
               setIsLoading(false);
             }
@@ -443,7 +444,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       Alert.alert('성공', '댓글이 삭제되었습니다.');
     } catch (error: any) {
-      Alert.alert('오류', error.message || '댓글 삭제에 실패했습니다.');
+      const errorMessage = error.response?.data?.message || error.message || '댓글 삭제에 실패했습니다.';
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -746,7 +748,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               <CommentIcon width={18} height={18} />
             </TouchableOpacity>
             <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
-              {comments?.totalParentElements || 0}
+              {comments?.totalCount || 0}
             </Text>
           </View>
           {/* 런칭 시 스크랩 기능 제외 */}
@@ -811,7 +813,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                       activeOpacity={0.7}
                       onPress={() => toggleRepliesExpand(parent.commentId)}
                     >
-                      <View>
+                      <View style={styles.chevronContainer}>
                         <ChevronDownIcon width={9} height={5} />
                       </View>
                       <Text variant="xsReg" color={colors.text.tertiary}>
@@ -853,11 +855,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
                       {/* 답글 숨기기 버튼 */}
                       <TouchableOpacity
-                        style={styles.toggleRepliesButton}
+                        style={[
+                          styles.toggleRepliesButton,
+                          styles.toggleRepliesButtonHide
+                        ]}
                         activeOpacity={0.7}
                         onPress={() => toggleRepliesExpand(parent.commentId)}
                       >
-                        <View style={{ transform: [{ rotate: '180deg' }] }}>
+                        <View style={[styles.chevronContainer, { transform: [{ rotate: '180deg' }] }]}>
                           <ChevronDownIcon width={9} height={5} />
                         </View>
                         <Text variant="xsReg" color={colors.text.tertiary}>
@@ -1165,7 +1170,10 @@ const styles = StyleSheet.create({
     width: scale(40),
     height: verticalScale(40),
     marginRight: scale(12),
+    borderRadius: scale(20),
     overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileImage: {
     width: scale(40),
@@ -1187,7 +1195,7 @@ const styles = StyleSheet.create({
     marginHorizontal: scale(4),
   },
   timeSpacing: {
-    height: verticalScale(4),
+    height: verticalScale(1),
   },
   questionTag: {
     alignSelf: 'flex-start',
@@ -1235,9 +1243,10 @@ const styles = StyleSheet.create({
   engagementSection: {
     flexDirection: 'row',
     gap: scale(12),
-    marginBottom: verticalScale(8),
+    marginBottom: verticalScale(24),
+    paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
-    borderBottomColor: colors.background,
+    borderBottomColor: colors.line,
   },
   engagementSectionNoComments: {
     marginBottom: verticalScale(65),
@@ -1256,14 +1265,23 @@ const styles = StyleSheet.create({
     marginLeft: scale(0),
   },
   commentsSection: {
-    paddingTop: verticalScale(1),
+    // paddingTop: verticalScale(1),
   },
   toggleRepliesButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(4),
-    paddingLeft: scale(52),
-    paddingVertical: verticalScale(8),
+    gap: 0,
+    paddingLeft: scale(30),
+    marginBottom: verticalScale(8),
+  },
+  toggleRepliesButtonHide: {
+    marginBottom: verticalScale(8), // 다음 댓글과의 간격
+  },
+  chevronContainer: {
+    width: scale(28),
+    height: verticalScale(28),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   keyboardAvoidingView: {
     position: 'absolute',

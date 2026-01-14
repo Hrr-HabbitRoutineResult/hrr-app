@@ -562,7 +562,17 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
                 placeholder="URL을 입력하세요"
                 placeholderTextColor={colors.icon.gray}
                 value={linkUrl}
-                onChangeText={setLinkUrl}
+                onChangeText={(text) => {
+                  setLinkUrl(text);
+                  // 텍스트 변경 시 에러 상태 초기화
+                  if (linkError) {
+                    setLinkError(false);
+                  }
+                  // 이전 프리뷰도 초기화하여 다시 확인 버튼 활성화
+                  if (modalLinkPreview) {
+                    setModalLinkPreview(null);
+                  }
+                }}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"
