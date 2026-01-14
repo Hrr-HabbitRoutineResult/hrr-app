@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    gap: verticalScale(13),
+    gap: verticalScale(10),
   },
   popularItem: {
     flexDirection: 'row',
@@ -539,7 +539,6 @@ const styles = StyleSheet.create({
   },
   rankContainer: {
     width: scale(20),
-    height: verticalScale(19),
     justifyContent: 'center',
     alignItems: 'center',
   },
