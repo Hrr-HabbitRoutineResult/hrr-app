@@ -43,9 +43,7 @@ export const ReportUserBottomSheet: React.FC<ReportUserBottomSheetProps> = ({
   };
   
   const handleNext = () => {
-    if (selectedReason) {
-      setStep(2);
-    }
+    setStep(2);
   };
 
   const handleBack = () => {
@@ -59,6 +57,18 @@ export const ReportUserBottomSheet: React.FC<ReportUserBottomSheetProps> = ({
     }
   };
 
+  const handlePressFooterButton = () => {
+    if (step === 1) {
+      if (selectedReason === 'OTHER') {
+        handleNext();
+      } else {
+        handleSubmit();
+      }
+    } else {
+      handleSubmit();
+    }
+  };
+
   const isStep1Nextable = selectedReason !== null;
   const isStep2Submittable = detailText.trim().length > 0;
 
@@ -68,10 +78,10 @@ export const ReportUserBottomSheet: React.FC<ReportUserBottomSheetProps> = ({
       <View style={styles.buttonContainer}>
         <Button
             variant={ (step === 1 && isStep1Nextable) || (step === 2 && isStep2Submittable) ? 'black' : 'gray'}
-            onPress={step === 1 ? handleNext : handleSubmit}
+            onPress={handlePressFooterButton}
             disabled={ (step === 1 && !isStep1Nextable) || (step === 2 && !isStep2Submittable) }
         >
-          신고하기
+          {step === 1 && selectedReason === 'OTHER' ? '다음' : '신고하기'}
         </Button>
       </View>
     </>

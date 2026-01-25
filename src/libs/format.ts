@@ -13,8 +13,26 @@ const date = (isoString: string): string => {
   return `${year}.${month}.${day}`;
 }
 
+const level = (levelString: string): string => {
+  switch (levelString?.toUpperCase()) {
+    case 'BRONZE':
+      return '브론즈';
+    case 'SILVER':
+      return '실버';
+    case 'GOLD':
+      return '골드';
+    case 'MASTER':
+      return '마스터';
+    case 'CHALLENGER':
+      return '챌린저';
+    default:
+      return levelString;
+  }
+}
+
 export const format = {
   participants: formatParticipants,
   date,
+  level,
 };
 

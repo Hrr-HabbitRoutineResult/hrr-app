@@ -31,6 +31,7 @@ import {
   reportUser,
   ReportReason
 } from '../../libs/api/challenge';
+import { format } from '../../libs/format';
 import { getS3ImageUrl } from '../../libs/s3';
 import MoreIcon from '../../../assets/icons/more.svg';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
@@ -43,6 +44,7 @@ import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
 import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
+import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -556,23 +558,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     return `${year}.${month}.${day} ${hours}:${minutes}`;
   };
 
-  const getUserLevelText = (level: string): string => {
-    switch (level) {
-      case 'BRONZE':
-        return '브론즈';
-      case 'SILVER':
-        return '실버';
-      case 'GOLD':
-        return '골드';
-      case 'MASTER':
-        return '마스터';
-      case 'CHALLENGER':
-        return '챌린저';
-      default:
-        return '브론즈';
-    }
-  };
-
   if (isLoading || !verification) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -605,7 +590,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       />
 
-      <ScrollView
+      <RefreshableScrollView
         ref={scrollRef}
         style={styles.scrollView}
         contentContainerStyle={[
@@ -615,6 +600,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           }
         ]}
         showsVerticalScrollIndicator={false}
+        onRefresh={fetchVerificationDetail}
       >
         {/* 사용자 정보 */}
         <View style={styles.userSection}>
@@ -635,7 +621,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </Text>
               <View style={styles.dot} />
               <Text variant="smReg" color={colors.text.tertiary}>
-                {getUserLevelText(verification.user.level)}
+                {format.level(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -876,7 +862,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             })}
           </View>
         )}
-      </ScrollView>
+      </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
       <KeyboardAvoidingView

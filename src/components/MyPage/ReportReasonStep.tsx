@@ -30,10 +30,10 @@ export const ReportReasonStep: React.FC<ReportReasonStepProps> = ({
           onPress={() => onSelectReason(reason.key)}
           activeOpacity={0.7}
         >
+          {selectedReason === reason.key ? <RadioCheckedIcon /> : <RadioUncheckedIcon />}
           <Text variant="smReg" color={colors.text.primary}>
             {reason.label}
           </Text>
-          {selectedReason === reason.key ? <RadioCheckedIcon /> : <RadioUncheckedIcon />}
         </TouchableOpacity>
       ))}
     </View>
@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
   },
   reasonItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: spacing.sm,
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
