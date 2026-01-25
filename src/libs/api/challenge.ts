@@ -69,7 +69,7 @@ export interface ChallengeDetail {
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
-  actionButtonStatus: 'DISABLED' | 'CERTIFIED' | 'CERTIFY_AVAILABLE' | 'WAITLIST' | 'JOIN';
+  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED';
   owner: {
     id: number;
     nickname: string;
@@ -577,9 +577,8 @@ export interface ChallengeRecommendationRequest {
   gender: 'MALE' | 'FEMALE';
   ageGroup: 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
   job: 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC';
-  // TODO: 시간대 다중 선택 지원 필요
-  availableTime: 'EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT';
-  category: string[];
+  availableTime: ('EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT')[];
+  category: ('HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT')[];
   goal: 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING';
 }
 
@@ -777,7 +776,7 @@ export interface CommentsData {
   comments: Comment[];
   currentPage: number;
   totalPages: number;
-  totalParentElements: number;
+  totalCount: number;
   size: number;
   first: boolean;
   last: boolean;
@@ -1265,7 +1264,7 @@ export interface GetCommentsResponse {
     comments: CommentItem[];
     currentPage: number;
     totalPages: number;
-    totalParentElements: number;
+    totalCount: number;
     size: number;
     first: boolean;
     last: boolean;

@@ -78,8 +78,40 @@ export const ChallengeCertificationScreen: React.FC = () => {
   const fetchMyVerifications = async () => {
     try {
       setIsMyLoading(true);
-      const data = await getMyVerifications(challengeId, { page: 1, size: 100 });
-      setMyData(data);
+
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let currentPage = 1;
+      let hasNext = true;
+      let allVerifications: VerificationFeedItem[] = [];
+
+      // 첫 페이지 요청
+      const firstPageData = await getMyVerifications(challengeId, { page: currentPage, size: 20 });
+
+      // MyVerificationInfo 구조 유지하면서 verifications만 누적
+      let resultData = firstPageData;
+      allVerifications = [...firstPageData.verifications.content];
+      hasNext = firstPageData.verifications.hasNext;
+      currentPage++;
+
+      // 나머지 페이지 요청
+      while (hasNext) {
+        const nextPageData = await getMyVerifications(challengeId, { page: currentPage, size: 20 });
+        allVerifications = [...allVerifications, ...nextPageData.verifications.content];
+        hasNext = nextPageData.verifications.hasNext;
+        currentPage++;
+      }
+
+      // 최종 데이터 설정 (verifications.content만 전체 데이터로 교체)
+      resultData = {
+        ...firstPageData,
+        verifications: {
+          ...firstPageData.verifications,
+          content: allVerifications,
+          hasNext: false,
+        }
+      };
+
+      setMyData(resultData);
     } catch (error: any) {
       Alert.alert('오류', error.message || '내 인증 현황을 불러오는데 실패했습니다.');
     } finally {
@@ -107,7 +139,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
       } else if (roundsList.length > 0) {
         initialRoundNumber = roundsList[0].roundNumber;
       }
-      
+
       setSelectedRound(initialRoundNumber);
 
       // 라운드가 있으면 해당 라운드의 피드를 즉시 조회
@@ -127,12 +159,25 @@ export const ChallengeCertificationScreen: React.FC = () => {
   const fetchChallengerFeed = async (roundNumber: number) => {
     try {
       setIsFeedLoading(true);
-      const feedData = await getVerificationFeed(challengeId, {
-        roundNumber,
-        page: 1,
-        size: 100,
-      });
-      setChallengerFeed(feedData.content);
+
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let allFeed: VerificationFeedItem[] = [];
+      let currentPage = 1;
+      let hasNext = true;
+
+      while (hasNext) {
+        const feedData = await getVerificationFeed(challengeId, {
+          roundNumber,
+          page: currentPage,
+          size: 20,
+        });
+
+        allFeed = [...allFeed, ...feedData.content];
+        hasNext = feedData.hasNext;
+        currentPage++;
+      }
+
+      setChallengerFeed(allFeed);
     } catch (error: any) {
       Alert.alert('오류', error.message || '인증 피드를 불러오는데 실패했습니다.');
       setChallengerFeed([]);
@@ -256,9 +301,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       title: item.title,
                       description: item.content,
                       date: item.createdDate,
-                      thumbnail: item.imageUrl
-                        ? { uri: item.imageUrl }
-                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
@@ -274,7 +317,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={myData.verifications.content.map(item => ({
                         id: item.verificationId,
-                        thumbnail: { uri: item.imageUrl },
+                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                         isQuestion: item.isQuestion,
                         isResolved: item.isResolved,
                       }))}
@@ -449,9 +492,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       title: item.title,
                       description: item.content,
                       date: item.createdDate,
-                      thumbnail: item.imageUrl
-                        ? { uri: item.imageUrl }
-                        : require('../../../assets/images/mock-challenge-profile.png'),
+                      thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
@@ -467,7 +508,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={challengerFeed.map(item => ({
                         id: item.verificationId,
-                        thumbnail: { uri: item.imageUrl },
+                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                         isQuestion: item.isQuestion,
                         isResolved: item.isResolved,
                       }))}
@@ -549,6 +590,7 @@ const styles = StyleSheet.create({
   sectionDivider: {
     height: verticalScale(8),
     backgroundColor: colors.background,
+    marginBottom: verticalScale(12),
   },
   // 챌린저 탭 - 원형 그래프 영역
   progressSection: {

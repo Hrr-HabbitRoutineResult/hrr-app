@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, Alert, Image } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 import { CommentItem as CommentItemType } from '../../libs/api/challenge';
+import { getS3ImageUrl } from '../../libs/s3';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
@@ -81,13 +82,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // 대댓글인 경우 왼쪽 여백 추가
   const isReply = comment.depth > 0;
 
-  // 마스킹된 댓글 여부 및 타입 확인
+  // 마스킹된 댓글 여부 (userId가 null이면 차단/삭제/탈퇴 중 하나)
   const isMasked = comment.userId === null;
-  const isDeleted = comment.userName === "삭제";
-  const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
-  const isInactive = comment.content === "탈퇴한 사용자의 댓글입니다.";
 
-  // 프로필 이미지 표시 여부 (모든 마스킹 케이스에서 숨김)
+  // 차단된 사용자 여부 (userName 표시 안 해도 됨)
+  const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
+
+  // 프로필 이미지 표시 여부
   const showProfile = !isMasked;
 
   const handleDelete = () => {
@@ -133,7 +134,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {/* 프로필 이미지 - 삭제/탈퇴는 숨김 */}
       {showProfile && (
         <View style={styles.profileContainer}>
-          <DefaultProfileIcon width={32} height={32} />
+          {getS3ImageUrl(comment.userProfileUrl) ? (
+            <Image
+              source={{ uri: getS3ImageUrl(comment.userProfileUrl)! }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <DefaultProfileIcon width={32} height={32} />
+          )}
         </View>
       )}
 
@@ -141,7 +149,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       <View style={[styles.contentContainer, !showProfile && styles.contentContainerNoProfile]}>
         {isBlocked ? (
           /* 차단된 사용자 - userName 없이 content만 표시 */
-          <Text variant="xsReg" color={colors.text.tertiary} style={styles.commentText}>
+          <Text variant="xsReg" color={colors.text.secondary} style={styles.commentText}>
             {comment.content}
           </Text>
         ) : (
@@ -291,11 +299,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingVertical: verticalScale(12),
+    paddingVertical: verticalScale(6),
     position: 'relative',
   },
   replyContainer: {
     marginLeft: scale(40),
+    paddingVertical: verticalScale(8), // 대댓글들끼리의 간격 조정
   },
   profileContainer: {
     width: scale(32),
@@ -303,6 +312,11 @@ const styles = StyleSheet.create({
     borderRadius: scale(16),
     marginRight: scale(8),
     overflow: 'hidden',
+  },
+  profileImage: {
+    width: scale(32),
+    height: verticalScale(32),
+    borderRadius: scale(16),
   },
   contentContainer: {
     flex: 1,
@@ -335,7 +349,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.text.primary,
   },
   commentText: {
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(4),
+    lineHeight: verticalScale(18),
   },
   actionsRow: {
     flexDirection: 'row',
@@ -344,7 +359,9 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: scale(4),
+    height: verticalScale(30),
   },
   actionText: {
     marginLeft: scale(2),

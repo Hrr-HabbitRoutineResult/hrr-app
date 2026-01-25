@@ -61,7 +61,7 @@ export const OnboardingQ1: React.FC<OnboardingQ1Props> = ({
   const isNextEnabled = selectedGender && selectedAge && selectedOccupation;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         onBack={onBack}

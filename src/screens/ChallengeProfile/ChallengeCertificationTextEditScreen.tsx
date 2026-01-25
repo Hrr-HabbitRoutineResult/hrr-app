@@ -52,6 +52,32 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
   const [modalLinkPreview, setModalLinkPreview] = useState<LinkPreview | null>(null);
   const [linkError, setLinkError] = useState(false);
 
+  // 원본 값과 비교하여 변경 여부 확인
+  const originalTitle = verification.title || '';
+  const originalContent = verification.content || '';
+  const originalTextUrl = verification.textUrl || null;
+  const originalTextImages = verification.textImages || [];
+
+  // 현재 이미지 URL 배열 (업로드 완료된 것만)
+  const currentImageUrls = selectedImages
+    .filter(img => img.url && !img.uploading)
+    .map(img => img.url)
+    .sort();
+
+  // 원본 이미지 URL 배열 정리 및 정렬
+  const originalImageUrls = originalTextImages
+    .map((url: string) => url?.endsWith('/') ? url.slice(0, -1) : url)
+    .filter((url: string) => url)
+    .sort();
+
+  // 변경 여부 확인
+  const hasTitleChanged = title.trim() !== originalTitle.trim();
+  const hasContentChanged = content.trim() !== originalContent.trim();
+  const hasLinkChanged = (attachedLink || '') !== (originalTextUrl || '');
+  const hasImagesChanged = JSON.stringify(currentImageUrls) !== JSON.stringify(originalImageUrls);
+
+  const hasChanges = hasTitleChanged || hasContentChanged || hasLinkChanged || hasImagesChanged;
+
   // 기존 이미지 초기화
   useEffect(() => {
     const images: Array<{ uri: string; url: string; uploading: boolean }> = [];
@@ -374,12 +400,12 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
           <TouchableOpacity
             onPress={handleComplete}
             activeOpacity={0.7}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasChanges}
           >
             {isSubmitting ? (
-              <ActivityIndicator size="small" color={colors.text.primary} />
+              <ActivityIndicator size="small" color={colors.icon.gray} />
             ) : (
-              <Text variant="smMd" color={colors.text.primary}>
+              <Text variant="smMd" color={hasChanges ? colors.text.primary : colors.icon.gray}>
                 완료
               </Text>
             )}
@@ -536,7 +562,17 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
                 placeholder="URL을 입력하세요"
                 placeholderTextColor={colors.icon.gray}
                 value={linkUrl}
-                onChangeText={setLinkUrl}
+                onChangeText={(text) => {
+                  setLinkUrl(text);
+                  // 텍스트 변경 시 에러 상태 초기화
+                  if (linkError) {
+                    setLinkError(false);
+                  }
+                  // 이전 프리뷰도 초기화하여 다시 확인 버튼 활성화
+                  if (modalLinkPreview) {
+                    setModalLinkPreview(null);
+                  }
+                }}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"

@@ -102,6 +102,23 @@ const styles = StyleSheet.create({
   container: {
 
   },
+  header: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: verticalScale(2),
+  },
+  headerTitle: {
+    ...typography.header4,
+    color: colors.text.primary,
+    lineHeight: verticalScale(20),
+  },
+  iconContainer: {
+    paddingTop: verticalScale(13),
+    paddingBottom: verticalScale(13),
+    paddingLeft: scale(15),
+    paddingRight: scale(16),
+  },
   emptyContainer: {
     width: '100%',
     height: verticalScale(80),

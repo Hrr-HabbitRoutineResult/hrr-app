@@ -23,7 +23,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onKakaoLogin,
 }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 로고 + 슬로건 */}
       <View style={styles.logoSection}>
         <View style={styles.logoContainer}>

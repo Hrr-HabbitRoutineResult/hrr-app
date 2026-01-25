@@ -49,40 +49,46 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
     }
   };
 
-  // 닉네임 중복 확인
-  // 입력 필드에서 포커스가 벗어날 때(onBlur) 자동으로 호출
-  const handleCheckNickname = async () => {
+  // 닉네임 중복 확인 -> 디바운스 방식으로 자동 호출
+  useEffect(() => {
+    // 닉네임이 비어있으면 idle 상태로
     if (nickname.length === 0) {
       setStatus('idle');
       return;
     }
 
-    try {
-      setIsChecking(true);
-      const accessToken = await AsyncStorage.getItem('accessToken');
+    // 0.5초 동안 추가 입력이 없으면 중복 확인 실행
+    const timer = setTimeout(async () => {
+      try {
+        setIsChecking(true);
+        const accessToken = await AsyncStorage.getItem('accessToken');
 
-      if (!accessToken) {
+        if (!accessToken) {
+          setStatus('error');
+          return;
+        }
+
+        // 닉네임 중복 확인 API 호출
+        const response = await checkNickname(accessToken, nickname);
+
+        if (response.isSuccess && response.result === true) {
+          // 닉네임 사용 가능
+          setStatus('success');
+        } else {
+          // 닉네임 중복 또는 사용 불가
+          setStatus('error');
+        }
+      } catch (error) {
+        // API 호출 실패 시 에러 상태로 표시
         setStatus('error');
-        return;
+      } finally {
+        setIsChecking(false);
       }
+    }, 500);
 
-      // 닉네임 중복 확인 API 호출
-      const response = await checkNickname(accessToken, nickname);
-
-      if (response.isSuccess && response.result === true) {
-        // 닉네임 사용 가능
-        setStatus('success');
-      } else {
-        // 닉네임 중복 또는 사용 불가
-        setStatus('error');
-      }
-    } catch (error) {
-      // API 호출 실패 시 에러 상태로 표시
-      setStatus('error');
-    } finally {
-      setIsChecking(false);
-    }
-  };
+    // 새로운 입력이 들어오면 이전 타이머 취소
+    return () => clearTimeout(timer);
+  }, [nickname]);
 
   // 닉네임 설정 완료
   const handleComplete = async () => {
@@ -111,9 +117,9 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
       }
     } catch (error: any) {
       // 서버에서 오는 에러 메시지가 있으면 우선 표시, 없으면 기본 메시지
-      const errorMessage = error?.response?.data?.message || 
-                          error?.response?.data?.error || 
-                          '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
+      const errorMessage = error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -121,7 +127,7 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 헤더 */}
       <Header
         title="회원가입"
@@ -146,7 +152,6 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
             placeholder="닉네임"
             value={nickname}
             onChangeText={handleNicknameChange}
-            onBlur={handleCheckNickname}
             error={status === 'error' ? '해당 닉네임은 이미 등록되어 있어요!' : undefined}
             message={
               status === 'success'

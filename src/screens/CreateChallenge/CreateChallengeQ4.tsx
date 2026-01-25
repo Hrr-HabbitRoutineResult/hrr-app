@@ -183,7 +183,7 @@ export const CreateChallengeQ4 = () => {
   }, [isObserverModeDisabled]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header
         onBack={() => navigation.goBack()}
         title="챌린지 개설"
@@ -340,5 +340,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
+    alignItems: 'center',
   },
 });

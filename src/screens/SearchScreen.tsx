@@ -38,6 +38,7 @@ const SearchScreen = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [popularSearches, setPopularSearches] = useState<string[]>([]);
+  const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
 
   // 뒤로가기 (인기 검색어 모드로 복귀)
   const handleBackToPopular = useCallback(() => {
@@ -45,6 +46,7 @@ const SearchScreen = () => {
     setSearchQuery('');
     setSearchResults([]);
     setHasSearched(false);
+    setShouldAutoFocus(false);
   }, []);
 
   const topPadding = Platform.OS === 'android' ? verticalScale(18) : verticalScale(10);
@@ -179,14 +181,26 @@ const SearchScreen = () => {
           // 검색 카운트 증가 실패 (검색 기능은 정상적으로 동작)
         });
 
-      const searchParams = {
-        title: trimmedQuery,
-        page: 1,
-        size: 20,
-      };
+      // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
+      let allChallenges: ChallengeInfo[] = [];
+      let currentPage = 1;
+      let hasNext = true;
 
-      const result = await getChallenges(searchParams);
-      setSearchResults(result.content);
+      while (hasNext) {
+        const searchParams = {
+          title: trimmedQuery,
+          page: currentPage,
+          size: 20,
+        };
+
+        const result = await getChallenges(searchParams);
+        allChallenges = [...allChallenges, ...result.content];
+
+        hasNext = result.hasNext;
+        currentPage++;
+      }
+
+      setSearchResults(allChallenges);
 
       // 최근 검색어 저장
       const updated = [trimmedQuery, ...recentSearches.filter(s => s !== trimmedQuery)].slice(0, MAX_RECENT_SEARCHES);
@@ -201,6 +215,7 @@ const SearchScreen = () => {
 
   // 인기 검색어 클릭 핸들러
   const handlePopularSearchClick = (keyword: string) => {
+    setShouldAutoFocus(false); // 자동 포커스 끄기
     setIsSearchMode(true);
     setSearchQuery(keyword);
     handleSearch(keyword);
@@ -244,7 +259,7 @@ const SearchScreen = () => {
               onChangeText={setSearchQuery}
               onSubmitEditing={() => handleSearch()}
               returnKeyType="search"
-              autoFocus={true}
+              autoFocus={shouldAutoFocus}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
@@ -367,7 +382,10 @@ const SearchScreen = () => {
       {/* 검색 필드 */}
       <TouchableOpacity
         style={styles.searchContainer}
-        onPress={() => setIsSearchMode(true)}
+        onPress={() => {
+          setIsSearchMode(true);
+          setShouldAutoFocus(true); // 검색 필드를 직접 클릭할 경우에만 포커스
+        }}
         activeOpacity={0.8}
       >
         <View style={styles.searchInputContainer}>
@@ -519,7 +537,7 @@ const styles = StyleSheet.create({
   },
   column: {
     flex: 1,
-    gap: verticalScale(13),
+    gap: verticalScale(10),
   },
   popularItem: {
     flexDirection: 'row',
@@ -527,7 +545,6 @@ const styles = StyleSheet.create({
   },
   rankContainer: {
     width: scale(20),
-    height: verticalScale(19),
     justifyContent: 'center',
     alignItems: 'center',
   },

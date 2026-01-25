@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getDayOfWeek_KST, getSecondsSinceMidnight_KST, getTodayYYYYMMDD_KST } from '../../utils/kst';
 import {
   View,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Alert,
+  Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -187,22 +189,20 @@ export const ChallengeProfileScreen: React.FC = () => {
     }
   };
 
-  const fetchData = useCallback(async () => {
+  // 전체 데이터 새로고침 함수
+  const refreshAllData = async () => {
     try {
-      setIsLoading(true);
-
-      // 먼저 챌린지 기본 정보 조회
+      // 챌린지 기본 정보 조회
       const detailResult = await getChallengeDetail(challengeId);
       setData(detailResult);
       setIsLiked(detailResult.isLiked);
       setIsParticipated(detailResult.isParticipant);
 
-      // 챌린지 프로필 정보 조회 (참가 여부와 관계없이)
+      // 챌린지 프로필 정보 조회
       try {
         const profileResult = await getChallengeProfile(challengeId);
         processProfileData(profileResult);
       } catch (profileError: any) {
-        // 프로필 조회 실패 시 무시 (참가하지 않은 경우 서버에서 에러를 반환할 수 있음)
         setProfile(null);
       }
 
@@ -216,13 +216,9 @@ export const ChallengeProfileScreen: React.FC = () => {
         }
       }
     } catch (error: any) {
-      Alert.alert('오류', error.message || '챌린지 정보를 불러오는데 실패했습니다.', [
-        { text: '확인', onPress: () => navigation.goBack() }
-      ]);
-    } finally {
-      setIsLoading(false);
+      console.error('데이터 새로고침 실패:', error);
     }
-  }, [challengeId, navigation, selectedRound]);
+  };
 
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
@@ -289,8 +285,27 @@ export const ChallengeProfileScreen: React.FC = () => {
     rules: profile?.rule || '',
   };
 
-  const handleShare = () => {
-    // TODO: 공유 기능 구현
+  const handleShare = async () => {
+    try {
+      const deepLink = `hrr://challenge/${challengeId}`;
+      const shareMessage = 
+`🔥 ${data.title} 챌린지에 참여해요!
+
+현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
+혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪
+
+${deepLink}`;
+      
+      await Share.share({
+        message: shareMessage,
+        title: `${data.title} 챌린지에 참여해요!`,
+      });
+    } catch (error: any) {
+      // 사용자가 공유를 취소한 경우는 에러로 처리하지 않음
+      if (error.message !== 'User did not share') {
+        Alert.alert('오류', '공유하기에 실패했습니다.');
+      }
+    }
   };
 
   const handleLike = async () => {
@@ -325,46 +340,35 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    const today = new Date();
-    const startDate = new Date(data.startDate);
-    const endDate = new Date(data.endDate);
-    const isFull = data.currentParticipantCount >= data.maxParticipantCount;
-    const isAfterEnd = today > endDate;
-    const hasStarted = today >= startDate;
+    // 챌린지 종료
+    if (data.actionButtonStatus === 'FINISHED') {
+      Alert.alert('알림', '이미 종료된 챌린지입니다.');
+      return;
+    }
 
-    // actionButtonStatus에 따라 처리
+    // 참여 개수 초과
+    if (data.actionButtonStatus === 'MAX_LIMIT_EXCEEDED') {
+      Alert.alert('알림', '참여 가능한 챌린지 개수를 초과했습니다.');
+      return;
+    }
+
+    // 정원 마감
     if (data.actionButtonStatus === 'WAITLIST') {
-      Alert.alert('알림', '인원이 마감된 챌린지입니다.');
+      Alert.alert('알림', '정원이 마감되어 빈자리 알림 신청만 가능합니다.');
       return;
     }
 
-    if (data.actionButtonStatus === 'DISABLED') {
-      let alertMessage = '현재 참가할 수 없는 챌린지입니다.';
-
-      if (isAfterEnd) {
-        alertMessage = '이미 종료된 챌린지입니다.';
-      } else if (isFull) {
-        alertMessage = '인원이 마감된 챌린지입니다.';
-      } else if (hasStarted && !isAfterEnd) {
-        alertMessage = '라운드 진행 중에는 참가할 수 없습니다.';
-      } else {
-        alertMessage = '참가할 수 없는 챌린지입니다.';
-      }
-
-      Alert.alert('알림', alertMessage);
+    // 모집 중
+    if (data.actionButtonStatus === 'JOIN') {
+      setShowParticipateModal(true);
+      setIsPasswordMode(false);
+      setPassword('');
+      setPasswordError(undefined);
       return;
     }
 
-    if (data.actionButtonStatus !== 'JOIN') {
-      Alert.alert('알림', '지금은 참가할 수 없습니다.');
-      return;
-    }
-
-    // 참가 가능한 경우 확인 모달 표시
-    setShowParticipateModal(true);
-    setIsPasswordMode(false);
-    setPassword('');
-    setPasswordError(undefined);
+    // 예외 케이스 (이미 참가 중인 경우 등 예상치 못한 상태인 경우 발생 시)
+    Alert.alert('알림', '현재는 참가 신청을 할 수 없습니다.');
   };
 
   // 참가하기 버튼 활성화 여부 결정
@@ -383,9 +387,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    // JS Date 객체에서 현재 요일을 숫자로 가져옴
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0(일) ~ 6(토)
+    // 인증 요일 판단 (KST 기준)
+    const dayOfWeek = getDayOfWeek_KST(); // 0(일) ~ 6(토)
 
     // 숫자를 요일로 변환
     const dayMap: { [key: number]: string } = {
@@ -408,8 +411,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    const now = new Date();
-    const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    // 인증 시간대 판단 (KST 기준)
+    const currentTime = getSecondsSinceMidnight_KST();
 
     // "HH:MM:SS" 형식을 초 단위로 변환
     const parseTime = (timeStr: string): number => {
@@ -429,12 +432,10 @@ export const ChallengeProfileScreen: React.FC = () => {
       return false;
     }
 
-    // startDate와 현재 날짜 비교
-    const now = new Date();
-    const startDate = new Date(data.startDate);
+    // 챌린지 시작 여부 판단 (KST 기준)
+    const todayStr = getTodayYYYYMMDD_KST();
 
-    // 시작일이 현재보다 이전이거나 같으면 시작된 것
-    return startDate <= now;
+    return data.startDate <= todayStr;
   };
 
   // 인증하기 버튼 활성화 여부 결정
@@ -443,12 +444,8 @@ export const ChallengeProfileScreen: React.FC = () => {
       return true;
     }
 
-    const isStarted = isChallengeStarted();
-    const isDayValid = isTodayVerificationDay();
-    const isTimeValid = isNowVerificationTime();
-
-    // 챌린지가 시작하지 않았거나, 요일이 맞지 않거나, 시간이 맞지 않으면 비활성화
-    return !isStarted || !isDayValid || !isTimeValid;
+    // button status가 AVAILABLE일 때만 활성화
+    return data.actionButtonStatus !== 'AVAILABLE';
   };
 
   // 인증하기 버튼 클릭 핸들러
@@ -458,32 +455,48 @@ export const ChallengeProfileScreen: React.FC = () => {
       return;
     }
 
-    const isStarted = isChallengeStarted();
-    const isDayValid = isTodayVerificationDay();
-    const isTimeValid = isNowVerificationTime();
+    // 챌린지 종료
+    if (data.actionButtonStatus === 'FINISHED') {
+      Alert.alert('알림', '이미 종료된 챌린지입니다.');
+      return;
+    }
 
-    // 비활성화 상태에서 클릭한 경우 알러트 표시
-    if (!isStarted) {
+    // 라운드 시작 전
+    if (data.actionButtonStatus === 'UPCOMING') {
       Alert.alert('알림', '라운드가 아직 시작되지 않았습니다.');
       return;
     }
 
-    if (!isDayValid) {
+    // 인증 요일이 아님
+    if (data.actionButtonStatus === 'NOT_DAY') {
       Alert.alert('알림', '오늘은 인증 가능한 요일이 아닙니다.');
       return;
     }
 
-    if (!isTimeValid) {
+    // 인증 시간대가 아님
+    if (data.actionButtonStatus === 'NOT_TIME') {
       Alert.alert('알림', '지금은 인증 가능한 시간대가 아닙니다.');
       return;
     }
 
-    // 모든 조건을 만족하면 인증 타입에 따라 화면 이동
-    if (data.verificationType === 'PHOTO') {
-      navigation.navigate('ChallengeCertificationCamera', { challengeId });
-    } else if (data.verificationType === 'TEXT') {
-      navigation.navigate('ChallengeCertificationText', { challengeId });
+    // 인증 완료
+    if (data.actionButtonStatus === 'DONE') {
+      Alert.alert('알림', '오늘의 인증을 이미 완료했습니다.');
+      return;
     }
+
+    // 인증하기
+    if (data.actionButtonStatus === 'AVAILABLE') {
+      if (data.verificationType === 'PHOTO') {
+        navigation.navigate('ChallengeCertificationCamera', { challengeId });
+      } else if (data.verificationType === 'TEXT') {
+        navigation.navigate('ChallengeCertificationText', { challengeId });
+      }
+      return;
+    }
+
+    // 예외 케이스
+    Alert.alert('알림', '현재는 인증을 진행할 수 없습니다.');
   };
 
   const handleParticipateConfirm = async () => {
@@ -503,13 +516,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         setPasswordError(undefined);
         setIsParticipated(true);
 
-        // 참가 후 프로필 정보 다시 불러오기
-        try {
-          const profileResult = await getChallengeProfile(challengeId);
-          processProfileData(profileResult);
-        } catch (profileError) {
-          // 프로필 조회 실패 시 무시
-        }
+        // 참가 후 전체 데이터 새로고침 (버튼 상태 업데이트를 위함)
+        await refreshAllData();
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
       } else {
@@ -518,13 +526,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         setShowParticipateModal(false);
         setIsParticipated(true);
 
-        // 참가 후 프로필 정보 다시 불러오기
-        try {
-          const profileResult = await getChallengeProfile(challengeId);
-          processProfileData(profileResult);
-        } catch (profileError) {
-          console.warn('프로필 정보 조회 실패:', profileError);
-        }
+        // 참가 후 전체 데이터 새로고침 (버튼 상태 업데이트를 위함)
+        await refreshAllData();
 
         Alert.alert('완료', '챌린지에 참가했습니다.');
       }
@@ -669,8 +672,8 @@ export const ChallengeProfileScreen: React.FC = () => {
         {/* 구분선 */}
         <View style={styles.sectionDivider} />
 
-        {/* 프로필/인증현황 탭 (관찰자 모드가 지원되거나 참가 후 표시) */}
-        {(data.isObserverMode || isParticipated) && (
+        {/* 프로필/인증현황 탭 (챌린지 시작 이후 + (관찰자 모드가 지원되거나 참가한 경우) 표시) */}
+        {isChallengeStarted() && (data.isObserverMode || isParticipated) && (
           <TabBar
             tabs={[
               { key: 'profile', label: '프로필' },
@@ -684,7 +687,7 @@ export const ChallengeProfileScreen: React.FC = () => {
         )}
 
         {/* 프로필/인증현황 탭 내용 */}
-        {(data.isObserverMode || isParticipated) && activeTab === 'certification' ? (
+        {isChallengeStarted() && (data.isObserverMode || isParticipated) && activeTab === 'certification' ? (
           // 인증현황 탭
           <View style={styles.certificationSection}>
             {/* 라운드 캐러셀 */}
@@ -766,6 +769,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                 style={styles.sectionTitleRow}
                 activeOpacity={0.7}
                 onPress={() => {
+                  if (!isParticipated) {
+                    Alert.alert('알림', '챌린지에 참여하면 인증 현황을 확인할 수 있어요.');
+                    return;
+                  }
                   navigation.navigate('ChallengeCertification', { challengeId });
                 }}
               >
@@ -808,6 +815,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           }))}
                         containerPadding={scale(24)}
                         onItemPress={(item) => {
+                          if (!isParticipated) {
+                            Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                            return;
+                          }
                           navigation.navigate('ChallengeCertificationDetail', {
                             verificationId: item.id,
                           });
@@ -828,6 +839,10 @@ export const ChallengeProfileScreen: React.FC = () => {
                           isResolved: item.isResolved,
                         }))}
                       onItemPress={(item) => {
+                        if (!isParticipated) {
+                          Alert.alert('알림', '챌린지에 참여하면 인증 내용을 확인할 수 있어요.');
+                          return;
+                        }
                         navigation.navigate('ChallengeCertificationDetail', {
                           verificationId: item.id,
                         });
@@ -1540,13 +1555,13 @@ const styles = StyleSheet.create({
   modalButtonsWithPassword: {
     marginTop: -16, // 비밀번호 모드일 때 타이틀과 텍스트 필드 사이 간격
   },
-    modalButton: {
-      paddingHorizontal: scale(16),
-      paddingVertical: verticalScale(12),
-      minWidth: scale(60),
-      height: verticalScale(48),
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
+  modalButton: {
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(12),
+    minWidth: scale(60),
+    height: verticalScale(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 

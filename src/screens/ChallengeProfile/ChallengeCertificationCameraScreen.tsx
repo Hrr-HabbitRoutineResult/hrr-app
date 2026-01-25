@@ -348,9 +348,10 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
           {/* 버튼 컨테이너 */}
           <View style={styles.certificationButtonContainer}>
             <Button
-              variant="black"
+              variant="white"
               onPress={handleRetake}
               style={styles.retakeButton}
+              disabled={isUploading}
             >
               재촬영하기
             </Button>
