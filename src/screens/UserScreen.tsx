@@ -7,6 +7,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { format } from '../libs/format';
+import { scale, verticalScale } from '../utils/scaling';
 
 import {
   OtherUser,
@@ -26,7 +27,7 @@ import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
 import { Header } from '../components/common/Header';
 import ProfileCard from '../components/MyPage/ProfileCard';
 import ParticipatingChallengeSection, { ParticipatingChallengeItem } from '../components/MyPage/ParticipatingChallengeSection';
-import ViewModeHeader from '../components/MyPage/ViewModeHeader';
+import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import MoreIcon from '../../assets/icons/more.svg';
@@ -55,8 +56,8 @@ const UserScreen = () => {
   const [verificationHistory, setVerificationHistory] = useState<VerificationHistoryItem[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [certificationViewMode, setCertificationViewMode] = useState('grid');
-  
+  const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
+
   const [sheetVisible, setSheetVisible] = useState(false);
   const [isBlockSheetVisible, setIsBlockSheetVisible] = useState(false);
   const [isUnblockSheetVisible, setIsUnblockSheetVisible] = useState(false);
@@ -165,7 +166,7 @@ const UserScreen = () => {
     setIsBlockSheetVisible(false);
     try {
       await blockUserById(user.userId);
-      await fetchData(); 
+      await fetchData();
       setToast({ visible: true, message: '차단이 완료되었어요' });
     } catch (error) {
       Alert.alert('오류', '사용자 차단에 실패했습니다.');
@@ -182,7 +183,7 @@ const UserScreen = () => {
     try {
       await unblockUserById(user.userId);
       setToast({ visible: true, message: '차단 해제가 완료되었어요' });
-      await fetchData(); 
+      await fetchData();
     } catch (error) {
       Alert.alert('오류', '사용자 차단 해제에 실패했습니다.');
     }
@@ -190,21 +191,21 @@ const UserScreen = () => {
 
   const handleReport = () => {
     closeSheet(() => {
-        setIsReportSheetVisible(true);
+      setIsReportSheetVisible(true);
     });
   };
 
   const handleReportSubmit = async (reason: string, detail: string) => {
     if (!user) return;
     try {
-        await reportUserById({
-            targetId: user.userId,
-            reason: reason as ReportReason,
-            description: detail,
-        });
-        setToast({ visible: true, message: '신고가 접수되었어요' });
+      await reportUserById({
+        targetId: user.userId,
+        reason: reason as ReportReason,
+        description: detail,
+      });
+      setToast({ visible: true, message: '신고가 접수되었어요' });
     } catch (error) {
-        Alert.alert('오류', '신고 접수에 실패했습니다.');
+      Alert.alert('오류', '신고 접수에 실패했습니다.');
     }
   };
 
@@ -217,7 +218,7 @@ const UserScreen = () => {
       avatarUrl: user.profileImage,
       followerCount: user.followerCount,
       followingCount: user.followingCount,
-      level: user.level, 
+      level: user.level,
     };
   }, [user]);
 
@@ -234,10 +235,10 @@ const UserScreen = () => {
   const certificationItems: TextCertificationItem[] = useMemo(() => {
     return (verificationHistory || []).map((item) => ({
       id: item.verificationId,
-      title: `[${item.challengeTitle}] ${item.title}`,
+      title: item.title,
       description: item.content || '',
       date: format.date(item.verifiedAt),
-      thumbnail: { uri: item.photoUrl },
+      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
     }));
   }, [verificationHistory]);
 
@@ -248,58 +249,65 @@ const UserScreen = () => {
         </View>
       );
     }
-    
+
     return (
-      <View style={styles.tabContentListWrapper}>
-        <ParticipatingChallengeSection
-          items={participatingChallenges}
-          onPressHeader={() => navigation.navigate('ParticipatingChallenge', { userId: userId })}
-          onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
-        />
-        <View style={{ marginTop: spacing.xxxl }}>
+      <>
+        <View style={styles.participatingChallengeWrapper}>
+          <ParticipatingChallengeSection
+            items={participatingChallenges}
+            onPressHeader={() => navigation.navigate('ParticipatingChallenge', { userId: userId })}
+            onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
+          />
+        </View>
+
+        <View style={styles.tabContentListWrapper}>
           <ViewModeHeader
             title="인증 기록"
             initialMode={certificationViewMode}
             onViewModeChange={(mode) => setCertificationViewMode(mode)}
             onPressTitle={() => navigation.navigate('CertificationHistory', { userId: userId })}
           />
+          {certificationItems.length === 0 ? (
+            <View style={styles.emptyCertificationContainer}>
+              <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+            </View>
+          ) : certificationViewMode === 'grid' ? (
+            <View style={styles.photoGridContainer}>
+              <PhotoCertificationGrid
+                items={certificationItems}
+                showOverlay={false}
+                containerPadding={0}
+                onItemPress={(item) =>
+                  navigation.navigate('ChallengeCertificationDetail', {
+                    verificationId: item.id,
+                  })
+                }
+              />
+            </View>
+          ) : (
+            <TextCertificationList
+              items={certificationItems}
+              containerPadding={0}
+              onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+              }
+            />
+          )}
         </View>
-        {certificationItems.length === 0 ? (
-          <View style={styles.emptyCertificationContainer}>
-            <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
-          </View>
-        ) : certificationViewMode === 'grid' ? (
-          <PhotoCertificationGrid
-            items={certificationItems}
-            showOverlay={false}
-            onItemPress={(item) =>
-              navigation.navigate('ChallengeCertificationDetail', {
-                verificationId: item.id,
-              })
-            }
-          />
-        ) : (
-          <TextCertificationList
-            items={certificationItems}
-            onItemPress={(item) =>
-              navigation.navigate('ChallengeCertificationDetail', {
-                verificationId: item.id,
-              })
-            }
-          />
-        )}
-      </View>
+      </>
     );
   };
-  
+
   if (isLoading) {
     return (
-        <SafeAreaView style={styles.safeArea}>
-            <Header onBack={() => navigation.goBack()} title="프로필" />
-            <View style={[styles.container, { justifyContent: 'center' }]}>
-                <ActivityIndicator />
-            </View>
-        </SafeAreaView>
+      <SafeAreaView style={styles.safeArea}>
+        <Header onBack={() => navigation.goBack()} title="프로필" showDivider />
+        <View style={[styles.container, { justifyContent: 'center' }]}>
+          <ActivityIndicator />
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -315,19 +323,26 @@ const UserScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-        <Header
-            onBack={() => navigation.goBack()}
-            title="프로필"
-            rightContent={
-                <TouchableOpacity
-                    onPress={openSheet}
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                    <MoreIcon />
-                </TouchableOpacity>
-            }
-        />
-      <RefreshableScrollView style={styles.container} onRefresh={fetchData}>
+      <Header
+        onBack={() => navigation.goBack()}
+        title="프로필"
+        showDivider
+        rightContent={
+          <TouchableOpacity
+            onPress={openSheet}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <MoreIcon />
+          </TouchableOpacity>
+        }
+      />
+      <RefreshableScrollView
+        style={styles.container}
+        onRefresh={fetchData}
+        contentContainerStyle={{
+          paddingHorizontal: scale(20),
+        }}
+      >
         <ProfileCard
           user={userProfile}
           variant='other'
@@ -406,10 +421,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
+  participatingChallengeWrapper: {
+    paddingTop: verticalScale(8),
+  },
   tabContentListWrapper: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingTop: 20,
+    marginTop: verticalScale(32),
   },
   tabContentText: {
     ...typography.md,
@@ -420,6 +438,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.xl,
+  },
+  photoGridContainer: {
+    marginHorizontal: -scale(20),
   },
   // Sheet styles
   sheetRoot: {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
+import { colors } from '../../design/tokens';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
 import ResolvedCircleIcon from '../../../assets/icons/challenge-profile/resolved-circle.svg';
 import TextIcon from '../../../assets/icons/text.svg';
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
   gridItem: {
     overflow: 'hidden',
     position: 'relative',
-    backgroundColor: '#f0f0f0', // Fallback background color
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E9E9E9', // A light grey background for the fallback
+    backgroundColor: colors.background,
   },
   questionMarkContainer: {
     position: 'absolute',

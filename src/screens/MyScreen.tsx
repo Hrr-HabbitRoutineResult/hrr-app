@@ -90,7 +90,7 @@ const MyScreen = () => {
       title: item.title,
       description: item.content || '',
       date: format.date(item.verifiedAt),
-      thumbnail: { uri: item.photoUrl },
+      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
     }));
   }, [myVerificationHistory]);
 

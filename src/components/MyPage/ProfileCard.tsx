@@ -102,10 +102,10 @@ const ProfileCard = ({
           <TouchableOpacity
             ref={buttonRef}
             activeOpacity={0.9}
-            style={[styles.followingButton, styles.singleButton]}
+            style={[styles.singleButton, styles.followingButton]}
             onPress={handleFollowingPress}
           >
-            <Text variant="smMd" color={colors.primary.main}>
+            <Text variant="xsMd" color={colors.primary.main}>
               팔로잉
             </Text>
           </TouchableOpacity>
@@ -115,8 +115,8 @@ const ProfileCard = ({
 
     return (
       <View style={styles.buttonRow}>
-        <Button variant="primary" size="small" style={styles.singleButton} onPress={onPressFollow || (() => { })}>
-          <Text variant="smMd" color={colors.white}>
+        <Button variant="primary" size="small" style={styles.followButton} onPress={onPressFollow || (() => { })}>
+          <Text variant="xsMd" color={colors.white}>
             팔로우
           </Text>
         </Button>
@@ -146,14 +146,13 @@ const ProfileCard = ({
             style={[
               styles.popover,
               {
-                top: buttonLayout.y + buttonLayout.height - spacing.sm,
-                left: buttonLayout.x + (buttonLayout.width * 0.6),
-                width: buttonLayout.width * 0.4,
+                top: buttonLayout.y + verticalScale(13),
+                right: scale(20),
               },
             ]}
           >
             <TouchableOpacity onPress={handleUnfollowConfirm} style={styles.popoverButton}>
-              <Text variant="smMd" color={colors.text.primary}>
+              <Text variant="smReg" color={colors.text.primary}>
                 언팔로우하기
               </Text>
             </TouchableOpacity>
@@ -183,7 +182,14 @@ const styles = StyleSheet.create({
     borderRadius: scale(10),
     backgroundColor: colors.background,
   },
+  followButton: {
+    flex: 1,
+    width: '100%',
+    height: verticalScale(36),
+    borderRadius: scale(10),
+  },
   followingButton: {
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -192,20 +198,20 @@ const styles = StyleSheet.create({
   },
   popover: {
     position: 'absolute',
-    backgroundColor: 'white',
-    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+    borderRadius: scale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: verticalScale(2),
+      height: 0,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: scale(3.84),
+    shadowOpacity: 0.08,
+    shadowRadius: scale(40),
     elevation: 5,
   },
   popoverButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: scale(41.5),
     alignItems: 'center',
   },
 });
