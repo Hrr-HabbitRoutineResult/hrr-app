@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../design/tokens';
@@ -9,6 +9,7 @@ import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
 import { verticalScale } from '../utils/scaling';
+import { Text } from '../components/common/Text';
 
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
@@ -94,9 +95,10 @@ const MyScreen = () => {
   }, [myVerificationHistory]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
       <SectionHeader
-        title='마이'
+        title="마이"
+        isScreenHeader
         rightContent={
           <TouchableOpacity
             onPress={() => navigation.navigate('Settings')}
@@ -107,8 +109,9 @@ const MyScreen = () => {
           </TouchableOpacity>
         }
       />
+
       <RefreshableScrollView
-        style={styles.container}
+        style={styles.scrollView}
         onRefresh={fetchData}
         contentContainerStyle={{ paddingBottom: tabBarHeight + insets.bottom }}
       >
@@ -144,7 +147,7 @@ const MyScreen = () => {
                 <ActivityIndicator style={styles.loadingIndicator} />
               ) : certificationItems.length === 0 ? (
                 <View style={styles.emptyCertificationContainer}>
-                  <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+                  <Text variant="md" color={colors.text.secondary}>인증 기록이 없습니다</Text>
                 </View>
               ) : certificationViewMode === 'grid' ? (
                 <PhotoCertificationGrid
@@ -170,18 +173,18 @@ const MyScreen = () => {
           </>
         )}
       </RefreshableScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default MyScreen;
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: colors.white,
   },
-  container: {
+  scrollView: {
     flex: 1,
     backgroundColor: colors.white,
   },
@@ -195,10 +198,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
     paddingTop: 20,
-  },
-  tabContentText: {
-    ...typography.md,
-    color: colors.text.secondary,
   },
   emptyCertificationContainer: {
     padding: spacing.xl,
