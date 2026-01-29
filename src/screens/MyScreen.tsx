@@ -16,7 +16,7 @@ import { Level } from '../libs/api/user/types';
 import ParticipatingChallengeSection, {
   ParticipatingChallengeItem,
 } from '../components/MyPage/ParticipatingChallengeSection';
-import ViewModeHeader from '../components/MyPage/ViewModeHeader';
+import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
@@ -34,7 +34,7 @@ const MyScreen = () => {
     fetchMyOngoingChallenges,
   } = useUserStore();
 
-  const [certificationViewMode, setCertificationViewMode] = useState('grid');
+  const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
   const [myVerificationHistory, setMyVerificationHistory] = useState<VerificationHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
@@ -123,13 +123,13 @@ const MyScreen = () => {
               onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userInfo?.userId })}
               onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
             />
-            
+
             <View style={styles.tabContentListWrapper}>
               <ParticipatingChallengeSection
                 items={participatingChallenges}
-                onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
+                onPressHeader={() => navigation.navigate('ParticipatingChallenge', {})}
                 onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
-                onPressEmpty={() => navigation.navigate('ChallengeList')}
+                onPressEmpty={() => navigation.navigate('ChallengeList', {})}
               />
 
               <View style={{ marginTop: spacing.xxxl }}>
@@ -137,7 +137,7 @@ const MyScreen = () => {
                   title="인증 기록"
                   initialMode={certificationViewMode}
                   onViewModeChange={(mode) => setCertificationViewMode(mode)}
-                  onPressTitle={() => navigation.navigate('CertificationHistory')}
+                  onPressTitle={() => navigation.navigate('CertificationHistory', {})}
                 />
               </View>
               {isHistoryLoading ? (
