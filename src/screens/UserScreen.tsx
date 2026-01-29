@@ -8,6 +8,7 @@ import { colors, typography, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { format } from '../libs/format';
 import { scale, verticalScale } from '../utils/scaling';
+import { getErrorMessage } from '../utils/errorHandler';
 
 import {
   OtherUser,
@@ -120,7 +121,8 @@ const UserScreen = () => {
         setToast({ visible: true, message: '오류가 발생했습니다.' });
         navigation.replace('ErrorScreen');
       } else {
-        Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
+        const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
+        Alert.alert('오류', errorMessage);
         navigation.goBack();
       }
     } finally {
@@ -151,7 +153,8 @@ const UserScreen = () => {
         );
       }
     } catch (error) {
-      Alert.alert('오류', '팔로우 처리에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '팔로우 처리에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -169,7 +172,8 @@ const UserScreen = () => {
       await fetchData();
       setToast({ visible: true, message: '차단이 완료되었어요' });
     } catch (error) {
-      Alert.alert('오류', '사용자 차단에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '사용자 차단에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -185,7 +189,8 @@ const UserScreen = () => {
       setToast({ visible: true, message: '차단 해제가 완료되었어요' });
       await fetchData();
     } catch (error) {
-      Alert.alert('오류', '사용자 차단 해제에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '사용자 차단 해제에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -205,7 +210,8 @@ const UserScreen = () => {
       });
       setToast({ visible: true, message: '신고가 접수되었어요' });
     } catch (error) {
-      Alert.alert('오류', '신고 접수에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '신고 접수에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 

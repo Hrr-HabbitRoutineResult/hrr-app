@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import {
   View,
   StyleSheet,
@@ -84,7 +85,8 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
       }
       setLikedChallenges(newLiked);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '찜하기 처리에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '찜하기 처리에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 

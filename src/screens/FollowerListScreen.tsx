@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Alert, TouchableOpacity, Modal, Pressable, ActivityIndicator } from 'react-native';
+import { getErrorMessage } from '../utils/errorHandler';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -21,13 +22,13 @@ const FollowerListScreen = () => {
 
     const [activeTab, setActiveTab] = useState(initialTab);
     const {
-      followers,
-      followings,
-      fetchFollowers,
-      fetchFollowings,
-      followUser,
-      unfollowUser,
-      userInfo, // Get current user info from the store
+        followers,
+        followings,
+        fetchFollowers,
+        fetchFollowings,
+        followUser,
+        unfollowUser,
+        userInfo, // Get current user info from the store
     } = useUserStore();
 
     // State for other user's follow lists
@@ -64,8 +65,9 @@ const FollowerListScreen = () => {
         const fetchData = async () => {
             try {
                 await refetchData();
-            } catch {
-                Alert.alert('오류', '팔로우 목록을 불러오는데 실패했습니다.');
+            } catch (error) {
+                const errorMessage = getErrorMessage(error, '팔로우 목록을 불러오는데 실패했습니다.');
+                Alert.alert('오류', errorMessage);
             }
         };
         fetchData();
@@ -86,7 +88,8 @@ const FollowerListScreen = () => {
                 await followUser(item.id);
                 await refetchData();
             } catch (error) {
-                Alert.alert('오류', '팔로우에 실패했습니다.');
+                const errorMessage = getErrorMessage(error, '팔로우에 실패했습니다.');
+                Alert.alert('오류', errorMessage);
             }
         }
     };
@@ -101,7 +104,8 @@ const FollowerListScreen = () => {
                 await unfollowUser(id);
                 await refetchData();
             } catch (error) {
-                Alert.alert('오류', '언팔로우에 실패했습니다.');
+                const errorMessage = getErrorMessage(error, '언팔로우에 실패했습니다.');
+                Alert.alert('오류', errorMessage);
             }
         }
 
@@ -134,21 +138,21 @@ const FollowerListScreen = () => {
             <FlatList
                 data={data}
                 renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.id })}>
-                    <PersonListItem
-                      avatarUrl={item.profilePhoto}
-                      nickname={item.nickname}
-                      tier={format.level(item.level)}
-                      isFollowing={item.isFollowing}
-                      onPressFollow={(event) => handlePressFollow(item, event)}
-                      showFollowButton={item.id !== userInfo?.userId}
-                    />
-                  </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.id })}>
+                        <PersonListItem
+                            avatarUrl={item.profilePhoto}
+                            nickname={item.nickname}
+                            tier={format.level(item.level)}
+                            isFollowing={item.isFollowing}
+                            onPressFollow={(event) => handlePressFollow(item, event)}
+                            showFollowButton={item.id !== userInfo?.userId}
+                        />
+                    </TouchableOpacity>
                 )}
                 keyExtractor={(item) => String(item.id)}
                 contentContainerStyle={styles.listContent}
             />
-             <Modal visible={popoverVisible} transparent onRequestClose={() => setPopoverVisible(false)}>
+            <Modal visible={popoverVisible} transparent onRequestClose={() => setPopoverVisible(false)}>
                 <Pressable style={styles.modalOverlay} onPress={() => setPopoverVisible(false)}>
                     <View
                         style={[

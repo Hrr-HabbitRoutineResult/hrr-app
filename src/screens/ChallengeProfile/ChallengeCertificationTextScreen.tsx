@@ -4,6 +4,7 @@ import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Activ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getErrorMessage } from '../../utils/errorHandler';
 import RNBlobUtil from 'react-native-blob-util';
 import * as LinkPreview from 'react-native-link-preview';
 import { Header } from '../../components/common/Header';
@@ -343,7 +344,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         );
       }, 100);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글 작성에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);

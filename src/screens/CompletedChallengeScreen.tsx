@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ImageBackground, Dimensions, ListRenderItemInfo, Alert } from 'react-native';
+import { getErrorMessage } from '../utils/errorHandler';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -33,7 +34,8 @@ const CompletedChallengeScreen = () => {
       const result = await getCompletedChallenges(1, 20); // TODO: Add pagination
       setChallenges(result.content);
     } catch (error) {
-      Alert.alert('오류', '종료한 챌린지 정보를 불러오는 데 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '종료한 챌린지 정보를 불러오는 데 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -96,12 +98,12 @@ const CompletedChallengeScreen = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-         <View style={styles.emptyCard}>
-            <Search width={24} height={24} />
-            <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
-            아직 종료한 챌린지가 없어요
-            </Text>
-        </View>
+      <View style={styles.emptyCard}>
+        <Search width={24} height={24} />
+        <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
+          아직 종료한 챌린지가 없어요
+        </Text>
+      </View>
     </View>
   );
 

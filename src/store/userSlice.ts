@@ -15,6 +15,7 @@ import {
   UpdateUserProfileRequest,
 } from '../libs/api/user';
 import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 // 스토어에서 사용할 사용자 정보 타입. level을 enum으로 관리
 export type UserInfo = Omit<UserMe, 'level'> & {
@@ -78,7 +79,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const challenges = await getOngoingChallenges();
       set({ myOngoingChallenges: challenges, isLoadingMyOngoingChallenges: false });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '참가중인 챌린지를 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '참가중인 챌린지를 불러오는데 실패했습니다.');
       set({ errorMyOngoingChallenges: errorMessage, isLoadingMyOngoingChallenges: false });
     }
   },
@@ -89,7 +90,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const history = await getVerificationHistory();
       set({ myVerificationHistory: history, isLoadingMyVerificationHistory: false });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '인증 기록을 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '인증 기록을 불러오는데 실패했습니다.');
       set({ errorMyVerificationHistory: errorMessage, isLoadingMyVerificationHistory: false });
     }
   },
@@ -105,7 +106,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       };
       set({ userInfo, nickname: userInfo.nickname, isLoadingUserInfo: false });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '사용자 정보를 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
       set({ errorUserInfo: errorMessage, isLoadingUserInfo: false });
     }
   },
@@ -116,7 +117,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const followers = await getFollowers();
       set({ followers, isLoadingFollowers: false });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '팔로워 목록을 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '팔로워 목록을 불러오는데 실패했습니다.');
       set({ errorFollowers: errorMessage, isLoadingFollowers: false });
     }
   },
@@ -127,7 +128,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const followings = await getFollowings();
       set({ followings, isLoadingFollowings: false });
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || error?.message || '팔로잉 목록을 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '팔로잉 목록을 불러오는데 실패했습니다.');
       set({ errorFollowings: errorMessage, isLoadingFollowings: false });
     }
   },
@@ -164,8 +165,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       // fetchUserInfo 액션이 최종 상태 설정 및 isLoading을 false로 처리합니다.
       await get().fetchUserInfo();
     } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || error?.message || '프로필 업데이트에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '프로필 업데이트에 실패했습니다.');
       // 실패 시 에러 상태를 설정하고 로딩 인디케이터를 끕니다.
       set({ errorUserInfo: errorMessage, isLoadingUserInfo: false });
       throw error; // 컴포넌트가 실패를 알 수 있도록 에러를 다시 던집니다.

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -113,7 +114,8 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
       setMyData(resultData);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '내 인증 현황을 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '내 인증 현황을 불러오는데 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsMyLoading(false);
     }
@@ -150,7 +152,8 @@ export const ChallengeCertificationScreen: React.FC = () => {
       }
 
     } catch (error: any) {
-      Alert.alert('오류', error.message || '챌린저 정보를 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '챌린저 정보를 불러오는데 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsChallengerLoading(false);
     }
@@ -179,7 +182,8 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
       setChallengerFeed(allFeed);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '인증 피드를 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '인증 피드를 불러오는데 실패했습니다.');
+      Alert.alert('오류', errorMessage);
       setChallengerFeed([]);
     } finally {
       setIsFeedLoading(false);

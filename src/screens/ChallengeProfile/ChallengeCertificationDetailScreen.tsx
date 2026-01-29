@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -191,7 +192,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글을 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글을 불러오는데 실패했습니다.');
       Alert.alert('오류', errorMessage);
       navigation.goBack();
     } finally {
@@ -283,7 +284,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 Alert.alert('성공', '게시글이 삭제되었습니다.');
               }, 100);
             } catch (error: any) {
-              const errorMessage = error.response?.data?.message || error.message || '게시글 삭제에 실패했습니다.';
+              const errorMessage = getErrorMessage(error, '게시글 삭제에 실패했습니다.');
               Alert.alert('오류', errorMessage);
             } finally {
               setIsLoading(false);
@@ -320,7 +321,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportPostBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
       Alert.alert('신고 실패', errorMessage);
     }
   };
@@ -339,7 +340,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportUserBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
       Alert.alert('신고 실패', errorMessage);
     }
   };
@@ -384,7 +385,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       });
       setComments(commentsResult);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '댓글 작성에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '댓글 작성에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmittingComment(false);
     }
@@ -446,7 +448,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       Alert.alert('성공', '댓글이 삭제되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '댓글 삭제에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '댓글 삭제에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
   };
@@ -477,7 +479,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsAdoptBottomSheetVisible(false);
       setSelectedCommentForAdopt(null);
 
-      const errorMessage = error.response?.data?.message || error.message || '댓글 채택에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '댓글 채택에 실패했습니다.');
 
       Alert.alert('오류', errorMessage);
     }
@@ -499,7 +501,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         setComments(commentsResult);
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '사용자 차단에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '사용자 차단에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
   };

@@ -26,6 +26,7 @@ import { getPresignedUrl } from '../libs/api/challenge';
 import { getS3ImageUrl } from '../libs/s3';
 import { colors as Color, spacing, typography } from '../design/tokens';
 import { scale, verticalScale } from '../utils/scaling';
+import { getErrorMessage } from '../utils/errorHandler';
 import ProfileImageWithEdit from '../components/common/ProfileImageWithEdit';
 import { Text } from '../components/common/Text';
 import { useUserStore } from '../store/userSlice';
@@ -100,7 +101,8 @@ const ProfileEditScreen: React.FC = () => {
           setIsPublic(user.isPublic);
         } catch (error) {
           console.error('프로필 데이터 불러오기 실패:', error);
-          Alert.alert('오류', '사용자 정보를 불러오는데 실패했습니다.');
+          const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
+          Alert.alert('오류', errorMessage);
         } finally {
           setIsLoading(false);
         }
@@ -210,10 +212,8 @@ const ProfileEditScreen: React.FC = () => {
       setTimeout(() => navigation.goBack(), 2000);
     } catch (error: any) {
       console.error('프로필 업데이트 실패:', error?.message);
-      Alert.alert(
-        '오류',
-        error?.response?.data?.message || error?.message || '프로필 업데이트에 실패했습니다.'
-      );
+      const errorMessage = getErrorMessage(error, '프로필 업데이트에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -284,7 +284,8 @@ const ProfileEditScreen: React.FC = () => {
         setToast({ visible: true, message: '업로드 완료. 완료를 눌러 저장하세요.', iconType: 'success' });
       } catch (error: any) {
         console.error('이미지 업로드 실패:', error);
-        Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error?.message || ''}`);
+        const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
       } finally {
         setIsLoading(false);
       }

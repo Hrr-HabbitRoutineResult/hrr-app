@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { getDayOfWeek_KST, getSecondsSinceMidnight_KST, getTodayYYYYMMDD_KST } from '../../utils/kst';
+import { getErrorMessage } from '../../utils/errorHandler';
 import {
   View,
   StyleSheet,
@@ -355,7 +356,8 @@ ${deepLink}`;
     } catch (error: any) {
       // 사용자가 공유를 취소한 경우는 에러로 처리하지 않음
       if (error.message !== 'User did not share') {
-        Alert.alert('오류', '공유하기에 실패했습니다.');
+        const errorMessage = getErrorMessage(error, '공유하기에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
       }
     }
   };
@@ -372,7 +374,8 @@ ${deepLink}`;
         setIsLiked(result.isLiked);
       }
     } catch (error: any) {
-      Alert.alert('오류', error.message || '찜하기 처리 중 오류가 발생했습니다.');
+      const errorMessage = getErrorMessage(error, '찜하기 처리 중 오류가 발생했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -585,10 +588,11 @@ ${deepLink}`;
       }
     } catch (error: any) {
       // 비밀번호 오류인 경우
-      if (isPasswordMode && error.message?.includes('비밀번호')) {
+      const errorMessage = getErrorMessage(error, '챌린지 참가에 실패했습니다.');
+      if (isPasswordMode && errorMessage.includes('비밀번호')) {
         setPasswordError('비밀번호를 다시 확인해 주세요');
       } else {
-        Alert.alert('오류', error.message || '챌린지 참가에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
       }
     }
   };

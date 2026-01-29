@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Alert, TouchableOpacity } from 'react-native';
+import { getErrorMessage } from '../utils/errorHandler';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -19,7 +20,8 @@ const BlockedUserScreen = () => {
             const users = await getBlockedUsers();
             setBlockedUsers(users);
         } catch (error) {
-            Alert.alert('오류', '차단된 사용자 목록을 불러오는데 실패했습니다.');
+            const errorMessage = getErrorMessage(error, '차단된 사용자 목록을 불러오는데 실패했습니다.');
+            Alert.alert('오류', errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -37,7 +39,8 @@ const BlockedUserScreen = () => {
             // After unblocking, refetch the list to update the UI
             fetchBlockedUsers();
         } catch (error) {
-            Alert.alert('오류', '차단 해제에 실패했습니다.');
+            const errorMessage = getErrorMessage(error, '차단 해제에 실패했습니다.');
+            Alert.alert('오류', errorMessage);
         }
     };
 
@@ -47,14 +50,14 @@ const BlockedUserScreen = () => {
             <FlatList
                 data={blockedUsers}
                 renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.userId })}>
-                    <BlockedUserListItem
-                        nickname={item.nickname}
-                        level={item.level}
-                        onUnblock={() => handleUnblock(item.userId)}
+                    <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.userId })}>
+                        <BlockedUserListItem
+                            nickname={item.nickname}
+                            level={item.level}
+                            onUnblock={() => handleUnblock(item.userId)}
                         // avatarUrl is not provided by the API for blocked users
-                    />
-                  </TouchableOpacity>
+                        />
+                    </TouchableOpacity>
                 )}
                 keyExtractor={(item) => String(item.userId)}
                 contentContainerStyle={styles.listContent}

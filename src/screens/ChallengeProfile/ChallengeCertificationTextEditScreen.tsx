@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, Image, Modal, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -206,7 +207,8 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
       const s3Url = presignedUrl.split('?')[0];
       return s3Url;
     } catch (error: any) {
-      Alert.alert('오류', `이미지 업로드에 실패했습니다: ${error.message}`);
+      const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
       return null;
     }
   };
@@ -377,7 +379,7 @@ export const ChallengeCertificationTextEditScreen: React.FC = () => {
         },
       ]);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글 수정에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글 수정에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
