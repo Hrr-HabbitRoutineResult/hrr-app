@@ -241,7 +241,7 @@ const RandomMissionScreen = () => {
                       style={[
                         StyleSheet.absoluteFill,
                         {
-                          backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.25)',
                           borderRadius: scale(10),
                         },
                       ]}
@@ -480,21 +480,14 @@ const styles = StyleSheet.create({
     right: scale(16),
     width: scale(137),
     height: verticalScale(32),
-    backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
     borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
-  androidBlurOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    borderRadius: scale(10),
-  },
   timestampText: {
     color: colors.white,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   certificationButtonContainer: {
     width: '100%',
