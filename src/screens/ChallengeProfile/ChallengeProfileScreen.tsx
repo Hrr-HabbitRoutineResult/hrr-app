@@ -291,7 +291,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
       FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
     };
-    return days.map(d => dayMap[d] || d).join('/');
+
+    // 요일 순서 정의 (월화수목금토일)
+    const dayOrder: Record<string, number> = {
+      MONDAY: 1,
+      TUESDAY: 2,
+      WEDNESDAY: 3,
+      THURSDAY: 4,
+      FRIDAY: 5,
+      SATURDAY: 6,
+      SUNDAY: 7,
+    };
+
+    // 요일 순서대로 정렬
+    const sortedDays = [...days].sort((a, b) => dayOrder[a] - dayOrder[b]);
+
+    return sortedDays.map(d => dayMap[d] || d).join('/');
   };
 
   // 시간 포맷 함수 (HH:MM:SS -> HH:MM)
