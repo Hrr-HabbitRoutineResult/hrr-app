@@ -32,7 +32,20 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const viewShotRef = useRef<ViewShot>(null);
 
-  const CROP_SIZE = 350;
+  // 화면에 보이는 프리뷰 크기
+  const PREVIEW_SIZE = 350;
+  // 실제 캡처되는 고해상도 이미지 크기
+  const CAPTURE_SIZE = 1080;
+  // 캡처용 배율
+  const CAPTURE_SCALE = CAPTURE_SIZE / PREVIEW_SIZE;
+
+  // 프리뷰 기준 타임스탬프 값들
+  const TS_WIDTH = scale(137);
+  const TS_HEIGHT = verticalScale(32);
+  const TS_RADIUS = scale(10);
+  const TS_BOTTOM = verticalScale(16);
+  const TS_RIGHT = scale(16);
+  const TS_FONT = 12;
 
   useEffect(() => {
     handleImagePicker();
@@ -238,7 +251,7 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
   // 이미지가 선택된 경우 인증 화면 표시
   if (selectedImage && imageSize) {
     const screenWidth = Dimensions.get('window').width - 40;
-    const displaySize = Math.min(screenWidth, CROP_SIZE);
+    const displaySize = Math.min(screenWidth, PREVIEW_SIZE);
 
     return (
       <SafeAreaView style={styles.certificationContainer}>
@@ -251,16 +264,16 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
               style={[
                 styles.hiddenViewShot,
                 {
-                  width: CROP_SIZE,
-                  height: CROP_SIZE,
+                  width: CAPTURE_SIZE,
+                  height: CAPTURE_SIZE,
                 }
               ]}
               options={{
                 format: 'jpg',
                 quality: 1.0,
                 result: 'tmpfile',
-                width: CROP_SIZE,
-                height: CROP_SIZE,
+                width: CAPTURE_SIZE,
+                height: CAPTURE_SIZE,
                 snapshotContentContainer: false,
               }}
             >
@@ -269,8 +282,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                 style={[
                   styles.thumbnailImage,
                   {
-                    width: CROP_SIZE,
-                    height: CROP_SIZE,
+                    width: CAPTURE_SIZE,
+                    height: CAPTURE_SIZE,
                   }
                 ]}
                 resizeMode="cover"
@@ -281,22 +294,61 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                   // 일부 URI에서 onError 발생 가능. 캡처/업로드 단계에서 재검증
                 }}
               />
-              {/* 타임스탬프 오버레이 */}
+              {/* 타임스탬프 오버레이 - 캡처용 */}
               {imageTimestamp && (
-                <View style={[
-                  styles.timestampContainer,
-                  {
-                    bottom: verticalScale(16),
-                    right: scale(16),
-                  }
-                ]}>
-                  <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="light"
-                    blurAmount={20}
-                    reducedTransparencyFallbackColor="black"
-                  />
-                  <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: TS_BOTTOM * CAPTURE_SCALE,
+                    right: TS_RIGHT * CAPTURE_SCALE,
+                    width: TS_WIDTH * CAPTURE_SCALE,
+                    height: TS_HEIGHT * CAPTURE_SCALE,
+                    borderRadius: TS_RADIUS * CAPTURE_SCALE,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
+                  }}
+                >
+                  {Platform.OS === 'ios' ? (
+                    <BlurView
+                      style={StyleSheet.absoluteFill}
+                      blurType="light"
+                      blurAmount={20}
+                      reducedTransparencyFallbackColor="black"
+                    />
+                  ) : (
+                    <>
+                      {/* 어두운 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                            borderRadius: TS_RADIUS * CAPTURE_SCALE,
+                          },
+                        ]}
+                      />
+                      {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderRadius: TS_RADIUS * CAPTURE_SCALE,
+                          },
+                        ]}
+                      />
+                    </>
+                  )}
+                  <Text
+                    style={{
+                      color: colors.white,
+                      fontSize: TS_FONT * CAPTURE_SCALE,
+                      lineHeight: TS_FONT * CAPTURE_SCALE * 1.2,
+                      fontFamily: 'Pretendard-Regular',
+                    }}
+                  >
                     {formatTimestamp(imageTimestamp)}
                   </Text>
                 </View>
@@ -331,12 +383,37 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                     right: scale(16),
                   }
                 ]}>
-                  <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="light"
-                    blurAmount={20}
-                    reducedTransparencyFallbackColor="black"
-                  />
+                  {Platform.OS === 'ios' ? (
+                    <BlurView
+                      style={StyleSheet.absoluteFill}
+                      blurType="light"
+                      blurAmount={20}
+                      reducedTransparencyFallbackColor="black"
+                    />
+                  ) : (
+                    <>
+                      {/* 배경을 약간 어둡게 하는 레이어 (블러의 어두운 부분 시뮬레이션) */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                      {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                    </>
+                  )}
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>

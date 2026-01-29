@@ -227,12 +227,37 @@ const RandomMissionScreen = () => {
             {/* 타임스탬프 오버레이 */}
             {imageTimestamp && (
               <View style={styles.timestampContainer}>
-                <BlurView
-                  style={StyleSheet.absoluteFill}
-                  blurType="light"
-                  blurAmount={20}
-                  reducedTransparencyFallbackColor="black"
-                />
+                {Platform.OS === 'ios' ? (
+                  <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="light"
+                    blurAmount={20}
+                    reducedTransparencyFallbackColor="black"
+                  />
+                ) : (
+                  <>
+                    {/* 어두운 블러 효과 시뮬레이션 레이어 */}
+                    <View
+                      style={[
+                        StyleSheet.absoluteFill,
+                        {
+                          backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                          borderRadius: scale(10),
+                        },
+                      ]}
+                    />
+                    {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                    <View
+                      style={[
+                        StyleSheet.absoluteFill,
+                        {
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          borderRadius: scale(10),
+                        },
+                      ]}
+                    />
+                  </>
+                )}
                 <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                   {formatTimestamp(imageTimestamp)}
                 </Text>
