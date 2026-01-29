@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -32,18 +32,8 @@ type ChallengeCarouselProps = {
 
 const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<any>>(null);
-
-  // ✅ scrollX 기반 인덱스 계산
-  useEffect(() => {
-    const listenerId = scrollX.addListener(({ value }) => {
-      const index = Math.round(value / SNAP_INTERVAL);
-      if (index !== currentIndex) setCurrentIndex(index);
-    });
-    return () => scrollX.removeListener(listenerId);
-  }, [currentIndex]);
 
   const renderItem = ({ item, index }: { item: Challenge; index: number }) => {
     const inputRange = [
@@ -147,7 +137,11 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         scrollEventThrottle={16}
       />
       <View style={styles.paginationWrapper}>
-        <CarouselPagination currentIndex={currentIndex} totalItems={challenges.length} />
+        <CarouselPagination
+          scrollX={scrollX}
+          totalItems={challenges.length}
+          snapInterval={SNAP_INTERVAL}
+        />
       </View>
     </View>
   );
