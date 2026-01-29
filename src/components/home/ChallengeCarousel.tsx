@@ -58,6 +58,8 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
       extrapolate: 'clamp',
     });
 
+    const isLastItem = index === challenges.length - 1;
+
     return (
       <TouchableOpacity
         activeOpacity={0.9}
@@ -66,7 +68,15 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
           navigation.navigate('ChallengeProfile', { challengeId: item.id });
         }}
       >
-        <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
+        <Animated.View
+          style={[
+            styles.itemContainer,
+            {
+              marginRight: isLastItem ? 0 : SPACING,
+              transform: [{ scale }],
+            },
+          ]}
+        >
           <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
           <LinearGradient
             colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.9)']}
@@ -107,6 +117,9 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
     );
   }
 
+  const centerOffset = (screenWidth - ITEM_SIZE) / 2;
+  const snapOffsets = challenges.map((_, index) => index * SNAP_INTERVAL);
+
   return (
     <View style={styles.container}>
       <Animated.FlatList
@@ -116,12 +129,11 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
-        snapToInterval={SNAP_INTERVAL}
-        snapToAlignment="start"
+        snapToOffsets={snapOffsets}
         decelerationRate="fast"
-        // ✅ 핵심: 양쪽 padding 모두 줘야 마지막 인덱스도 중앙에 옴
+        bounces={false}
         contentContainerStyle={{
-          paddingHorizontal: (screenWidth - ITEM_SIZE) / 2,
+          paddingHorizontal: centerOffset,
         }}
         getItemLayout={(_, index) => ({
           length: SNAP_INTERVAL,
@@ -174,7 +186,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     width: ITEM_SIZE,
     height: ITEM_SIZE,
-    marginRight: SPACING,
     justifyContent: 'center',
     alignItems: 'center',
   },
