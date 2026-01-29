@@ -290,12 +290,37 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                     right: scale(16),
                   }
                 ]}>
-                  <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="light"
-                    blurAmount={20}
-                    reducedTransparencyFallbackColor="black"
-                  />
+                  {Platform.OS === 'ios' ? (
+                    <BlurView
+                      style={StyleSheet.absoluteFill}
+                      blurType="light"
+                      blurAmount={20}
+                      reducedTransparencyFallbackColor="black"
+                    />
+                  ) : (
+                    <>
+                      {/* 어두운 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                      {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                    </>
+                  )}
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -331,12 +356,37 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
                     right: scale(16),
                   }
                 ]}>
-                  <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="light"
-                    blurAmount={20}
-                    reducedTransparencyFallbackColor="black"
-                  />
+                  {Platform.OS === 'ios' ? (
+                    <BlurView
+                      style={StyleSheet.absoluteFill}
+                      blurType="light"
+                      blurAmount={20}
+                      reducedTransparencyFallbackColor="black"
+                    />
+                  ) : (
+                    <>
+                      {/* 배경을 약간 어둡게 하는 레이어 (블러의 어두운 부분 시뮬레이션) */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                      {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          {
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderRadius: scale(10),
+                          },
+                        ]}
+                      />
+                    </>
+                  )}
                   <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
                     {formatTimestamp(imageTimestamp)}
                   </Text>
@@ -423,14 +473,21 @@ const styles = StyleSheet.create({
     right: scale(16),
     width: scale(137),
     height: verticalScale(32),
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    backgroundColor: Platform.OS === 'ios' ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
     borderRadius: scale(10),
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
   },
+  androidBlurOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    borderRadius: scale(10),
+  },
   timestampText: {
     color: colors.white,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   certificationButtonContainer: {
     width: '100%',
