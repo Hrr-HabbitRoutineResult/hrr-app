@@ -113,6 +113,7 @@ const CompletedChallengeScreen = () => {
         title="종료한 챌린지"
         onBack={() => navigation.goBack()}
         useSafeArea={true}
+        showDivider
       />
       {completedChallenges.length > 0 ? (
         <FlatList

@@ -98,6 +98,7 @@ const ParticipatingChallengeScreen = () => {
         title="참가중인 챌린지"
         onBack={() => navigation.goBack()}
         useSafeArea={true}
+        showDivider
       />
       {participatingChallenges.length > 0 ? (
         <FlatList

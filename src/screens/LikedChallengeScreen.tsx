@@ -109,6 +109,7 @@ const LikedChallengeScreen = () => {
         title="찜한 챌린지"
         onBack={() => navigation.goBack()}
         useSafeArea={true}
+        showDivider
       />
       {likedChallenges.length > 0 ? (
         <FlatList

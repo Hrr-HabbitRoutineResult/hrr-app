@@ -21,7 +21,7 @@ const CertificationHistoryScreen = () => {
   const isMe = !userId;
 
   const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
-  
+
   // State for other user's data
   const [otherUserHistory, setOtherUserHistory] = useState<VerificationHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,8 +41,8 @@ const CertificationHistoryScreen = () => {
           try {
             const result = await getVerificationHistoryById(userId);
             // isPublic 체크 없이 모든 인증 기록을 표시합니다.
-            if(result.verifications) {
-                setOtherUserHistory(result.verifications.content);
+            if (result.verifications) {
+              setOtherUserHistory(result.verifications.content);
             }
           } catch (error) {
             // Handle error
@@ -54,7 +54,7 @@ const CertificationHistoryScreen = () => {
       }
     }, [isMe, userId, fetchMyVerificationHistory, myVerificationHistory.length])
   );
-  
+
   const historySource = isMe ? myVerificationHistory : otherUserHistory;
 
   const certificationItems: TextCertificationItem[] = useMemo(() => {
@@ -69,53 +69,54 @@ const CertificationHistoryScreen = () => {
 
   const renderContent = () => {
     if (isLoading) {
-        return (
-            <View style={styles.emptyContainer}>
-                <ActivityIndicator />
-            </View>
-        )
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator />
+        </View>
+      )
     }
 
     if (certificationItems.length === 0) {
-        return (
-            <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>인증 기록이 없습니다</Text>
-            </View>
-        );
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>인증 기록이 없습니다</Text>
+        </View>
+      );
     }
 
     return certificationViewMode === 'grid' ? (
-        <PhotoCertificationGrid
-            items={certificationItems}
-            showOverlay={false}
-            containerPadding={spacing.md}
-            onItemPress={(item) =>
-                navigation.navigate('ChallengeCertificationDetail', {
-                  verificationId: item.id,
-                })
-            }
-        />
-      ) : (
-        <TextCertificationList
-            items={certificationItems}
-            containerPadding={spacing.md}
-            onItemPress={(item) =>
-                navigation.navigate('ChallengeCertificationDetail', {
-                  verificationId: item.id,
-                })
-            }
-        />
-      );
+      <PhotoCertificationGrid
+        items={certificationItems}
+        showOverlay={false}
+        containerPadding={spacing.md}
+        onItemPress={(item) =>
+          navigation.navigate('ChallengeCertificationDetail', {
+            verificationId: item.id,
+          })
+        }
+      />
+    ) : (
+      <TextCertificationList
+        items={certificationItems}
+        containerPadding={spacing.md}
+        onItemPress={(item) =>
+          navigation.navigate('ChallengeCertificationDetail', {
+            verificationId: item.id,
+          })
+        }
+      />
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Header 
+      <Header
         title="인증 기록"
         onBack={() => navigation.goBack()}
         useSafeArea
+        showDivider
       />
-      <ViewModeHeader 
+      <ViewModeHeader
         title="전체 기록"
         initialMode={certificationViewMode}
         onViewModeChange={(mode) => setCertificationViewMode(mode)}
