@@ -22,11 +22,11 @@ const RandomMissionBanner = () => {
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container}>
-      <BackgroundSvg 
-        width="100%" 
-        height="100%" 
+      <BackgroundSvg
+        width="100%"
+        height="100%"
         preserveAspectRatio="none"
-        style={styles.backgroundSvg} 
+        style={styles.backgroundSvg}
       />
       <View style={styles.notCompletedContainer}>
         {isCompleted ? (
@@ -37,7 +37,7 @@ const RandomMissionBanner = () => {
         ) : (
           <>
             <Text style={styles.descriptionLine1}>새로운 랜덤미션이 도착했어요!</Text>
-            <Text style={styles.descriptionLine2}>참여하고 플로우 스코어를 받아요</Text>
+            <Text style={styles.descriptionLine2}>참여하고 오늘의 루틴을 완성해요</Text>
           </>
         )}
       </View>
