@@ -782,13 +782,13 @@ ${deepLink}`;
                         style={styles.infoIconButton}
                         onPress={() => setShowCertificationTooltip(!showCertificationTooltip)}
                       >
-                        <InfoCircleIcon width={14} height={14} />
+                        <InfoCircleIcon width={16} height={16} />
                       </TouchableOpacity>
                     </View>
                     {showCertificationTooltip && (
                       <View style={styles.tooltip}>
                         <Text variant="xsReg" color={colors.text.secondary}>
-                          직전 인증 요일의 인증 완료 인원 기준입니다
+                          최근 인증일의 인증 완료 인원 기준입니다
                         </Text>
                       </View>
                     )}
@@ -1360,11 +1360,11 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: scale(24),
-    marginTop: verticalScale(36),
+    marginTop: verticalScale(18),
   },
   sectionNoPadding: {
     paddingHorizontal: scale(0),
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(4),
   },
   sectionTitleNoPadding: {
     paddingHorizontal: scale(24),
@@ -1401,14 +1401,13 @@ const styles = StyleSheet.create({
   },
   participantSummary: {
     flexDirection: 'column',
-    gap: scale(16),
     paddingHorizontal: scale(24),
     marginBottom: verticalScale(12),
   },
   summaryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   summaryItemHeaderContainer: {
     flex: 1,
@@ -1420,19 +1419,18 @@ const styles = StyleSheet.create({
     gap: scale(4),
   },
   summaryValue: {
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
   },
   infoIconButton: {
-    width: scale(16),
-    height: verticalScale(16),
+    width: scale(36),
+    height: verticalScale(36),
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: scale(10),
   },
   tooltip: {
     position: 'absolute',
-    top: verticalScale(24),
-    left: scale(84),
+    top: verticalScale(32),
+    left: scale(88),
     height: verticalScale(32),
     borderRadius: scale(10),
     backgroundColor: colors.background,
