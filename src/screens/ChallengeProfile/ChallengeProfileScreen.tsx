@@ -160,14 +160,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       setRounds(roundsResult);
 
       const currentRound = roundsResult.find(r => r.isCurrentRound);
+      let roundToSelect: number | null = null;
       if (currentRound) {
+        roundToSelect = currentRound.roundNumber;
         setSelectedRound(currentRound.roundNumber);
       } else if (roundsResult.length > 0) {
+        roundToSelect = roundsResult[0].roundNumber;
         setSelectedRound(roundsResult[0].roundNumber);
       }
 
       const statResult = await getVerificationStat(challengeId);
       setVerificationStat(statResult);
+
+      // 라운드가 선택되면 피드도 가져오기
+      if (roundToSelect !== null) {
+        await fetchVerificationFeed(roundToSelect);
+      }
     } catch (error: any) {
       // 라운드/통계 조회 실패 시 무시
     }
@@ -189,6 +197,35 @@ export const ChallengeProfileScreen: React.FC = () => {
     }
   };
 
+  // 초기 데이터 로딩 함수
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // 챌린지 기본 정보 조회
+      const detailResult = await getChallengeDetail(challengeId);
+      setData(detailResult);
+      setIsLiked(detailResult.isLiked);
+      setIsParticipated(detailResult.isParticipant);
+
+      // 챌린지 프로필 정보 조회
+      try {
+        const profileResult = await getChallengeProfile(challengeId);
+        processProfileData(profileResult);
+      } catch (profileError: any) {
+        setProfile(null);
+      }
+
+      // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
+      if (detailResult.isObserverMode || detailResult.isParticipant) {
+        await fetchRoundsAndStats();
+      }
+    } catch (error: any) {
+      console.error('데이터 로딩 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [challengeId]);
+
   // 전체 데이터 새로고침 함수
   const refreshAllData = async () => {
     try {
@@ -209,22 +246,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
       if (detailResult.isObserverMode || detailResult.isParticipant) {
         await fetchRoundsAndStats();
-
-        // 선택된 라운드가 있으면 피드도 새로고침
-        if (selectedRound !== null) {
-          await fetchVerificationFeed(selectedRound);
-        }
       }
     } catch (error: any) {
       console.error('데이터 새로고침 실패:', error);
     }
   };
 
+  // 초기 데이터 로딩
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      fetchData();
-    }, [fetchData])
+      refreshAllData();
+    }, [challengeId])
   );
 
   // 선택된 라운드 변경 시 피드 조회
@@ -288,14 +325,14 @@ export const ChallengeProfileScreen: React.FC = () => {
   const handleShare = async () => {
     try {
       const deepLink = `hrr://challenge/${challengeId}`;
-      const shareMessage = 
-`🔥 ${data.title} 챌린지에 참여해요!
+      const shareMessage =
+        `🔥 ${data.title} 챌린지에 참여해요!
 
 현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
 혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪
 
 ${deepLink}`;
-      
+
       await Share.share({
         message: shareMessage,
         title: `${data.title} 챌린지에 참여해요!`,

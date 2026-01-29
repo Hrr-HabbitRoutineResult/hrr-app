@@ -1,7 +1,7 @@
 import { VerificationDetail, VerificationDetailResponse } from '../libs/api/challenge';
 
 export type RootStackParamList = {
-  HomeTabs: undefined;
+  HomeTabs: { screen?: keyof HomeTabParamList } | undefined;
   Notifications: undefined;
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
