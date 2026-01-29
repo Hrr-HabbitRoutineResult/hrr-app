@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: scale(24),
+    paddingHorizontal: scale(20),
     backgroundColor: colors.white,
   },
   backButton: {
@@ -469,8 +469,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   searchContainer: {
-    paddingHorizontal: scale(24),
-    paddingTop: verticalScale(15),
+    paddingHorizontal: scale(20),
     backgroundColor: colors.white,
   },
   searchInputContainer: {
@@ -508,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: scale(24),
+    paddingHorizontal: scale(20),
     paddingBottom: verticalScale(100), // 하단 네비게이션 바 여유 공간
   },
   popularSearchSection: {

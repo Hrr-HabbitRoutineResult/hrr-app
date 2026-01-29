@@ -1,4 +1,3 @@
-// src/components/challenge/ChallengeCard.tsx
 import React from 'react';
 import {
   View,
@@ -8,6 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { colors, radius, spacing, typography } from '../../design/tokens';
+import { scale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 
 export type ChallengeCardItem = {
@@ -24,9 +24,9 @@ type Props = {
 };
 
 const { width: screenWidth } = Dimensions.get('window');
-const CARD_MARGIN = spacing.md;
+const HORIZONTAL_PADDING = scale(20);
 const CARD_PADDING = spacing.xs;
-const CARD_WIDTH = (screenWidth - (CARD_MARGIN * 2) - CARD_PADDING) / 2; // Unified card width
+const CARD_WIDTH = (screenWidth - (HORIZONTAL_PADDING * 2) - CARD_PADDING) / 2;
 
 export const ChallengeCard = ({ item, onPress }: Props) => {
 
@@ -34,8 +34,6 @@ export const ChallengeCard = ({ item, onPress }: Props) => {
     width: CARD_WIDTH,
     height: 148,
   };
-
-  const pillWidth = CARD_WIDTH * 0.9; // Pill is 90% of card width
 
   return (
     <TouchableOpacity
@@ -52,7 +50,7 @@ export const ChallengeCard = ({ item, onPress }: Props) => {
 
         <View style={styles.cardTextArea}>
           <Text
-            variant="smMd" // Changed to smMd for bolder text
+            variant="smMd"
             color={colors.white}
             style={styles.cardTitle}
             numberOfLines={1}
@@ -60,7 +58,7 @@ export const ChallengeCard = ({ item, onPress }: Props) => {
             {item.title}
           </Text>
           <Text
-            variant="xsReg"
+            variant="xxs"
             color={colors.white}
             style={styles.cardSubtitle}
             numberOfLines={1}
@@ -69,7 +67,7 @@ export const ChallengeCard = ({ item, onPress }: Props) => {
           </Text>
         </View>
 
-        <View style={[styles.pill, { width: pillWidth }]}>
+        <View style={styles.pill}>
           <Text variant="xsReg" color={colors.white} style={styles.pillText} numberOfLines={1}>
             {item.roundText}
           </Text>
@@ -81,7 +79,7 @@ export const ChallengeCard = ({ item, onPress }: Props) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.lg,
+    borderRadius: scale(10),
     overflow: 'hidden',
   },
   cardImage: {
@@ -89,16 +87,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardImageStyle: {
-    borderRadius: radius.lg,
+    borderRadius: scale(10),
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.60)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   cardTextArea: {
-    paddingHorizontal: spacing.sm,
-    paddingTop: 24,
-    left: 8,
+    paddingLeft: 16,
+    paddingRight: 12,
+    paddingTop: 23.5,
   },
   cardTitle: {
     lineHeight: 18,
@@ -108,11 +106,11 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   pill: {
-    alignSelf: 'center',
-    marginBottom: spacing.sm,
-    paddingVertical: 4, // Vertically shorter
-    borderRadius: 999,
-    backgroundColor: 'rgba(0,0,0,0.70)',
+    marginBottom: scale(12),
+    marginHorizontal: scale(12),
+    paddingVertical: scale(6),
+    borderRadius: scale(14),
+    backgroundColor: colors.text.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },

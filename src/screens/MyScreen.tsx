@@ -8,7 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
-import { verticalScale } from '../utils/scaling';
+import { scale, verticalScale } from '../utils/scaling';
 import { Text } from '../components/common/Text';
 
 import SectionHeader from '../components/common/SectionHeader';
@@ -87,7 +87,7 @@ const MyScreen = () => {
   const certificationItems: TextCertificationItem[] = useMemo(() => {
     return (myVerificationHistory || []).map((item) => ({
       id: item.verificationId,
-      title: `[${item.challengeTitle}] ${item.title}`,
+      title: item.title,
       description: item.content || '',
       date: format.date(item.verifiedAt),
       thumbnail: { uri: item.photoUrl },
@@ -102,10 +102,10 @@ const MyScreen = () => {
         rightContent={
           <TouchableOpacity
             onPress={() => navigation.navigate('Settings')}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            hitSlop={{ top: scale(12), bottom: scale(12), left: scale(12), right: scale(12) }}
             style={styles.iconButton}
           >
-            <SettingIcon />
+            <SettingIcon width={scale(22)} height={scale(22)} />
           </TouchableOpacity>
         }
       />
@@ -113,7 +113,10 @@ const MyScreen = () => {
       <RefreshableScrollView
         style={styles.scrollView}
         onRefresh={fetchData}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + insets.bottom }}
+        contentContainerStyle={{
+          paddingHorizontal: scale(20),
+          paddingBottom: tabBarHeight + insets.bottom
+        }}
       >
         {isHistoryLoading && !userInfo ? (
           <ActivityIndicator style={styles.loadingIndicator} />
@@ -127,22 +130,22 @@ const MyScreen = () => {
               onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
             />
 
-            <View style={styles.tabContentListWrapper}>
+            <View style={styles.participatingChallengeWrapper}>
               <ParticipatingChallengeSection
                 items={participatingChallenges}
                 onPressHeader={() => navigation.navigate('ParticipatingChallenge', {})}
                 onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
                 onPressEmpty={() => navigation.navigate('ChallengeList', {})}
               />
+            </View>
 
-              <View style={{ marginTop: spacing.xxxl }}>
-                <ViewModeHeader
-                  title="인증 기록"
-                  initialMode={certificationViewMode}
-                  onViewModeChange={(mode) => setCertificationViewMode(mode)}
-                  onPressTitle={() => navigation.navigate('CertificationHistory', {})}
-                />
-              </View>
+            <View style={styles.tabContentListWrapper}>
+              <ViewModeHeader
+                title="인증 기록"
+                initialMode={certificationViewMode}
+                onViewModeChange={(mode) => setCertificationViewMode(mode)}
+                onPressTitle={() => navigation.navigate('CertificationHistory', {})}
+              />
               {isHistoryLoading ? (
                 <ActivityIndicator style={styles.loadingIndicator} />
               ) : certificationItems.length === 0 ? (
@@ -150,18 +153,22 @@ const MyScreen = () => {
                   <Text variant="md" color={colors.text.secondary}>인증 기록이 없습니다</Text>
                 </View>
               ) : certificationViewMode === 'grid' ? (
-                <PhotoCertificationGrid
-                  items={certificationItems}
-                  showOverlay={false}
-                  onItemPress={(item) =>
-                    navigation.navigate('ChallengeCertificationDetail', {
-                      verificationId: item.id,
-                    })
-                  }
-                />
+                <View style={styles.photoGridContainer}>
+                  <PhotoCertificationGrid
+                    items={certificationItems}
+                    showOverlay={false}
+                    containerPadding={0}
+                    onItemPress={(item) =>
+                      navigation.navigate('ChallengeCertificationDetail', {
+                        verificationId: item.id,
+                      })
+                    }
+                  />
+                </View>
               ) : (
                 <TextCertificationList
                   items={certificationItems}
+                  containerPadding={0}
                   onItemPress={(item) =>
                     navigation.navigate('ChallengeCertificationDetail', {
                       verificationId: item.id,
@@ -189,15 +196,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   iconButton: {
-    width: 24,
-    height: 24,
+    width: scale(48),
+    height: scale(48),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  participatingChallengeWrapper: {
+    paddingTop: verticalScale(8),
   },
   tabContentListWrapper: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingTop: 20,
+    marginTop: verticalScale(32),
   },
   emptyCertificationContainer: {
     padding: spacing.xl,
@@ -207,5 +217,8 @@ const styles = StyleSheet.create({
   },
   loadingIndicator: {
     marginTop: spacing.xl,
+  },
+  photoGridContainer: {
+    marginHorizontal: -scale(20),
   },
 });

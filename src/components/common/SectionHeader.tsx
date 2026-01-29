@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { scale, verticalScale } from '../../utils/scaling';
@@ -16,16 +16,17 @@ type SectionHeaderProps = {
 const SectionHeader = ({ title, actionText, onActionPress, rightContent, isScreenHeader = false }: SectionHeaderProps) => {
   const insets = useSafeAreaInsets();
 
-  const topPadding = isScreenHeader ? (Platform.OS === 'android' ? verticalScale(18) : verticalScale(10)) : 0;
-  const bottomPadding = isScreenHeader ? verticalScale(4) : 0;
-  const safeAreaTop = isScreenHeader ? (Platform.OS === 'android' ? Math.max(insets.top, verticalScale(24)) : insets.top) : 0;
+  const topPadding = isScreenHeader ? verticalScale(20) : 0
+  const bottomPadding = isScreenHeader ? verticalScale(14) : 0;
+  const safeAreaTop = isScreenHeader ? insets.top : 0;
 
   return (
     <View style={[
       isScreenHeader ? styles.screenHeaderContainer : styles.container,
       isScreenHeader && {
         paddingTop: safeAreaTop + topPadding,
-        paddingBottom: bottomPadding
+        paddingBottom: bottomPadding,
+        height: safeAreaTop + topPadding + bottomPadding + verticalScale(34),
       }
     ]}>
       {isScreenHeader ? (
@@ -66,16 +67,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: scale(24),
+    paddingLeft: scale(20),
+    paddingRight: scale(10),
     backgroundColor: colors.white,
   },
   rightContentContainer: {
-    minWidth: 24,
+    minWidth: scale(24),
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
   rightContentPlaceholder: {
-    minWidth: 24,
+    minWidth: scale(24),
   },
 });
 

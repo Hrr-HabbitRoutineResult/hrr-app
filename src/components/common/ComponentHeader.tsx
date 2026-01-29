@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../design/tokens';
+import { scale, verticalScale } from '../../utils/scaling';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 
 type ComponentHeaderProps = {
@@ -23,21 +24,19 @@ const ComponentHeader = ({ title, onPress }: ComponentHeaderProps) => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingVertical: verticalScale(10),
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    // The user wants the icon right next to the text, so no space-between
+    gap: scale(15),
+    marginBottom: verticalScale(4),
   },
   title: {
-    ...typography.header3,
+    ...typography.header4,
     color: colors.text.primary,
-    marginRight: spacing.xxs, // Small space between text and icon
   },
   chevronBox: {
-    width: 18,
-    height: 18,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
