@@ -360,6 +360,7 @@ const ProfileEditScreen: React.FC = () => {
             maxLength={10}
             placeholder="닉네임을 입력해 주세요"
             placeholderTextColor={Color.icon.gray}
+            allowFontScaling={false}
           />
           {nickname.length > 0 && (
             <>

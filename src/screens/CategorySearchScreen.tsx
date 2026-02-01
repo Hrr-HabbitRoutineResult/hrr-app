@@ -193,6 +193,7 @@ const CategorySearchScreen = () => {
             onSubmitEditing={() => handleSearch()}
             returnKeyType="search"
             autoFocus={false}
+            allowFontScaling={false}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity

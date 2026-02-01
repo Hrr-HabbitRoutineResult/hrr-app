@@ -79,7 +79,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
               ) : (
                 <CheckboxUnchecked width={12} height={10} />
               )}
-              <Text style={styles.challengeName}>{item.title}</Text>
+              <Text style={styles.challengeName} allowFontScaling={false}>{item.title}</Text>
             </View>
           </View>
         </Animated.View>
@@ -98,7 +98,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         >
           <View style={styles.contentWrapper}>
             <PlusIcon width={20} height={20} />
-            <Text style={styles.emptyText}>
+            <Text style={styles.emptyText} allowFontScaling={false}>
               새로운 챌린지에{'\n'}가입해 보세요
             </Text>
           </View>

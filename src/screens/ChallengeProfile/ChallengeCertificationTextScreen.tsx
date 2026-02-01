@@ -399,6 +399,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
               placeholderTextColor={colors.icon.gray}
               value={title}
               onChangeText={setTitle}
+              allowFontScaling={false}
             />
           </View>
         </View>
@@ -414,6 +415,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
             multiline
             textAlignVertical="top"
             maxLength={200}
+            allowFontScaling={false}
           />
         </View>
         <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
@@ -587,6 +589,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
                     setModalLinkPreview(null);
                   }
                 }}
+                allowFontScaling={false}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"

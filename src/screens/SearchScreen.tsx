@@ -260,6 +260,7 @@ const SearchScreen = () => {
               onSubmitEditing={() => handleSearch()}
               returnKeyType="search"
               autoFocus={shouldAutoFocus}
+              allowFontScaling={false}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity

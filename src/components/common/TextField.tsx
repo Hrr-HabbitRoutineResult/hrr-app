@@ -120,6 +120,7 @@ export const TextField = React.forwardRef<TextInput, TextFieldProps>(({
                     style={[styles.input, typography.smMd, style]}
                     placeholderTextColor={getPlaceholderColor()}
                     editable={!disabled}                        // 비활성화 상태에 따른 편집 가능 여부
+                    allowFontScaling={false}                    // 시스템 폰트 크기 설정 무시
                     onFocus={() => setIsFocused(true)}          // 포커스 시 테두리 색상 변경
                     onBlur={() => setIsFocused(false)}          // 포커스 해제 시 테두리 색상 복원
                     {...rest}                                  // 나머지 TextInput props 전달

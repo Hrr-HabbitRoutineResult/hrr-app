@@ -197,6 +197,7 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
                       setBottomSheetHeight(560);
                       setIsKeyboardActive(false);
                     }}
+                    allowFontScaling={false}
                   />
                 </View>
                 <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
