@@ -8,8 +8,6 @@ import { Header } from '../components/common/Header';
 import { Text } from '../components/common/Text';
 import { colors, spacing, typography } from '../design/tokens';
 import { getLikedChallenges, ChallengeItem as ApiChallengeItem } from '../libs/api/user';
-import { SvgXml } from 'react-native-svg';
-import { magnifyingGlass } from '../../assets/icons/search-text-primay.svg'
 import Search from '../../assets/icons/search-text-primay.svg';
 export type LikedChallengeItem = {
   id: string;
