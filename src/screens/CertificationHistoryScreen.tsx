@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import { colors, spacing, typography } from '../design/tokens';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 import { getVerificationHistoryById, VerificationHistoryItem } from '../libs/api/user';
+import { scale, verticalScale } from '../utils/scaling';
 
 type CertificationHistoryScreenRouteProp = RouteProp<RootStackParamList, 'CertificationHistory'>;
 
@@ -60,10 +61,10 @@ const CertificationHistoryScreen = () => {
   const certificationItems: TextCertificationItem[] = useMemo(() => {
     return (historySource || []).map((item) => ({
       id: item.verificationId,
-      title: `[${item.challengeTitle}] ${item.title}`,
+      title: item.title,
       description: item.content || '',
       date: format.date(item.verifiedAt),
-      thumbnail: { uri: item.photoUrl },
+      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
     }));
   }, [historySource]);
 
@@ -84,27 +85,33 @@ const CertificationHistoryScreen = () => {
       );
     }
 
-    return certificationViewMode === 'grid' ? (
-      <PhotoCertificationGrid
-        items={certificationItems}
-        showOverlay={false}
-        containerPadding={spacing.md}
-        onItemPress={(item) =>
-          navigation.navigate('ChallengeCertificationDetail', {
-            verificationId: item.id,
-          })
-        }
-      />
-    ) : (
-      <TextCertificationList
-        items={certificationItems}
-        containerPadding={spacing.md}
-        onItemPress={(item) =>
-          navigation.navigate('ChallengeCertificationDetail', {
-            verificationId: item.id,
-          })
-        }
-      />
+    return (
+      <View style={styles.listWrapper}>
+        {certificationViewMode === 'grid' ? (
+          <View style={styles.photoGridContainer}>
+            <PhotoCertificationGrid
+              items={certificationItems}
+              showOverlay={false}
+              containerPadding={0}
+              onItemPress={(item) =>
+                navigation.navigate('ChallengeCertificationDetail', {
+                  verificationId: item.id,
+                })
+              }
+            />
+          </View>
+        ) : (
+          <TextCertificationList
+            items={certificationItems}
+            containerPadding={0}
+            onItemPress={(item) =>
+              navigation.navigate('ChallengeCertificationDetail', {
+                verificationId: item.id,
+              })
+            }
+          />
+        )}
+      </View>
     );
   }
 
@@ -116,11 +123,13 @@ const CertificationHistoryScreen = () => {
         useSafeArea
         showDivider
       />
-      <ViewModeHeader
-        title="전체 기록"
-        initialMode={certificationViewMode}
-        onViewModeChange={(mode) => setCertificationViewMode(mode)}
-      />
+      <View style={styles.contentWrapper}>
+        <ViewModeHeader
+          title="전체 기록"
+          initialMode={certificationViewMode}
+          onViewModeChange={(mode) => setCertificationViewMode(mode)}
+        />
+      </View>
       {renderContent()}
     </View>
   );
@@ -131,6 +140,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
+  contentWrapper: {
+    paddingHorizontal: scale(20),
+    marginTop: verticalScale(14),
+  },
+  listWrapper: {
+    flex: 1,
+    paddingHorizontal: scale(20),
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -139,6 +156,9 @@ const styles = StyleSheet.create({
   emptyText: {
     ...typography.md,
     color: colors.text.secondary,
+  },
+  photoGridContainer: {
+    marginHorizontal: -scale(20),
   },
 });
 
