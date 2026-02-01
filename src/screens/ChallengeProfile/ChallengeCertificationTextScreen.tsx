@@ -492,37 +492,62 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       </ScrollView>
 
       {/* 하단 첨부 바 */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        style={styles.keyboardAvoidingView}
-      >
+      {Platform.OS === 'ios' ? (
+        <KeyboardAvoidingView
+          behavior="padding"
+          keyboardVerticalOffset={0}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={[
+            styles.attachmentBar,
+            isKeyboardVisible && styles.attachmentBarKeyboard,
+          ]}>
+            <View style={styles.attachmentButtons}>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleGalleryPress}
+                activeOpacity={0.7}
+              >
+                <PostGalleryIcon width={20} height={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleLinkPress}
+                activeOpacity={0.7}
+              >
+                <PostLinkIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      ) : (
         <View style={[
-          styles.attachmentBar,
-          isKeyboardVisible && styles.attachmentBarKeyboard,
-          Platform.OS === 'android' && isKeyboardVisible && {
-            bottom: keyboardHeight,
-            paddingBottom: verticalScale(25),
-          }
+          styles.keyboardAvoidingView,
+          isKeyboardVisible && { bottom: keyboardHeight }
         ]}>
-          <View style={styles.attachmentButtons}>
-            <TouchableOpacity
-              style={styles.attachmentButton}
-              onPress={handleGalleryPress}
-              activeOpacity={0.7}
-            >
-              <PostGalleryIcon width={20} height={20} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.attachmentButton}
-              onPress={handleLinkPress}
-              activeOpacity={0.7}
-            >
-              <PostLinkIcon width={20} height={20} />
-            </TouchableOpacity>
+          <View style={[
+            styles.attachmentBar,
+            isKeyboardVisible && styles.attachmentBarKeyboard,
+          ]}>
+            <View style={styles.attachmentButtons}>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleGalleryPress}
+                activeOpacity={0.7}
+              >
+                <PostGalleryIcon width={20} height={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleLinkPress}
+                activeOpacity={0.7}
+              >
+                <PostLinkIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      )}
 
       {/* 링크 첨부 모달 */}
       <Modal
