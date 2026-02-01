@@ -12,7 +12,7 @@ type ComponentHeaderProps = {
 const ComponentHeader = ({ title, onPress }: ComponentHeaderProps) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.container} disabled={!onPress}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title} allowFontScaling={false}>{title}</Text>
       {onPress && (
         <View style={styles.chevronBox}>
           <ChevronRightIcon width={5} height={10} />

@@ -232,6 +232,7 @@ const NotificationsScreen = () => {
                 styles.filterButtonText,
                 activeCategory === category.value && styles.filterButtonTextActive,
               ]}
+              allowFontScaling={false}
             >
               {category.label}
             </Text>
@@ -269,7 +270,7 @@ const NotificationsScreen = () => {
       ) : (
         <View style={styles.emptyContainer}>
           <LogoGray width={124.16} height={119.79} />
-          <Text style={styles.emptyText}>받은 알림이 없어요</Text>
+          <Text style={styles.emptyText} allowFontScaling={false}>받은 알림이 없어요</Text>
         </View>
       )}
     </View>

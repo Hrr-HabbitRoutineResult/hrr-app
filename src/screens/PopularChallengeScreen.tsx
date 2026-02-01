@@ -60,7 +60,7 @@ const PopularChallengeScreen = () => {
         {dailyTop10.length === 0 && (
           <View style={styles.emptyContainer}>
             <LogoGray width={124.16} height={119.79} />
-            <Text style={styles.emptyText}>
+            <Text style={styles.emptyText} allowFontScaling={false}>
               새로운 하루의 챌린지 순위를{'\n'}집계 중이에요
             </Text>
           </View>
@@ -69,8 +69,8 @@ const PopularChallengeScreen = () => {
         {/* TOP 10 타이틀 섹션 */}
         {dailyTop10.length > 0 && (
           <View style={styles.top10Container}>
-            <Text style={styles.top10Title}>TOP 10</Text>
-            <Text style={styles.top10Subtitle}>오늘의 인기 챌린지 순위예요!</Text>
+            <Text style={styles.top10Title} allowFontScaling={false}>TOP 10</Text>
+            <Text style={styles.top10Subtitle} allowFontScaling={false}>오늘의 인기 챌린지 순위예요!</Text>
           </View>
         )}
 

@@ -94,7 +94,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
                   color: isFocused ? colors.text.primary : colors.text.secondary,
                   fontSize: typography.xxs.fontSize,
                   fontFamily: typography.xxs.fontFamily,
-                }}>
+                }} allowFontScaling={false}>
                   {route.name}
                 </Text>
               </View>

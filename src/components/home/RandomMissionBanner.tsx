@@ -31,13 +31,13 @@ const RandomMissionBanner = () => {
       <View style={styles.notCompletedContainer}>
         {isCompleted ? (
           <>
-            <Text style={styles.descriptionLine1}>랜덤미션을 완료했어요!</Text>
-            <Text style={styles.descriptionLine2}>내일 새로운 미션으로 돌아올게요</Text>
+            <Text style={styles.descriptionLine1} allowFontScaling={false}>랜덤미션을 완료했어요!</Text>
+            <Text style={styles.descriptionLine2} allowFontScaling={false}>내일 새로운 미션으로 돌아올게요</Text>
           </>
         ) : (
           <>
-            <Text style={styles.descriptionLine1}>새로운 랜덤미션이 도착했어요!</Text>
-            <Text style={styles.descriptionLine2}>참여하고 오늘의 루틴을 완성해요</Text>
+            <Text style={styles.descriptionLine1} allowFontScaling={false}>새로운 랜덤미션이 도착했어요!</Text>
+            <Text style={styles.descriptionLine2} allowFontScaling={false}>참여하고 오늘의 루틴을 완성해요</Text>
           </>
         )}
       </View>

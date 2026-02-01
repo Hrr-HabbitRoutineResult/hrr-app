@@ -277,7 +277,7 @@ const UserScreen = () => {
           />
           {certificationItems.length === 0 ? (
             <View style={styles.emptyCertificationContainer}>
-              <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+              <Text style={styles.tabContentText} allowFontScaling={false}>인증 기록이 없습니다</Text>
             </View>
           ) : certificationViewMode === 'grid' ? (
             <View style={styles.photoGridContainer}>
@@ -378,16 +378,16 @@ const UserScreen = () => {
           <Animated.View style={[styles.sheetWrap, { transform: [{ translateY }] }]}>
             <View style={styles.sheetGroup}>
               <Pressable style={styles.sheetItem} onPress={handleBlock}>
-                <Text style={styles.sheetItemTextDestructive}>차단하기</Text>
+                <Text style={styles.sheetItemTextDestructive} allowFontScaling={false}>차단하기</Text>
               </Pressable>
               <View style={styles.sheetDivider} />
               <Pressable style={styles.sheetItem} onPress={handleReport}>
-                <Text style={styles.sheetItemTextDestructive}>신고하기</Text>
+                <Text style={styles.sheetItemTextDestructive} allowFontScaling={false}>신고하기</Text>
               </Pressable>
             </View>
             <View style={{ height: 10 }} />
             <Pressable style={styles.sheetCancel} onPress={() => closeSheet()}>
-              <Text style={styles.sheetItemText}>취소</Text>
+              <Text style={styles.sheetItemText} allowFontScaling={false}>취소</Text>
             </Pressable>
             <View style={{ height: Platform.OS === 'ios' ? 10 : 16 }} />
           </Animated.View>

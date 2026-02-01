@@ -61,7 +61,7 @@ const ChallengeItem: React.FC<ChallengeItemProps> = ({
             <View style={styles.dDayOverlay}>
               {/* D-5까지만 텍스트 표시, D-6 이상은 오버레이만 */}
               {ddayUntilStart !== undefined && ddayUntilStart <= 5 && (
-                <Text style={styles.dDayText}>D-{ddayUntilStart}</Text>
+                <Text style={styles.dDayText} allowFontScaling={false}>D-{ddayUntilStart}</Text>
               )}
             </View>
           )}
@@ -72,15 +72,15 @@ const ChallengeItem: React.FC<ChallengeItemProps> = ({
             styles.rankCircle,
             rank > 3 && styles.rankCircleGray
           ]}>
-            <Text style={styles.rankText}>{rank}</Text>
+            <Text style={styles.rankText} allowFontScaling={false}>{rank}</Text>
           </View>
         )}
       </View>
 
       {/* 챌린지 정보 영역 */}
       <View style={styles.infoContainer}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subText} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={styles.title} allowFontScaling={false}>{title}</Text>
+        <Text style={styles.subText} numberOfLines={1} ellipsizeMode="tail" allowFontScaling={false}>
           {description}
         </Text>
       </View>
@@ -88,14 +88,14 @@ const ChallengeItem: React.FC<ChallengeItemProps> = ({
       {/* 오른쪽 영역 (요일 배지, 참가자 수) */}
       <View style={styles.rightContainer}>
         <View style={styles.dailyBadge}>
-          <Text style={styles.dailyText}>{daysText}</Text>
+          <Text style={styles.dailyText} allowFontScaling={false}>{daysText}</Text>
         </View>
 
         <View style={styles.participantRow}>
           <View style={styles.iconWrapper}>
             <PersonIcon width={14} height={14} />
           </View>
-          <Text style={styles.participantCount}>
+          <Text style={styles.participantCount} allowFontScaling={false}>
             {currentParticipantCount} / {maxParticipantCount}
           </Text>
         </View>

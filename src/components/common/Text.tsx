@@ -23,6 +23,7 @@ export const Text: React.FC<TextProps> = ({
     // 렌더링
     return (
         <RNText
+            allowFontScaling={false}  // 시스템 폰트 크기 설정 무시
             style={[
                 {
                     includeFontPadding: false,

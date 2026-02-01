@@ -48,6 +48,7 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
                 styles.dayText,
                 isSelected && styles.dayTextSelected,
               ]}
+              allowFontScaling={false}
             >
               {day.label}
             </Text>

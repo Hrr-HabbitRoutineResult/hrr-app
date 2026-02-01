@@ -80,7 +80,7 @@ const CertificationHistoryScreen = () => {
     if (certificationItems.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>인증 기록이 없습니다</Text>
+          <Text style={styles.emptyText} allowFontScaling={false}>인증 기록이 없습니다</Text>
         </View>
       );
     }

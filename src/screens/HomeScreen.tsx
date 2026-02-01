@@ -72,14 +72,14 @@ const HomeScreen = () => {
         {/* 초기 로딩 시에만 로딩 인디케이터를 표시합니다. */}
         {isLoading && dailyTop.length === 0 ? (
           <View style={styles.centerBox}>
-            <Text style={styles.loadingText}>로딩 중...</Text>
+            <Text style={styles.loadingText} allowFontScaling={false}>로딩 중...</Text>
           </View>
         ) : (
           <>
             <View style={styles.topSectionContainer}>
               <View style={styles.welcomeContainer}>
-                <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
-                <Text style={styles.welcomeTitle}>오늘도 챌린지를 해볼까요?</Text>
+                <Text style={styles.welcomeSubtitle} allowFontScaling={false}>안녕하세요 {nickname} 님!</Text>
+                <Text style={styles.welcomeTitle} allowFontScaling={false}>오늘도 챌린지를 해볼까요?</Text>
               </View>
 
               <ChallengeCarousel challenges={ongoingChallenges} />
@@ -106,7 +106,7 @@ const HomeScreen = () => {
 
               <View style={[styles.sectionContainer, styles.lastSection]}>
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>오늘의 랜덤미션</Text>
+                  <Text style={styles.sectionTitle} allowFontScaling={false}>오늘의 랜덤미션</Text>
                 </View>
                 <RandomMissionBanner />
               </View>
