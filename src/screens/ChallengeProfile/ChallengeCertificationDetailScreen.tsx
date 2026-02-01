@@ -605,7 +605,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         onRefresh={fetchVerificationDetail}
       >
         {/* 사용자 정보 */}
-        <View style={styles.userSection}>
+        <TouchableOpacity
+          style={styles.userSection}
+          onPress={() => navigation.navigate('User', { userId: verification.user.userId })}
+          activeOpacity={0.7}
+        >
           <View style={styles.userAvatar}>
             {getS3ImageUrl(verification.user.profileImageUrl) ? (
               <Image
@@ -631,7 +635,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               {formatDate(verification.createdAt)}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* 질문 태그 */}
         {verification.isQuestion && (
@@ -788,6 +792,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     onDelete={handleDeleteComment}
                     onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
+                    onProfilePress={(userId) => navigation.navigate('User', { userId })}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
                     canSelectComment={verification?.canSelectComment}
@@ -834,6 +839,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                             onDelete={handleDeleteComment}
                             onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
+                            onProfilePress={(userId) => navigation.navigate('User', { userId })}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
                             canSelectComment={verification?.canSelectComment}

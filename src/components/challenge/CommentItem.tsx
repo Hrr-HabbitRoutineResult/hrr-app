@@ -21,6 +21,7 @@ interface CommentItemProps {
   onDelete?: (commentId: number) => void;
   onAdopt?: (commentId: number) => void;
   onBlock?: (commentId: number) => void; // 댓글 작성자 차단
+  onProfilePress?: (userId: number) => void; // 프로필 클릭 시 호출
   isLiked?: boolean;
   isMine?: boolean;
   currentUserNickname?: string;
@@ -40,6 +41,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onDelete,
   onAdopt,
   onBlock,
+  onProfilePress,
   isLiked = false,
   isMine = false,
   currentUserNickname,
@@ -133,7 +135,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     >
       {/* 프로필 이미지 - 삭제/탈퇴는 숨김 */}
       {showProfile && (
-        <View style={styles.profileContainer}>
+        <TouchableOpacity
+          style={styles.profileContainer}
+          onPress={() => comment.userId && onProfilePress?.(comment.userId)}
+          activeOpacity={0.7}
+          disabled={!comment.userId}
+        >
           {getS3ImageUrl(comment.userProfileUrl) ? (
             <Image
               source={{ uri: getS3ImageUrl(comment.userProfileUrl)! }}
@@ -142,7 +149,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           ) : (
             <DefaultProfileIcon width={32} height={32} />
           )}
-        </View>
+        </TouchableOpacity>
       )}
 
       {/* 댓글 내용 */}
@@ -156,7 +163,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           <>
             {/* 사용자 닉네임과 작성 시간 */}
             <View style={styles.headerRow}>
-              <View style={styles.userInfoRow}>
+              <TouchableOpacity
+                style={styles.userInfoRow}
+                onPress={() => comment.userId && onProfilePress?.(comment.userId)}
+                activeOpacity={0.7}
+                disabled={!comment.userId}
+              >
                 {comment.anonymous && !isMasked && (
                   <View style={styles.lockIconContainer}>
                     <LockIcon width={10} height={12} />
@@ -176,7 +188,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                     </Text>
                   </>
                 )}
-              </View>
+              </TouchableOpacity>
               {!isMasked && (
                 <TouchableOpacity
                   onPress={() => onMenuToggle?.(comment.commentId)}
