@@ -80,7 +80,9 @@ const MyScreen = () => {
       title: item.title,
       subtitle: item.description,
       imageUrl: item.image,
-      roundText: `${item.currentRound}R째 진행 중`,
+      roundText: item.isStarted
+        ? `${item.currentRound}R째 진행 중`
+        : `D-${item.dday}`,
     }));
   }, [myOngoingChallenges]);
 
