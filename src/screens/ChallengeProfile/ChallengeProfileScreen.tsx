@@ -1379,7 +1379,7 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: scale(24),
-    marginTop: verticalScale(18),
+    marginTop: verticalScale(36),
   },
   sectionNoPadding: {
     paddingHorizontal: scale(0),
