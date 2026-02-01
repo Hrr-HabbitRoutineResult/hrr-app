@@ -94,7 +94,7 @@ const LikedChallengeScreen = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList')} activeOpacity={0.8}>
+      <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList', {})} activeOpacity={0.8}>
         <Search width={24} height={24} />
         <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
           관심있는 챌린지를 찜해보세요

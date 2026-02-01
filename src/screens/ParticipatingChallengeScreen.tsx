@@ -82,7 +82,7 @@ const ParticipatingChallengeScreen = () => {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       {isMe ? (
-        <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList')} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList', {})} activeOpacity={0.8}>
           <PlusIcon width={24} height={24} fill={colors.text.secondary} />
           <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
             새로운 챌린지에 가입해보세요
