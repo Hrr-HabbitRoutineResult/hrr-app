@@ -32,6 +32,8 @@ export type RootStackParamList = {
   CompletedChallenge: undefined;
   BlockedUserScreen: undefined;
   ErrorScreen: undefined;
+  TermsWebView: { title: string; url: string };
+  AuthOnboarding: undefined;
 };
 
 export type HomeTabParamList = {

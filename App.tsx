@@ -1,4 +1,4 @@
-import { StatusBar, StyleSheet, useColorScheme, View, AppState, DeviceEventEmitter, Platform } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme, AppState, DeviceEventEmitter, Platform } from 'react-native';
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -6,7 +6,6 @@ import {
 import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthOnboardingScreen } from './src/screens/Auth/AuthOnboardingScreen';
 import RootNavigator from './src/navigation/RootNavigator';
 import { LOGOUT_EVENT } from './src/libs/auth/logout';
 
@@ -106,21 +105,12 @@ function AppContent() {
     return null;
   }
 
-  if (isOnboardingComplete) {
-    return <RootNavigator showRecommendation={showRecommendation} />;
-  }
-
   return (
-    <View style={styles.container}>
-      <AuthOnboardingScreen onOnboardingComplete={handleOnboardingComplete} />
-    </View>
+    <RootNavigator 
+      showRecommendation={showRecommendation} 
+      isAuthenticated={isOnboardingComplete}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
