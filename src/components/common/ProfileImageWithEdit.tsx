@@ -1,14 +1,15 @@
-// src/components/MyPage/ProfileImageWithEdit.tsx
 import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import EditProfileIcon from '../../../assets/icons/camera-white.svg';
+import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import { colors as Color } from '../../design/tokens';
 
 interface ProfileImageWithEditProps {
   profileImageUrl?: string;
   onPress: () => void;
-  size?: number; // default 100
-  overlayOpacity?: number; // default 0.35
+  size?: number;
+  overlayOpacity?: number;
+  iconSize?: number;
 }
 
 const ProfileImageWithEdit: React.FC<ProfileImageWithEditProps> = ({
@@ -16,6 +17,7 @@ const ProfileImageWithEdit: React.FC<ProfileImageWithEditProps> = ({
   onPress,
   size = 100,
   overlayOpacity = 0.35,
+  iconSize = 32,
 }) => {
   const r = size / 2;
 
@@ -28,10 +30,12 @@ const ProfileImageWithEdit: React.FC<ProfileImageWithEditProps> = ({
       {profileImageUrl ? (
         <Image source={{ uri: profileImageUrl }} style={[styles.profileImage, { borderRadius: r }]} />
       ) : (
-        <View style={[styles.profileImagePlaceholder, { borderRadius: r }]} />
+        <View style={[styles.profileImagePlaceholder, { borderRadius: r }]}>
+          <DefaultProfileIcon width={size} height={size} />
+        </View>
       )}
 
-      {/* ✅ 사진 전체 덮는 오버레이 */}
+      {/* 사진 전체 덮는 오버레이 */}
       <View
         pointerEvents="none"
         style={[
@@ -40,9 +44,9 @@ const ProfileImageWithEdit: React.FC<ProfileImageWithEditProps> = ({
         ]}
       />
 
-      {/* ✅ 오버레이 중앙 아이콘 */}
+      {/* 오버레이 중앙 아이콘 */}
       <View pointerEvents="none" style={styles.centerIconWrap}>
-        <EditProfileIcon width={32} height={32} />
+        <EditProfileIcon width={iconSize} height={iconSize} />
       </View>
     </TouchableOpacity>
   );
@@ -52,7 +56,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Color.icon.gray,
     position: 'relative',
-    overflow: 'hidden', // ✅ 원형 밖으로 오버레이/아이콘 안 나가게
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -66,10 +70,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: Color.icon.gray,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   fullOverlay: {
-    ...StyleSheet.absoluteFillObject, // ✅ 전체 덮기
+    ...StyleSheet.absoluteFillObject,
   },
 
   centerIconWrap: {

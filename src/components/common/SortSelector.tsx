@@ -44,6 +44,7 @@ export const SortSelector: React.FC<SortSelectorProps> = ({
                 styles.optionText,
                 isSelected && styles.optionTextSelected,
               ]}
+              allowFontScaling={false}
             >
               {option.label}
             </Text>

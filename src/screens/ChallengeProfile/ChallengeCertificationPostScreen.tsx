@@ -4,6 +4,7 @@ import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { Header } from '../../components/common/Header';
 import { Text } from '../../components/common/Text';
 import { colors, typography } from '../../design/tokens';
@@ -116,8 +117,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         );
       }, 100);
     } catch (error: any) {
-
-      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글 작성에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -191,6 +191,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
               placeholderTextColor={colors.icon.gray}
               value={title}
               onChangeText={setTitle}
+              allowFontScaling={false}
             />
           </View>
         </View>
@@ -206,6 +207,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
             multiline
             textAlignVertical="top"
             maxLength={200}
+            allowFontScaling={false}
           />
         </View>
         <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>

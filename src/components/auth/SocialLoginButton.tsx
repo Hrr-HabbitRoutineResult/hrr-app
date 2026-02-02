@@ -59,7 +59,7 @@ export const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
         <View style={styles.iconContainer}>
           <IconComponent width={20} height={20} />
         </View>
-        <Text variant="md" color={config.textColor} style={styles.buttonText}>
+        <Text variant="md" color={config.textColor} style={styles.buttonText} allowFontScaling={false}>
           {config.text}
         </Text>
       </View>
@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
   button: {
     width: '100%',
     maxWidth: scale(350),
-    height: verticalScale(54),
     borderRadius: scale(8),
     paddingTop: verticalScale(18),
     paddingRight: scale(16),

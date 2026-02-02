@@ -1,4 +1,3 @@
-// src/components/MyPage/ParticipatingChallengeSection.tsx
 import React from 'react';
 import {
   View,
@@ -12,15 +11,16 @@ import { Text } from '../common/Text';
 import ComponentHeader from '../common/ComponentHeader';
 import PlusIcon from '../../../assets/icons/plus.svg';
 import { ChallengeCard, ChallengeCardItem } from '../challenge/ChallengeCard';
+import { scale, verticalScale } from '../../utils/scaling';
 
 export type ParticipatingChallengeItem = ChallengeCardItem;
 
 type Props = {
-  title?: string; // 기본: "참가중인 챌린지"
+  title?: string;
   items: ParticipatingChallengeItem[];
   onPressHeader?: () => void;
   onPressItem?: (item: ParticipatingChallengeItem) => void;
-  onPressEmpty?: () => void; // Empty state card press handler
+  onPressEmpty?: () => void;
 };
 
 const ParticipatingChallengeSection = ({
@@ -37,7 +37,7 @@ const ParticipatingChallengeSection = ({
   const renderEmptyState = () => (
     <TouchableOpacity style={styles.emptyCard} onPress={onPressEmpty} activeOpacity={0.8}>
       <View style={styles.emptyContent}>
-        <PlusIcon width={24} height={24} fill={colors.text.secondary} />
+        <PlusIcon width={scale(24)} height={scale(24)} fill={colors.text.secondary} />
         <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
           새로운 챌린지에 가입해보세요
         </Text>
@@ -46,7 +46,7 @@ const ParticipatingChallengeSection = ({
   );
 
   return (
-    <View style={styles.container}>
+    <View>
       <ComponentHeader title={title} onPress={onPressHeader} />
 
       {items.length > 0 ? (
@@ -56,7 +56,6 @@ const ParticipatingChallengeSection = ({
           keyExtractor={(it) => it.id}
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
           ItemSeparatorComponent={() => <View style={{ width: spacing.xs }} />}
         />
       ) : (
@@ -68,18 +67,9 @@ const ParticipatingChallengeSection = ({
 
 export default ParticipatingChallengeSection;
 
-const CARD_H = 148;
+const CARD_H = verticalScale(148);
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
-
-  listContent: {
-    // paddingHorizontal is now handled by the main container
-  },
-
   emptyCard: {
     width: '100%',
     height: CARD_H,

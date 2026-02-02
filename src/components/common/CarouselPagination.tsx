@@ -1,41 +1,70 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../design/tokens';
 
 interface CarouselPaginationProps {
-  currentIndex: number;
+  scrollX: Animated.Value;
   totalItems: number;
+  snapInterval: number;
 }
 
 export const CarouselPagination: React.FC<CarouselPaginationProps> = ({
-  currentIndex,
+  scrollX,
   totalItems,
+  snapInterval,
 }) => {
   return (
     <View style={styles.container}>
       {Array.from({ length: totalItems }, (_, index) => {
-        const isActive = index === currentIndex;
         const isEnd = index === 0 || index === totalItems - 1;
 
-        // 현재 인덱스에 따라 스타일 결정
-        let dotStyle;
-        if (isActive) {
-          // 현재 선택된 바
-          dotStyle = styles.paginationDotActive;
-        } else if (isEnd) {
-          // 맨 끝 작은 원
-          dotStyle = styles.paginationDotEnd;
-        } else {
-          // 양옆 원
-          dotStyle = styles.paginationDot;
-        }
+        // progress 계산
+        const inputRange = [
+          (index - 1) * snapInterval,
+          index * snapInterval,
+          (index + 1) * snapInterval,
+        ];
+
+        const activeProgress = scrollX.interpolate({
+          inputRange,
+          outputRange: [0, 1, 0],
+          extrapolate: 'clamp',
+        });
+
+        // 크기 정의
+        const inactiveWidth = isEnd ? scale(4) : scale(6);
+        const inactiveHeight = isEnd ? verticalScale(4) : verticalScale(6);
+        const activeWidth = scale(32);
+        const activeHeight = verticalScale(6);
+
+        // 크기 보간
+        const width = activeProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [inactiveWidth, activeWidth],
+        });
+
+        const height = activeProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [inactiveHeight, activeHeight],
+        });
+
+        // 색상 보간
+        const backgroundColor = activeProgress.interpolate({
+          inputRange: [0, 0.5, 0.5, 1],
+          outputRange: [colors.button, colors.button, colors.primary.main, colors.primary.main],
+        });
 
         return (
-          <View
+          <Animated.View
             key={index}
             style={[
-              dotStyle,
+              styles.paginationDot,
+              {
+                width,
+                height,
+                backgroundColor,
+              },
               index < totalItems - 1 && styles.paginationDotSpacing,
             ]}
           />
@@ -52,22 +81,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   paginationDot: {
-    width: scale(6),
-    height: verticalScale(6),
     borderRadius: scale(3),
-    backgroundColor: colors.button,
-  },
-  paginationDotActive: {
-    width: scale(32),
-    height: verticalScale(6),
-    borderRadius: scale(3),
-    backgroundColor: colors.primary.main,
-  },
-  paginationDotEnd: {
-    width: scale(4),
-    height: verticalScale(4),
-    borderRadius: scale(2),
-    backgroundColor: colors.button,
   },
   paginationDotSpacing: {
     marginRight: scale(4),

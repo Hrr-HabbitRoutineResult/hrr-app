@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList, HomeTabParamList } from '../navigation/types';
 import { colors, typography } from '../design/tokens';
 import { Text } from '../components/common/Text';
-// ... 나머지 import는 그대로 유지 ...
+import SectionHeader from '../components/common/SectionHeader';
 import { getChallenges, ChallengeInfo, trackChallengeClick } from '../libs/api/challenge';
 import { getPopularKeywords, incrementSearchCount } from '../libs/api/search';
 import ChallengeItem from '../components/common/ChallengeItem';
@@ -260,6 +260,7 @@ const SearchScreen = () => {
               onSubmitEditing={() => handleSearch()}
               returnKeyType="search"
               autoFocus={shouldAutoFocus}
+              allowFontScaling={false}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity
@@ -369,15 +370,7 @@ const SearchScreen = () => {
   // 인기 검색어 모드일 때 UI (초기 진입 화면)
   return (
     <View style={styles.container}>
-      {/* 헤더 영역 */}
-      <View style={[styles.header, {
-        paddingTop: safeAreaTop + topPadding,
-        paddingBottom: bottomPadding
-      }]}>
-        <Text variant="header1" color={colors.text.primary} style={styles.headerTitle}>
-          검색
-        </Text>
-      </View>
+      <SectionHeader title="검색" isScreenHeader />
 
       {/* 검색 필드 */}
       <TouchableOpacity
@@ -459,16 +452,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  header: {
-    paddingHorizontal: scale(24),
-    backgroundColor: colors.white,
-  },
-  headerTitle: {
-  },
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: scale(24),
+    paddingHorizontal: scale(20),
     backgroundColor: colors.white,
   },
   backButton: {
@@ -483,8 +470,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   searchContainer: {
-    paddingHorizontal: scale(24),
-    paddingTop: verticalScale(15),
+    paddingHorizontal: scale(20),
     backgroundColor: colors.white,
   },
   searchInputContainer: {
@@ -522,7 +508,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: scale(24),
+    paddingHorizontal: scale(20),
     paddingBottom: verticalScale(100), // 하단 네비게이션 바 여유 공간
   },
   popularSearchSection: {

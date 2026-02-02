@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ImageBackground, Dimensions, ListRenderItemInfo, Alert } from 'react-native';
+import { getErrorMessage } from '../utils/errorHandler';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -7,8 +8,6 @@ import { Header } from '../components/common/Header';
 import { Text } from '../components/common/Text';
 import { colors, spacing, typography } from '../design/tokens';
 import { getLikedChallenges, ChallengeItem as ApiChallengeItem } from '../libs/api/user';
-import { SvgXml } from 'react-native-svg';
-import {magnifyingGlass} from '../../assets/icons/search-text-primay.svg'
 import Search from '../../assets/icons/search-text-primay.svg';
 export type LikedChallengeItem = {
   id: string;
@@ -33,7 +32,8 @@ const LikedChallengeScreen = () => {
       const result = await getLikedChallenges(1, 20); // TODO: Add pagination
       setChallenges(result.content);
     } catch (error) {
-      Alert.alert('오류', '찜한 챌린지 정보를 불러오는 데 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '찜한 챌린지 정보를 불러오는 데 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -92,11 +92,11 @@ const LikedChallengeScreen = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList')} activeOpacity={0.8}>
-          <Search width={24} height={24} />
-          <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
+      <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList', {})} activeOpacity={0.8}>
+        <Search width={24} height={24} />
+        <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
           관심있는 챌린지를 찜해보세요
-          </Text>
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -107,6 +107,7 @@ const LikedChallengeScreen = () => {
         title="찜한 챌린지"
         onBack={() => navigation.goBack()}
         useSafeArea={true}
+        showDivider
       />
       {likedChallenges.length > 0 ? (
         <FlatList

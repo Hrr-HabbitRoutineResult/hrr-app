@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { colors, typography, spacing } from '../design/tokens';
@@ -8,7 +8,8 @@ import { RootStackParamList } from '../navigation/types';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
 import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
-import { verticalScale } from '../utils/scaling';
+import { scale, verticalScale } from '../utils/scaling';
+import { Text } from '../components/common/Text';
 
 import SectionHeader from '../components/common/SectionHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
@@ -16,7 +17,7 @@ import { Level } from '../libs/api/user/types';
 import ParticipatingChallengeSection, {
   ParticipatingChallengeItem,
 } from '../components/MyPage/ParticipatingChallengeSection';
-import ViewModeHeader from '../components/MyPage/ViewModeHeader';
+import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
@@ -34,7 +35,7 @@ const MyScreen = () => {
     fetchMyOngoingChallenges,
   } = useUserStore();
 
-  const [certificationViewMode, setCertificationViewMode] = useState('grid');
+  const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
   const [myVerificationHistory, setMyVerificationHistory] = useState<VerificationHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
 
@@ -79,38 +80,52 @@ const MyScreen = () => {
       title: item.title,
       subtitle: item.description,
       imageUrl: item.image,
-      roundText: `${item.currentRound}R째 진행 중`,
+      roundText: item.isStarted
+        ? `${item.currentRound}R째 진행 중`
+        : `D-${item.dday}`,
     }));
   }, [myOngoingChallenges]);
 
   const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (myVerificationHistory || []).map((item) => ({
-      id: item.verificationId,
-      title: `[${item.challengeTitle}] ${item.title}`,
-      description: item.content || '',
-      date: format.date(item.verifiedAt),
-      thumbnail: { uri: item.photoUrl },
-    }));
+    return (myVerificationHistory || []).map((item) => {
+      const thumbnailUrl = item.photoUrl ||
+        (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
+          ? item.textImages[0]
+          : null);
+
+      return {
+        id: item.verificationId,
+        title: item.title,
+        description: item.content || '',
+        date: format.date(item.verifiedAt),
+        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
+      };
+    });
   }, [myVerificationHistory]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
       <SectionHeader
-        title='마이'
+        title="마이"
+        isScreenHeader
         rightContent={
           <TouchableOpacity
             onPress={() => navigation.navigate('Settings')}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            hitSlop={{ top: scale(12), bottom: scale(12), left: scale(12), right: scale(12) }}
             style={styles.iconButton}
           >
-            <SettingIcon />
+            <SettingIcon width={scale(22)} height={scale(22)} />
           </TouchableOpacity>
         }
       />
+
       <RefreshableScrollView
-        style={styles.container}
+        style={styles.scrollView}
         onRefresh={fetchData}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + insets.bottom }}
+        contentContainerStyle={{
+          paddingHorizontal: scale(20),
+          paddingBottom: tabBarHeight + insets.bottom
+        }}
       >
         {isHistoryLoading && !userInfo ? (
           <ActivityIndicator style={styles.loadingIndicator} />
@@ -123,42 +138,46 @@ const MyScreen = () => {
               onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userInfo?.userId })}
               onPressProfileEdit={() => navigation.navigate('ProfileEdit')}
             />
-            
-            <View style={styles.tabContentListWrapper}>
+
+            <View style={styles.participatingChallengeWrapper}>
               <ParticipatingChallengeSection
                 items={participatingChallenges}
-                onPressHeader={() => navigation.navigate('ParticipatingChallenge')}
+                onPressHeader={() => navigation.navigate('ParticipatingChallenge', {})}
                 onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
-                onPressEmpty={() => navigation.navigate('ChallengeList')}
+                onPressEmpty={() => navigation.navigate('ChallengeList', {})}
               />
+            </View>
 
-              <View style={{ marginTop: spacing.xxxl }}>
-                <ViewModeHeader
-                  title="인증 기록"
-                  initialMode={certificationViewMode}
-                  onViewModeChange={(mode) => setCertificationViewMode(mode)}
-                  onPressTitle={() => navigation.navigate('CertificationHistory')}
-                />
-              </View>
+            <View style={styles.tabContentListWrapper}>
+              <ViewModeHeader
+                title="인증 기록"
+                initialMode={certificationViewMode}
+                onViewModeChange={(mode) => setCertificationViewMode(mode)}
+                onPressTitle={() => navigation.navigate('CertificationHistory', {})}
+              />
               {isHistoryLoading ? (
                 <ActivityIndicator style={styles.loadingIndicator} />
               ) : certificationItems.length === 0 ? (
                 <View style={styles.emptyCertificationContainer}>
-                  <Text style={styles.tabContentText}>인증 기록이 없습니다</Text>
+                  <Text variant="md" color={colors.text.secondary}>인증 기록이 없습니다</Text>
                 </View>
               ) : certificationViewMode === 'grid' ? (
-                <PhotoCertificationGrid
-                  items={certificationItems}
-                  showOverlay={false}
-                  onItemPress={(item) =>
-                    navigation.navigate('ChallengeCertificationDetail', {
-                      verificationId: item.id,
-                    })
-                  }
-                />
+                <View style={styles.photoGridContainer}>
+                  <PhotoCertificationGrid
+                    items={certificationItems}
+                    showOverlay={false}
+                    containerPadding={0}
+                    onItemPress={(item) =>
+                      navigation.navigate('ChallengeCertificationDetail', {
+                        verificationId: item.id,
+                      })
+                    }
+                  />
+                </View>
               ) : (
                 <TextCertificationList
                   items={certificationItems}
+                  containerPadding={0}
                   onItemPress={(item) =>
                     navigation.navigate('ChallengeCertificationDetail', {
                       verificationId: item.id,
@@ -170,35 +189,34 @@ const MyScreen = () => {
           </>
         )}
       </RefreshableScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default MyScreen;
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   container: {
     flex: 1,
     backgroundColor: colors.white,
   },
+  scrollView: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
   iconButton: {
-    width: 24,
-    height: 24,
+    width: scale(48),
+    height: scale(48),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  participatingChallengeWrapper: {
+    paddingTop: verticalScale(8),
   },
   tabContentListWrapper: {
     flex: 1,
     backgroundColor: colors.white,
-    paddingTop: 20,
-  },
-  tabContentText: {
-    ...typography.md,
-    color: colors.text.secondary,
+    marginTop: verticalScale(32),
   },
   emptyCertificationContainer: {
     padding: spacing.xl,
@@ -208,5 +226,8 @@ const styles = StyleSheet.create({
   },
   loadingIndicator: {
     marginTop: spacing.xl,
+  },
+  photoGridContainer: {
+    marginHorizontal: -scale(20),
   },
 });

@@ -340,6 +340,7 @@ export const CreateChallengeQ2 = () => {
                 updateData({ challengeName: limitedText });
               }}
               maxLength={10}
+              allowFontScaling={false}
             />
           </View>
           <View style={styles.divider} />
@@ -356,6 +357,7 @@ export const CreateChallengeQ2 = () => {
                 updateData({ oneLiner: limitedText });
               }}
               maxLength={20}
+              allowFontScaling={false}
             />
           </View>
         </View>
@@ -501,6 +503,7 @@ export const CreateChallengeQ2 = () => {
                 maxLength={2}
                 placeholder="00"
                 placeholderTextColor={colors.icon.gray}
+                allowFontScaling={false}
               />
               <Text variant="smReg" color={colors.icon.gray}>
                 {' / 30'}
@@ -527,6 +530,7 @@ export const CreateChallengeQ2 = () => {
               setChallengeRules(limitedText);
               updateData({ challengeRules: limitedText });
             }}
+            allowFontScaling={false}
             multiline
             textAlignVertical="top"
             maxLength={200}

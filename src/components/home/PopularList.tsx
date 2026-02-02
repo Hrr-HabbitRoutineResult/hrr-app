@@ -64,8 +64,8 @@ const PopularList: React.FC<PopularListProps> = ({ challenges }) => {
             style={styles.emptyBackground}
           />
           <View style={styles.emptyTextContainer}>
-            <Text style={styles.emptyTitle}>아직 랭킹이 없어요</Text>
-            <Text style={styles.emptySubtitle}>새로운 하루의 챌린지 순위를 집계 중이에요</Text>
+            <Text style={styles.emptyTitle} allowFontScaling={false}>아직 랭킹이 없어요</Text>
+            <Text style={styles.emptySubtitle} allowFontScaling={false}>새로운 하루의 챌린지 순위를 집계 중이에요</Text>
           </View>
         </View>
       ) : (

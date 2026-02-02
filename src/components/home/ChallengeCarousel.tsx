@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -32,18 +32,8 @@ type ChallengeCarouselProps = {
 
 const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList<any>>(null);
-
-  // ✅ scrollX 기반 인덱스 계산
-  useEffect(() => {
-    const listenerId = scrollX.addListener(({ value }) => {
-      const index = Math.round(value / SNAP_INTERVAL);
-      if (index !== currentIndex) setCurrentIndex(index);
-    });
-    return () => scrollX.removeListener(listenerId);
-  }, [currentIndex]);
 
   const renderItem = ({ item, index }: { item: Challenge; index: number }) => {
     const inputRange = [
@@ -58,6 +48,8 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
       extrapolate: 'clamp',
     });
 
+    const isLastItem = index === challenges.length - 1;
+
     return (
       <TouchableOpacity
         activeOpacity={0.9}
@@ -66,7 +58,15 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
           navigation.navigate('ChallengeProfile', { challengeId: item.id });
         }}
       >
-        <Animated.View style={[styles.itemContainer, { transform: [{ scale }] }]}>
+        <Animated.View
+          style={[
+            styles.itemContainer,
+            {
+              marginRight: isLastItem ? 0 : SPACING,
+              transform: [{ scale }],
+            },
+          ]}
+        >
           <Image source={{ uri: item.thumbnail }} style={styles.thumbnail} />
           <LinearGradient
             colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.9)']}
@@ -79,7 +79,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
               ) : (
                 <CheckboxUnchecked width={12} height={10} />
               )}
-              <Text style={styles.challengeName}>{item.title}</Text>
+              <Text style={styles.challengeName} allowFontScaling={false}>{item.title}</Text>
             </View>
           </View>
         </Animated.View>
@@ -98,7 +98,7 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         >
           <View style={styles.contentWrapper}>
             <PlusIcon width={20} height={20} />
-            <Text style={styles.emptyText}>
+            <Text style={styles.emptyText} allowFontScaling={false}>
               새로운 챌린지에{'\n'}가입해 보세요
             </Text>
           </View>
@@ -106,6 +106,9 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
       </View>
     );
   }
+
+  const centerOffset = (screenWidth - ITEM_SIZE) / 2;
+  const snapOffsets = challenges.map((_, index) => index * SNAP_INTERVAL);
 
   return (
     <View style={styles.container}>
@@ -116,12 +119,11 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
-        snapToInterval={SNAP_INTERVAL}
-        snapToAlignment="start"
+        snapToOffsets={snapOffsets}
         decelerationRate="fast"
-        // ✅ 핵심: 양쪽 padding 모두 줘야 마지막 인덱스도 중앙에 옴
+        bounces={false}
         contentContainerStyle={{
-          paddingHorizontal: (screenWidth - ITEM_SIZE) / 2,
+          paddingHorizontal: centerOffset,
         }}
         getItemLayout={(_, index) => ({
           length: SNAP_INTERVAL,
@@ -135,7 +137,11 @@ const ChallengeCarousel = ({ challenges }: ChallengeCarouselProps) => {
         scrollEventThrottle={16}
       />
       <View style={styles.paginationWrapper}>
-        <CarouselPagination currentIndex={currentIndex} totalItems={challenges.length} />
+        <CarouselPagination
+          scrollX={scrollX}
+          totalItems={challenges.length}
+          snapInterval={SNAP_INTERVAL}
+        />
       </View>
     </View>
   );
@@ -174,7 +180,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     width: ITEM_SIZE,
     height: ITEM_SIZE,
-    marginRight: SPACING,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -592,6 +592,7 @@ export interface RecommendedChallenge {
   category: string;
   verifyStartTime: string;
   verifyEndTime: string;
+  likedByMe: boolean;
   cert_time_slots: string;
   goal_text: string;
   image_key: string;

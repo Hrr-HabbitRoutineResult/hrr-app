@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, ImageBackground, Dimensions, ListRenderItemInfo, Alert } from 'react-native';
+import { getErrorMessage } from '../utils/errorHandler';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -30,7 +31,7 @@ const ParticipatingChallengeScreen = () => {
 
   // Global state for logged-in user
   const { myOngoingChallenges, fetchMyOngoingChallenges } = useUserStore();
-  
+
   useFocusEffect(
     useCallback(() => {
       if (isMe) {
@@ -44,7 +45,8 @@ const ParticipatingChallengeScreen = () => {
             const result = await getOngoingChallengesById(userId);
             setOtherUserChallenges(result.content);
           } catch (error) {
-            Alert.alert('오류', '챌린지 정보를 불러오는 데 실패했습니다.');
+            const errorMessage = getErrorMessage(error, '챌린지 정보를 불러오는 데 실패했습니다.');
+            Alert.alert('오류', errorMessage);
           } finally {
             setIsLoading(false);
           }
@@ -62,7 +64,9 @@ const ParticipatingChallengeScreen = () => {
       title: item.title,
       subtitle: item.description,
       imageUrl: item.image,
-      roundText: `${item.currentRound}R째 진행 중`,
+      roundText: item.isStarted
+        ? `${item.currentRound}R째 진행 중`
+        : `D-${item.dday}`,
     }));
   }, [challengesSource]);
 
@@ -77,16 +81,16 @@ const ParticipatingChallengeScreen = () => {
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-        {isMe ? (
-            <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList')} activeOpacity={0.8}>
-                <PlusIcon width={24} height={24} fill={colors.text.secondary} />
-                <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
-                새로운 챌린지에 가입해보세요
-                </Text>
-            </TouchableOpacity>
-        ) : (
-            <Text style={styles.emptyText}>참가중인 챌린지가 없습니다.</Text>
-        )}
+      {isMe ? (
+        <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList', {})} activeOpacity={0.8}>
+          <PlusIcon width={24} height={24} fill={colors.text.secondary} />
+          <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
+            새로운 챌린지에 가입해보세요
+          </Text>
+        </TouchableOpacity>
+      ) : (
+        <Text style={styles.emptyText}>참가중인 챌린지가 없습니다.</Text>
+      )}
     </View>
   );
 
@@ -96,6 +100,7 @@ const ParticipatingChallengeScreen = () => {
         title="참가중인 챌린지"
         onBack={() => navigation.goBack()}
         useSafeArea={true}
+        showDivider
       />
       {participatingChallenges.length > 0 ? (
         <FlatList

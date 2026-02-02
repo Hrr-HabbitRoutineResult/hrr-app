@@ -7,6 +7,7 @@ import { Text } from '../common/Text';
 import { ProfileHeader } from './ProfileHeader';
 import { BadgeRow } from './BadgeRow';
 import { Level, levelToDisplayString } from '../../libs/api/user/types';
+import { scale, verticalScale } from '../../utils/scaling';
 
 interface UserProfile {
   nickname: string;
@@ -42,7 +43,7 @@ const ProfileCard = ({
   const { nickname, avatarUrl, followerCount, followingCount, level = Level.CHALLENGER } = user;
   const [popoverVisible, setPopoverVisible] = useState(false);
   const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const buttonRef = useRef<TouchableOpacity>(null);
+  const buttonRef = useRef<View>(null);
 
   const isOther = variant === 'other';
 
@@ -50,7 +51,7 @@ const ProfileCard = ({
     if (buttonRef.current) {
       const nodeHandle = findNodeHandle(buttonRef.current);
       if (nodeHandle) {
-        buttonRef.current.measure((_fx, _fy, width, height, px, py) => {
+        (buttonRef.current as any).measure((_fx: number, _fy: number, width: number, height: number, px: number, py: number) => {
           setButtonLayout({ x: px, y: py, width, height });
           setPopoverVisible(true);
         });
@@ -69,8 +70,8 @@ const ProfileCard = ({
     if (!isOther) {
       return (
         <View style={styles.buttonRow}>
-          <Button variant="gray" size="small" style={styles.singleButton} onPress={onPressProfileEdit}>
-            <Text variant="sm" color={colors.text.tertiary}>
+          <Button variant="gray" size="small" style={styles.singleButton} onPress={onPressProfileEdit || (() => { })}>
+            <Text variant="xsMd" color={colors.text.tertiary}>
               프로필 수정
             </Text>
           </Button>
@@ -85,9 +86,9 @@ const ProfileCard = ({
             variant="outlinePrimary"
             size="small"
             style={styles.singleButton}
-            onPress={onPressBlock}
+            onPress={onPressBlock || (() => { })}
           >
-            <Text variant="sm" color={colors.primary.main}>
+            <Text variant="smMd" color={colors.primary.main}>
               차단됨
             </Text>
           </Button>
@@ -98,25 +99,24 @@ const ProfileCard = ({
     if (isFollowing) {
       return (
         <View style={styles.buttonRow}>
-          <Button
+          <TouchableOpacity
             ref={buttonRef}
-            variant="gray"
-            size="small"
-            style={styles.singleButton}
+            activeOpacity={0.9}
+            style={[styles.singleButton, styles.followingButton]}
             onPress={handleFollowingPress}
           >
-            <Text variant="sm" color={colors.primary.main}>
+            <Text variant="xsMd" color={colors.primary.main}>
               팔로잉
             </Text>
-          </Button>
+          </TouchableOpacity>
         </View>
       );
     }
 
     return (
       <View style={styles.buttonRow}>
-        <Button variant="primary" size="small" style={styles.singleButton} onPress={onPressFollow}>
-          <Text variant="sm" color={colors.white}>
+        <Button variant="primary" size="small" style={styles.followButton} onPress={onPressFollow || (() => { })}>
+          <Text variant="xsMd" color={colors.white}>
             팔로우
           </Text>
         </Button>
@@ -146,14 +146,13 @@ const ProfileCard = ({
             style={[
               styles.popover,
               {
-                top: buttonLayout.y + buttonLayout.height - spacing.sm,
-                left: buttonLayout.x + (buttonLayout.width * 0.6),
-                width: buttonLayout.width * 0.4,
+                top: buttonLayout.y + verticalScale(13),
+                right: scale(20),
               },
             ]}
           >
             <TouchableOpacity onPress={handleUnfollowConfirm} style={styles.popoverButton}>
-              <Text variant="sm" color={colors.text.primary}>
+              <Text variant="smReg" color={colors.text.primary}>
                 언팔로우하기
               </Text>
             </TouchableOpacity>
@@ -168,40 +167,51 @@ export default ProfileCard;
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: verticalScale(16),
     backgroundColor: colors.white,
-    padding: spacing.md,
-    marginHorizontal: spacing.xs,
   },
   buttonRow: {
-    marginTop: 8,
+    marginTop: verticalScale(12),
     flexDirection: 'row',
     gap: spacing.sm,
   },
   singleButton: {
     flex: 1,
     width: '100%',
-    height: 40,
-    borderRadius: radius.md,
+    height: verticalScale(36),
+    borderRadius: scale(10),
+    backgroundColor: colors.background,
+  },
+  followButton: {
+    flex: 1,
+    width: '100%',
+    height: verticalScale(36),
+    borderRadius: scale(10),
+  },
+  followingButton: {
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
   },
   popover: {
     position: 'absolute',
-    backgroundColor: 'white',
-    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+    borderRadius: scale(10),
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.08,
+    shadowRadius: scale(40),
     elevation: 5,
   },
   popoverButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: scale(41.5),
     alignItems: 'center',
   },
 });

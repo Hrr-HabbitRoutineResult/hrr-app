@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { scale } from '../../utils/scaling';
 import GridIconBlack from '../../../assets/icons/mypage/ic_grid_black.svg';
 import GridIconGrey from '../../../assets/icons/mypage/ic_grid_grey.svg';
 import ViewIconBlack from '../../../assets/icons/mypage/ic_view_black.svg';
@@ -25,15 +26,15 @@ const ViewModeHeader = ({ title, onPressTitle, onViewModeChange, initialMode = '
 
   return (
     <View style={styles.container}>
-        <ComponentHeader title={title} onPress={onPressTitle} />
-        <View style={styles.iconContainer}>
-            <TouchableOpacity onPress={() => handleViewModeChange('grid')}>
-                {viewMode === 'grid' ? <GridIconBlack /> : <GridIconGrey />}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleViewModeChange('view')}>
-                {viewMode === 'view' ? <ViewIconBlack /> : <ViewIconGrey />}
-            </TouchableOpacity>
-        </View>
+      <ComponentHeader title={title} onPress={onPressTitle} />
+      <View style={styles.iconContainer}>
+        <TouchableOpacity onPress={() => handleViewModeChange('grid')}>
+          {viewMode === 'grid' ? <GridIconBlack /> : <GridIconGrey />}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleViewModeChange('view')}>
+          {viewMode === 'view' ? <ViewIconBlack /> : <ViewIconGrey />}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -43,12 +44,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
   },
   iconContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: scale(4),
   },
 });
 

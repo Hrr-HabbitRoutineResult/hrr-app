@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, Alert, Dimensions, Platform } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -172,7 +173,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
 
       return s3ImageUrl;
     } catch (error: any) {
-      Alert.alert('이미지 업로드 실패', error.message || '알 수 없는 오류');
+      const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
+      Alert.alert('이미지 업로드 실패', errorMessage);
       return null;
     } finally {
       setIsUploading(false);

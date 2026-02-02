@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -53,7 +54,6 @@ type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
 
 // 플랫폼별 키보드 오프셋
 const KEYBOARD_OFFSET_IOS = 0;
-const KEYBOARD_OFFSET_ANDROID = 15;
 
 export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
@@ -191,7 +191,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       });
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글을 불러오는데 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글을 불러오는데 실패했습니다.');
       Alert.alert('오류', errorMessage);
       navigation.goBack();
     } finally {
@@ -283,7 +283,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 Alert.alert('성공', '게시글이 삭제되었습니다.');
               }, 100);
             } catch (error: any) {
-              const errorMessage = error.response?.data?.message || error.message || '게시글 삭제에 실패했습니다.';
+              const errorMessage = getErrorMessage(error, '게시글 삭제에 실패했습니다.');
               Alert.alert('오류', errorMessage);
             } finally {
               setIsLoading(false);
@@ -320,7 +320,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportPostBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
       Alert.alert('신고 실패', errorMessage);
     }
   };
@@ -339,7 +339,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportUserBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '신고에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
       Alert.alert('신고 실패', errorMessage);
     }
   };
@@ -384,7 +384,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       });
       setComments(commentsResult);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '댓글 작성에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '댓글 작성에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmittingComment(false);
     }
@@ -446,7 +447,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       Alert.alert('성공', '댓글이 삭제되었습니다.');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '댓글 삭제에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '댓글 삭제에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
   };
@@ -477,7 +478,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsAdoptBottomSheetVisible(false);
       setSelectedCommentForAdopt(null);
 
-      const errorMessage = error.response?.data?.message || error.message || '댓글 채택에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '댓글 채택에 실패했습니다.');
 
       Alert.alert('오류', errorMessage);
     }
@@ -499,7 +500,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         setComments(commentsResult);
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '사용자 차단에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '사용자 차단에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
   };
@@ -603,7 +604,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         onRefresh={fetchVerificationDetail}
       >
         {/* 사용자 정보 */}
-        <View style={styles.userSection}>
+        <TouchableOpacity
+          style={styles.userSection}
+          onPress={() => navigation.navigate('User', { userId: verification.user.userId })}
+          activeOpacity={0.7}
+        >
           <View style={styles.userAvatar}>
             {getS3ImageUrl(verification.user.profileImageUrl) ? (
               <Image
@@ -629,7 +634,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               {formatDate(verification.createdAt)}
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* 질문 태그 */}
         {verification.isQuestion && (
@@ -786,6 +791,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     onDelete={handleDeleteComment}
                     onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
+                    onProfilePress={(userId) => navigation.navigate('User', { userId })}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
                     canSelectComment={verification?.canSelectComment}
@@ -832,6 +838,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                             onDelete={handleDeleteComment}
                             onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
+                            onProfilePress={(userId) => navigation.navigate('User', { userId })}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
                             canSelectComment={verification?.canSelectComment}
@@ -865,63 +872,116 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? KEYBOARD_OFFSET_IOS : 0}
-        style={styles.keyboardAvoidingView}
-      >
+      {Platform.OS === 'ios' ? (
+        <KeyboardAvoidingView
+          behavior="padding"
+          keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={[
+            styles.commentInputContainer,
+            isKeyboardVisible && styles.commentInputContainerKeyboard,
+          ]}>
+            <TextField
+              ref={commentInputRef}
+              variant="default"
+              placeholder="댓글을 입력하세요"
+              value={commentText}
+              onChangeText={setCommentText}
+              editable={!isSubmittingComment}
+              leftIcon={
+                <View style={styles.lockIconContainer}>
+                  <TouchableOpacity
+                    onPress={() => setIsCommentLocked(!isCommentLocked)}
+                    activeOpacity={0.7}
+                    style={styles.lockIconButton}
+                  >
+                    {isCommentLocked ? (
+                      <LockIcon width={10} height={12} />
+                    ) : (
+                      <UnlockIcon width={10} height={12} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              }
+              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+              rightIcon={
+                <View style={styles.sendIconContainer}>
+                  <TouchableOpacity
+                    onPress={handleSubmitComment}
+                    activeOpacity={0.7}
+                    style={styles.sendIconButton}
+                    disabled={isSubmittingComment}
+                  >
+                    {isSubmittingComment ? (
+                      <ActivityIndicator size="small" color={colors.primary.main} />
+                    ) : (
+                      <SendIcon width={30} height={30} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              }
+              onRightIconPress={handleSubmitComment}
+              containerStyle={styles.textFieldContainer}
+              inputContainerStyle={styles.commentInputField}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      ) : (
         <View style={[
-          styles.commentInputContainer,
-          isKeyboardVisible && styles.commentInputContainerKeyboard,
-          Platform.OS === 'android' && isKeyboardVisible && {
-            bottom: keyboardHeight + KEYBOARD_OFFSET_ANDROID,
-          }
+          styles.keyboardAvoidingView,
+          isKeyboardVisible && { bottom: keyboardHeight }
         ]}>
-          <TextField
-            ref={commentInputRef}
-            variant="default"
-            placeholder="댓글을 입력하세요"
-            value={commentText}
-            onChangeText={setCommentText}
-            editable={!isSubmittingComment}
-            leftIcon={
-              <View style={styles.lockIconContainer}>
-                <TouchableOpacity
-                  onPress={() => setIsCommentLocked(!isCommentLocked)}
-                  activeOpacity={0.7}
-                  style={styles.lockIconButton}
-                >
-                  {isCommentLocked ? (
-                    <LockIcon width={10} height={12} />
-                  ) : (
-                    <UnlockIcon width={10} height={12} />
-                  )}
-                </TouchableOpacity>
-              </View>
-            }
-            onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-            rightIcon={
-              <View style={styles.sendIconContainer}>
-                <TouchableOpacity
-                  onPress={handleSubmitComment}
-                  activeOpacity={0.7}
-                  style={styles.sendIconButton}
-                  disabled={isSubmittingComment}
-                >
-                  {isSubmittingComment ? (
-                    <ActivityIndicator size="small" color={colors.primary.main} />
-                  ) : (
-                    <SendIcon width={30} height={30} />
-                  )}
-                </TouchableOpacity>
-              </View>
-            }
-            onRightIconPress={handleSubmitComment}
-            containerStyle={styles.textFieldContainer}
-            inputContainerStyle={styles.commentInputField}
-          />
+          <View style={[
+            styles.commentInputContainer,
+            isKeyboardVisible && styles.commentInputContainerKeyboard,
+          ]}>
+            <TextField
+              ref={commentInputRef}
+              variant="default"
+              placeholder="댓글을 입력하세요"
+              value={commentText}
+              onChangeText={setCommentText}
+              editable={!isSubmittingComment}
+              leftIcon={
+                <View style={styles.lockIconContainer}>
+                  <TouchableOpacity
+                    onPress={() => setIsCommentLocked(!isCommentLocked)}
+                    activeOpacity={0.7}
+                    style={styles.lockIconButton}
+                  >
+                    {isCommentLocked ? (
+                      <LockIcon width={10} height={12} />
+                    ) : (
+                      <UnlockIcon width={10} height={12} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              }
+              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+              rightIcon={
+                <View style={styles.sendIconContainer}>
+                  <TouchableOpacity
+                    onPress={handleSubmitComment}
+                    activeOpacity={0.7}
+                    style={styles.sendIconButton}
+                    disabled={isSubmittingComment}
+                  >
+                    {isSubmittingComment ? (
+                      <ActivityIndicator size="small" color={colors.primary.main} />
+                    ) : (
+                      <SendIcon width={30} height={30} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              }
+              onRightIconPress={handleSubmitComment}
+              containerStyle={styles.textFieldContainer}
+              inputContainerStyle={styles.commentInputField}
+            />
+          </View>
         </View>
-      </KeyboardAvoidingView>
+      )}
 
       {/* 게시글 더보기 액션 시트 */}
       <Modal

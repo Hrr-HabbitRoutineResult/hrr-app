@@ -46,7 +46,7 @@ const CategoryChips = () => {
             />
           </View>
           <View style={styles.textWrapper}>
-            <Text style={styles.chipText}>{name}</Text>
+            <Text style={styles.chipText} allowFontScaling={false}>{name}</Text>
           </View>
         </TouchableOpacity>
       ))}

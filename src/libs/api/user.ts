@@ -63,7 +63,9 @@ export interface OngoingChallengeItem {
   title: string;
   description: string;
   image: string;
-  currentRound: number;
+  isStarted: boolean;
+  currentRound: number | null;
+  dday: number | null;
   verified: boolean;
 }
 
@@ -123,6 +125,7 @@ export interface VerificationHistoryItem {
   content: string | null;
   photoUrl: string | null;
   textUrl: string | null;
+  textImages?: string[];
   verifiedAt: string;
 }
 

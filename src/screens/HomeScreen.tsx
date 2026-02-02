@@ -7,8 +7,7 @@ import { colors, typography, spacing } from '../design/tokens';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
-import { getDailyMissionCompleted } from '../libs/api/challenge';
-import { handleLogout } from '../libs/auth/logout';
+import { getDailyMissionCompleted, Challenge } from '../libs/api/challenge';
 
 import TopAppBar from '../components/home/TopAppBar';
 import { ChallengeSuggestButton } from '../components/home/ChallengeSuggestButton';
@@ -34,7 +33,7 @@ const HomeScreen = () => {
       id: item.challengeId,
       thumbnail: item.image,
       title: item.title,
-      todayEligible: item.currentRound > 0,
+      verified: item.verified,
     }));
   }, [myOngoingChallenges]);
 
@@ -73,24 +72,25 @@ const HomeScreen = () => {
         {/* 초기 로딩 시에만 로딩 인디케이터를 표시합니다. */}
         {isLoading && dailyTop.length === 0 ? (
           <View style={styles.centerBox}>
-            <Text style={styles.loadingText}>로딩 중...</Text>
+            <Text style={styles.loadingText} allowFontScaling={false}>로딩 중...</Text>
           </View>
         ) : (
           <>
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeSubtitle}>안녕하세요 {nickname} 님!</Text>
-              <Text style={styles.welcomeTitle}>오늘도 챌린지를 해볼까요?</Text>
-              {/* <Button title="로그아웃 테스트" onPress={handleLogoutTest} /> */}
-            </View>
+            <View style={styles.topSectionContainer}>
+              <View style={styles.welcomeContainer}>
+                <Text style={styles.welcomeSubtitle} allowFontScaling={false}>안녕하세요 {nickname} 님!</Text>
+                <Text style={styles.welcomeTitle} allowFontScaling={false}>오늘도 챌린지를 해볼까요?</Text>
+              </View>
 
-            <ChallengeCarousel challenges={ongoingChallenges} />
+              <ChallengeCarousel challenges={ongoingChallenges} />
 
-            <View style={styles.suggestButtonContainer}>
-              <ChallengeSuggestButton
-                onPress={() => {
-                  navigation.navigate('Onboarding');
-                }}
-              />
+              <View style={styles.suggestButtonContainer}>
+                <ChallengeSuggestButton
+                  onPress={() => {
+                    navigation.navigate('Onboarding');
+                  }}
+                />
+              </View>
             </View>
 
             <View style={styles.divider} />
@@ -106,7 +106,7 @@ const HomeScreen = () => {
 
               <View style={[styles.sectionContainer, styles.lastSection]}>
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>오늘의 랜덤미션</Text>
+                  <Text style={styles.sectionTitle} allowFontScaling={false}>오늘의 랜덤미션</Text>
                 </View>
                 <RandomMissionBanner />
               </View>
@@ -139,6 +139,9 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.md,
     marginBottom: spacing.sm,
+  },
+  topSectionContainer: {
+    backgroundColor: colors.white,
   },
   welcomeContainer: {
     paddingLeft: scale(20),

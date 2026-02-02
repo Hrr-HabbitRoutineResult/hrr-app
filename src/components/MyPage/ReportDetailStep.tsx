@@ -24,6 +24,7 @@ export const ReportDetailStep: React.FC<ReportDetailStepProps> = ({ text, onChan
           multiline
           maxLength={200}
           textAlignVertical="top"
+          allowFontScaling={false}
         />
       </View>
     </View>

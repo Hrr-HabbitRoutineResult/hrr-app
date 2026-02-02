@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import {
   View,
   StyleSheet,
@@ -116,10 +117,7 @@ export const NicknameSetupScreen: React.FC<NicknameSetupScreenProps> = ({
         Alert.alert('오류', response.message || '닉네임 설정에 실패했습니다.');
       }
     } catch (error: any) {
-      // 서버에서 오는 에러 메시지가 있으면 우선 표시, 없으면 기본 메시지
-      const errorMessage = error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.';
+      const errorMessage = getErrorMessage(error, '닉네임 설정 중 문제가 발생했습니다. 다시 시도해주세요.');
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);

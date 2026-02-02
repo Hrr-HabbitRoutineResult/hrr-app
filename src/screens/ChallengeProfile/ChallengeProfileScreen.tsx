@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { getDayOfWeek_KST, getSecondsSinceMidnight_KST, getTodayYYYYMMDD_KST } from '../../utils/kst';
+import { getErrorMessage } from '../../utils/errorHandler';
 import {
   View,
   StyleSheet,
@@ -160,14 +161,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       setRounds(roundsResult);
 
       const currentRound = roundsResult.find(r => r.isCurrentRound);
+      let roundToSelect: number | null = null;
       if (currentRound) {
+        roundToSelect = currentRound.roundNumber;
         setSelectedRound(currentRound.roundNumber);
       } else if (roundsResult.length > 0) {
+        roundToSelect = roundsResult[0].roundNumber;
         setSelectedRound(roundsResult[0].roundNumber);
       }
 
       const statResult = await getVerificationStat(challengeId);
       setVerificationStat(statResult);
+
+      // 라운드가 선택되면 피드도 가져오기
+      if (roundToSelect !== null) {
+        await fetchVerificationFeed(roundToSelect);
+      }
     } catch (error: any) {
       // 라운드/통계 조회 실패 시 무시
     }
@@ -189,6 +198,35 @@ export const ChallengeProfileScreen: React.FC = () => {
     }
   };
 
+  // 초기 데이터 로딩 함수
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      // 챌린지 기본 정보 조회
+      const detailResult = await getChallengeDetail(challengeId);
+      setData(detailResult);
+      setIsLiked(detailResult.isLiked);
+      setIsParticipated(detailResult.isParticipant);
+
+      // 챌린지 프로필 정보 조회
+      try {
+        const profileResult = await getChallengeProfile(challengeId);
+        processProfileData(profileResult);
+      } catch (profileError: any) {
+        setProfile(null);
+      }
+
+      // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
+      if (detailResult.isObserverMode || detailResult.isParticipant) {
+        await fetchRoundsAndStats();
+      }
+    } catch (error: any) {
+      console.error('데이터 로딩 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [challengeId]);
+
   // 전체 데이터 새로고침 함수
   const refreshAllData = async () => {
     try {
@@ -209,22 +247,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
       if (detailResult.isObserverMode || detailResult.isParticipant) {
         await fetchRoundsAndStats();
-
-        // 선택된 라운드가 있으면 피드도 새로고침
-        if (selectedRound !== null) {
-          await fetchVerificationFeed(selectedRound);
-        }
       }
     } catch (error: any) {
       console.error('데이터 새로고침 실패:', error);
     }
   };
 
+  // 초기 데이터 로딩
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   // 화면 포커스 시마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      fetchData();
-    }, [fetchData])
+      refreshAllData();
+    }, [challengeId])
   );
 
   // 선택된 라운드 변경 시 피드 조회
@@ -254,7 +292,22 @@ export const ChallengeProfileScreen: React.FC = () => {
       MONDAY: '월', TUESDAY: '화', WEDNESDAY: '수', THURSDAY: '목',
       FRIDAY: '금', SATURDAY: '토', SUNDAY: '일'
     };
-    return days.map(d => dayMap[d] || d).join('/');
+
+    // 요일 순서 정의 (월화수목금토일)
+    const dayOrder: Record<string, number> = {
+      MONDAY: 1,
+      TUESDAY: 2,
+      WEDNESDAY: 3,
+      THURSDAY: 4,
+      FRIDAY: 5,
+      SATURDAY: 6,
+      SUNDAY: 7,
+    };
+
+    // 요일 순서대로 정렬
+    const sortedDays = [...days].sort((a, b) => dayOrder[a] - dayOrder[b]);
+
+    return sortedDays.map(d => dayMap[d] || d).join('/');
   };
 
   // 시간 포맷 함수 (HH:MM:SS -> HH:MM)
@@ -288,14 +341,14 @@ export const ChallengeProfileScreen: React.FC = () => {
   const handleShare = async () => {
     try {
       const deepLink = `hrr://challenge/${challengeId}`;
-      const shareMessage = 
-`🔥 ${data.title} 챌린지에 참여해요!
+      const shareMessage =
+        `🔥 ${data.title} 챌린지에 참여해요!
 
 현재 ${data.currentParticipantCount}명이 함께 도전 중이에요.
 혼자보다는 같이, 흐르르에서 끝까지 목표를 달성해 보세요 💪
 
 ${deepLink}`;
-      
+
       await Share.share({
         message: shareMessage,
         title: `${data.title} 챌린지에 참여해요!`,
@@ -303,7 +356,8 @@ ${deepLink}`;
     } catch (error: any) {
       // 사용자가 공유를 취소한 경우는 에러로 처리하지 않음
       if (error.message !== 'User did not share') {
-        Alert.alert('오류', '공유하기에 실패했습니다.');
+        const errorMessage = getErrorMessage(error, '공유하기에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
       }
     }
   };
@@ -320,7 +374,8 @@ ${deepLink}`;
         setIsLiked(result.isLiked);
       }
     } catch (error: any) {
-      Alert.alert('오류', error.message || '찜하기 처리 중 오류가 발생했습니다.');
+      const errorMessage = getErrorMessage(error, '찜하기 처리 중 오류가 발생했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -533,10 +588,11 @@ ${deepLink}`;
       }
     } catch (error: any) {
       // 비밀번호 오류인 경우
-      if (isPasswordMode && error.message?.includes('비밀번호')) {
+      const errorMessage = getErrorMessage(error, '챌린지 참가에 실패했습니다.');
+      if (isPasswordMode && errorMessage.includes('비밀번호')) {
         setPasswordError('비밀번호를 다시 확인해 주세요');
       } else {
-        Alert.alert('오류', error.message || '챌린지 참가에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
       }
     }
   };
@@ -745,13 +801,13 @@ ${deepLink}`;
                         style={styles.infoIconButton}
                         onPress={() => setShowCertificationTooltip(!showCertificationTooltip)}
                       >
-                        <InfoCircleIcon width={14} height={14} />
+                        <InfoCircleIcon width={16} height={16} />
                       </TouchableOpacity>
                     </View>
                     {showCertificationTooltip && (
                       <View style={styles.tooltip}>
                         <Text variant="xsReg" color={colors.text.secondary}>
-                          직전 인증 요일의 인증 완료 인원 기준입니다
+                          최근 인증일의 인증 완료 인원 기준입니다
                         </Text>
                       </View>
                     )}
@@ -1327,7 +1383,7 @@ const styles = StyleSheet.create({
   },
   sectionNoPadding: {
     paddingHorizontal: scale(0),
-    marginTop: verticalScale(12),
+    marginTop: verticalScale(4),
   },
   sectionTitleNoPadding: {
     paddingHorizontal: scale(24),
@@ -1364,14 +1420,13 @@ const styles = StyleSheet.create({
   },
   participantSummary: {
     flexDirection: 'column',
-    gap: scale(16),
     paddingHorizontal: scale(24),
     marginBottom: verticalScale(12),
   },
   summaryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   summaryItemHeaderContainer: {
     flex: 1,
@@ -1383,19 +1438,18 @@ const styles = StyleSheet.create({
     gap: scale(4),
   },
   summaryValue: {
-    alignSelf: 'flex-end',
+    alignSelf: 'center',
   },
   infoIconButton: {
-    width: scale(16),
-    height: verticalScale(16),
+    width: scale(36),
+    height: verticalScale(36),
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: scale(10),
   },
   tooltip: {
     position: 'absolute',
-    top: verticalScale(24),
-    left: scale(84),
+    top: verticalScale(32),
+    left: scale(88),
     height: verticalScale(32),
     borderRadius: scale(10),
     backgroundColor: colors.background,

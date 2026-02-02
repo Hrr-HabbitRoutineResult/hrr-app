@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorInfo } from '../../utils/errorHandler';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -147,25 +148,8 @@ export const CreateChallengeQ4 = () => {
       });
     } catch (error: any) {
       // 서버에서 반환한 상세 에러 정보 추출
-      const errorData = error.response?.data;
-      let errorMessage = '챌린지 생성에 실패했습니다.';
-      let errorTitle = '오류';
-
-      if (errorData) {
-        // 서버 응답이 있는 경우 상세 정보 표시
-        errorTitle = errorData.status || '오류';
-        errorMessage = errorData.message || error.message || errorMessage;
-
-        // 에러 코드가 있으면 함께 표시
-        if (errorData.code) {
-          errorMessage = `[${errorData.code}]\n${errorMessage}`;
-        }
-      } else if (error.message) {
-        // 네트워크 에러 등 기타 에러
-        errorMessage = error.message;
-      }
-
-      Alert.alert(errorTitle, errorMessage);
+      const { title, message } = getErrorInfo(error, '챌린지 생성에 실패했습니다.');
+      Alert.alert(title, message);
     } finally {
       setIsCreating(false);
     }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, Alert, ActivityIndicator, Platform } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { scale, verticalScale } from '../utils/scaling';
+import { getErrorMessage } from '../utils/errorHandler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -142,7 +143,7 @@ const RandomMissionScreen = () => {
 
       return s3Key;
     } catch (error: any) {
-      const errorMessage = error.message || '알 수 없는 오류';
+      const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
       Alert.alert('이미지 업로드 실패', errorMessage);
       return null;
     } finally {
@@ -192,7 +193,7 @@ const RandomMissionScreen = () => {
         },
       ]);
     } catch (error: any) {
-      const errorMessage = error.message || '인증에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '인증에 실패했습니다.');
       Alert.alert('인증 실패', errorMessage);
     } finally {
       setIsUploading(false);

@@ -4,6 +4,7 @@ import { View, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Activ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getErrorMessage } from '../../utils/errorHandler';
 import RNBlobUtil from 'react-native-blob-util';
 import * as LinkPreview from 'react-native-link-preview';
 import { Header } from '../../components/common/Header';
@@ -343,7 +344,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         );
       }, 100);
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || '게시글 작성에 실패했습니다.';
+      const errorMessage = getErrorMessage(error, '게시글 작성에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -398,6 +399,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
               placeholderTextColor={colors.icon.gray}
               value={title}
               onChangeText={setTitle}
+              allowFontScaling={false}
             />
           </View>
         </View>
@@ -413,6 +415,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
             multiline
             textAlignVertical="top"
             maxLength={200}
+            allowFontScaling={false}
           />
         </View>
         <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
@@ -491,37 +494,62 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
       </ScrollView>
 
       {/* 하단 첨부 바 */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        style={styles.keyboardAvoidingView}
-      >
+      {Platform.OS === 'ios' ? (
+        <KeyboardAvoidingView
+          behavior="padding"
+          keyboardVerticalOffset={0}
+          style={styles.keyboardAvoidingView}
+        >
+          <View style={[
+            styles.attachmentBar,
+            isKeyboardVisible && styles.attachmentBarKeyboard,
+          ]}>
+            <View style={styles.attachmentButtons}>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleGalleryPress}
+                activeOpacity={0.7}
+              >
+                <PostGalleryIcon width={20} height={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleLinkPress}
+                activeOpacity={0.7}
+              >
+                <PostLinkIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      ) : (
         <View style={[
-          styles.attachmentBar,
-          isKeyboardVisible && styles.attachmentBarKeyboard,
-          Platform.OS === 'android' && isKeyboardVisible && {
-            bottom: keyboardHeight,
-            paddingBottom: verticalScale(25),
-          }
+          styles.keyboardAvoidingView,
+          isKeyboardVisible && { bottom: keyboardHeight }
         ]}>
-          <View style={styles.attachmentButtons}>
-            <TouchableOpacity
-              style={styles.attachmentButton}
-              onPress={handleGalleryPress}
-              activeOpacity={0.7}
-            >
-              <PostGalleryIcon width={20} height={20} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.attachmentButton}
-              onPress={handleLinkPress}
-              activeOpacity={0.7}
-            >
-              <PostLinkIcon width={20} height={20} />
-            </TouchableOpacity>
+          <View style={[
+            styles.attachmentBar,
+            isKeyboardVisible && styles.attachmentBarKeyboard,
+          ]}>
+            <View style={styles.attachmentButtons}>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleGalleryPress}
+                activeOpacity={0.7}
+              >
+                <PostGalleryIcon width={20} height={20} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.attachmentButton}
+                onPress={handleLinkPress}
+                activeOpacity={0.7}
+              >
+                <PostLinkIcon width={20} height={20} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      )}
 
       {/* 링크 첨부 모달 */}
       <Modal
@@ -561,6 +589,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
                     setModalLinkPreview(null);
                   }
                 }}
+                allowFontScaling={false}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="url"

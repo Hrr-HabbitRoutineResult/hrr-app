@@ -214,7 +214,7 @@ const ChallengeListScreen = ({ route }: Props) => {
           ) : (
             <CheckboxFilterUnchecked width={24} height={24} />
           )}
-          <Text style={styles.checkboxLabel}>
+          <Text style={styles.checkboxLabel} allowFontScaling={false}>
             곧{'\u00A0'}시작하는{'\u00A0'}챌린지만
           </Text>
         </TouchableOpacity>
@@ -230,7 +230,7 @@ const ChallengeListScreen = ({ route }: Props) => {
             <Text style={[
               styles.filterButtonText,
               appliedSelectedDays.length > 0 && styles.filterButtonTextActive,
-            ]}>
+            ]} allowFontScaling={false}>
               {appliedSelectedDays.length > 0 ? `요일 ${appliedSelectedDays.length}` : '요일'}
             </Text>
           </TouchableOpacity>
@@ -245,7 +245,7 @@ const ChallengeListScreen = ({ route }: Props) => {
             <Text style={[
               styles.filterButtonText,
               appliedSelectedSort && appliedSelectedSort !== 'POPULAR' && styles.filterButtonTextActive,
-            ]}>
+            ]} allowFontScaling={false}>
               {appliedSelectedSort === 'LATEST' ? '최신순' : appliedSelectedSort === 'OLDEST' ? '오래된순' : '인기순'}
             </Text>
             {appliedSelectedSort && appliedSelectedSort !== 'POPULAR' ? (
@@ -263,16 +263,16 @@ const ChallengeListScreen = ({ route }: Props) => {
       >
         {isLoading ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>로딩 중...</Text>
+            <Text style={styles.emptyText} allowFontScaling={false}>로딩 중...</Text>
           </View>
         ) : error ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorText} allowFontScaling={false}>{error}</Text>
           </View>
         ) : challenges.length === 0 ? (
           <View style={styles.emptyContainer}>
             <LogoGray width={124.16} height={119.79} />
-            <Text style={styles.emptyText}>
+            <Text style={styles.emptyText} allowFontScaling={false}>
               선택한 필터에 맞는 챌린지가 없어요{'\n'}원하는 챌린지를 개설해 보세요!
             </Text>
           </View>

@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
+import { getErrorMessage } from '../../utils/errorHandler';
 import {
   View,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   NativeSyntheticEvent,
   Image,
   Alert,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -49,19 +51,40 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
 }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedChallenges, setLikedChallenges] = useState<Set<number>>(new Set());
+
+  // API의 likedByMe 값을 기반으로 초기 상태 설정
+  const initialLikedChallenges = new Set(
+    recommendedChallenges.filter(c => c.likedByMe).map(c => c.challengeId)
+  );
+  const [likedChallenges, setLikedChallenges] = useState<Set<number>>(initialLikedChallenges);
+
   const [refreshKey, setRefreshKey] = useState(0); // 화면 새로고침을 위한 key
   const [bottomButtonTop, setBottomButtonTop] = useState(0); // 하단 버튼의 상단 위치
   const flatListRef = useRef<FlatList>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   // 추천 챌린지가 없을 경우 빈 배열 사용
   const challenges = recommendedChallenges.length > 0 ? recommendedChallenges : [];
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / (CARD_WIDTH + CARD_SPACING));
-    setCurrentIndex(index);
-  };
+  // recommendedChallenges가 변경될 때마다 likedByMe 값으로 상태 업데이트
+  useEffect(() => {
+    const newLikedChallenges = new Set(
+      recommendedChallenges.filter(c => c.likedByMe).map(c => c.challengeId)
+    );
+    setLikedChallenges(newLikedChallenges);
+  }, [recommendedChallenges]);
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const index = Math.round(offsetX / (CARD_WIDTH + CARD_SPACING));
+        setCurrentIndex(index);
+      },
+    }
+  );
 
   const handleLikeToggle = async (challengeId: number) => {
     const isLiked = likedChallenges.has(challengeId);
@@ -84,7 +107,8 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
       }
       setLikedChallenges(newLiked);
     } catch (error: any) {
-      Alert.alert('오류', error.message || '찜하기 처리에 실패했습니다.');
+      const errorMessage = getErrorMessage(error, '찜하기 처리에 실패했습니다.');
+      Alert.alert('오류', errorMessage);
     }
   };
 
@@ -214,8 +238,9 @@ export const OnboardingResultScreen: React.FC<OnboardingResultScreenProps> = ({
               {/* 페이지네이션 */}
               <View style={styles.paginationContainer}>
                 <CarouselPagination
-                  currentIndex={currentIndex}
+                  scrollX={scrollX}
                   totalItems={challenges.length}
+                  snapInterval={CARD_WIDTH + CARD_SPACING}
                 />
               </View>
             </>
