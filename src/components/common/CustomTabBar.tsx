@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Dimensions, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions, Text, Platform } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { colors, typography } from '../../design/tokens';
 import { HomeTabParamList } from '../../navigation/types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import SVG icons
 import HomeIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_home_color.svg';
@@ -52,8 +53,15 @@ const renderTabIcon = (routeName: keyof HomeTabParamList, focused: boolean) => {
 };
 
 const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  const insets = useSafeAreaInsets();
+
+  // Android 시스템 네비게이션 바로 인한 높이 조정
+  const tabBarHeight = Platform.OS === 'android' ? verticalScale(60) : verticalScale(84);
+  const bottomInset = Platform.OS === 'android' ? 0 : insets.bottom;
+  const iconTranslateY = Platform.OS === 'android' ? -verticalScale(4) : -verticalScale(8);
+
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { height: tabBarHeight, paddingBottom: bottomInset }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -87,7 +95,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             onLongPress={onLongPress}
             style={styles.tabItem}
           >
-            <View style={styles.iconLabelContainer}>
+            <View style={[styles.iconLabelContainer, { transform: [{ translateY: iconTranslateY }] }]}>
               <View>{renderTabIcon(route.name as keyof HomeTabParamList, isFocused)}</View>
               <View style={styles.labelContainer}>
                 <Text style={{
@@ -109,20 +117,19 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
 const styles = StyleSheet.create({
   tabBarContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Distribute items evenly
-    alignItems: 'center', // Center items vertically
+    justifyContent: 'space-around',
+    alignItems: 'center',
     backgroundColor: colors.white,
-    height: verticalScale(84),
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     borderTopWidth: scale(1),
     borderTopColor: colors.line,
-    paddingHorizontal: scale(10), // Add some horizontal padding
+    paddingHorizontal: scale(10),
   },
   tabItem: {
-    flex: 1, // Each item takes equal space
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
@@ -130,10 +137,12 @@ const styles = StyleSheet.create({
   iconLabelContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ translateY: -verticalScale(8) }],
+    height: verticalScale(48),
+    width: verticalScale(48),
+    marginTop: verticalScale(4),
   },
   labelContainer: {
-    marginTop: verticalScale(5),
+    marginTop: verticalScale(3),
   }
 });
 
