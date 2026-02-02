@@ -8,6 +8,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import Config from 'react-native-config';
+import { RootStackParamList } from '../../navigation/types';
 import { Text } from '../../components/common/Text';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
@@ -51,6 +55,7 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
   onBack,
   onNext,
 }) => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [agreedTerms, setAgreedTerms] = useState<Set<TermId>>(new Set());
   const [isAllAgreed, setIsAllAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,7 +170,30 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
   };
 
   const handleViewTermDetail = (termId: TermId) => {
-    // TODO: 약관 상세 화면으로 이동하기
+    if (termId === 'age') return;
+
+    const termLabels: Record<Exclude<TermId, 'age'>, string> = {
+      service: '서비스 이용 약관',
+      privacy: '개인정보 수집 및 이용 동의',
+      marketing: '마케팅 개인정보 제3자 제공 동의',
+    };
+
+    const termsUrls: Record<Exclude<TermId, 'age'>, string | undefined> = {
+      service: Config.TERMS_SERVICE_URL,
+      privacy: Config.TERMS_PRIVACY_URL,
+      marketing: Config.TERMS_MARKETING_URL,
+    };
+
+    const url = termsUrls[termId as Exclude<TermId, 'age'>];
+    if (!url) {
+      Alert.alert('오류', '약관 URL이 설정되지 않았습니다.');
+      return;
+    }
+
+    navigation.navigate('TermsWebView', {
+      title: termLabels[termId as Exclude<TermId, 'age'>],
+      url,
+    });
   };
 
   return (
@@ -217,11 +245,14 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
             activeOpacity={0.7}
           >
             <View style={styles.allAgreeContent}>
-              {isAllAgreed ? (
-                <RadioCheckedIcon width={24} height={24} />
-              ) : (
-                <RadioUncheckedIcon width={24} height={24} />
-              )}
+              {/* 라디오 아이콘 컨테이너 */}
+              <View style={styles.radioContainer}>
+                {isAllAgreed ? (
+                  <RadioCheckedIcon width={24} height={24} />
+                ) : (
+                  <RadioUncheckedIcon width={24} height={24} />
+                )}
+              </View>
               <Text variant="header4" color={colors.text.primary} style={styles.allAgreeText}>
                 모든 약관에 동의합니다
               </Text>
@@ -236,18 +267,21 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
             {TERMS.map((term) => {
               const isAgreed = agreedTerms.has(term.id);
               return (
-                <TouchableOpacity
-                  key={term.id}
-                  style={styles.termItem}
-                  onPress={() => handleToggleTerm(term.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.termContent}>
-                    {isAgreed ? (
-                      <CheckboxCheckedIcon width={12} height={10} />
-                    ) : (
-                      <CheckboxUncheckedIcon width={12} height={10} />
-                    )}
+                <View key={term.id} style={styles.termItem}>
+                  {/* 체크박스 + 텍스트 영역 */}
+                  <TouchableOpacity
+                    style={styles.termContent}
+                    onPress={() => handleToggleTerm(term.id)}
+                    activeOpacity={0.7}
+                  >
+                    {/* 체크박스 아이콘 컨테이너 */}
+                    <View style={styles.checkboxContainer}>
+                      {isAgreed ? (
+                        <CheckboxCheckedIcon width={12} height={10} />
+                      ) : (
+                        <CheckboxUncheckedIcon width={12} height={10} />
+                      )}
+                    </View>
                     <View style={styles.termTextContainer}>
                       <Text variant="md" color={colors.text.primary} style={styles.termText}>
                         {term.label}
@@ -260,16 +294,19 @@ export const TermsAgreementScreen: React.FC<TermsAgreementScreenProps> = ({
                         ({term.required ? '필수' : '선택'})
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
+
+                  {/* 쉐브론 아이콘 영역 */}
                   {term.id !== 'age' && (
                     <TouchableOpacity
+                      style={styles.chevronContainer}
                       onPress={() => handleViewTermDetail(term.id)}
                       activeOpacity={0.7}
                     >
                       <ChevronRightIcon width={4} height={8} />
                     </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                </View>
               );
             })}
           </View>
@@ -298,7 +335,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: scale(24),
+    paddingHorizontal: scale(20),
     paddingTop: verticalScale(40),
     justifyContent: 'space-between',
   },
@@ -329,21 +366,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  radioContainer: {
+    width: scale(48),
+    height: scale(48),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: scale(-8),
+  },
   allAgreeText: {
     flex: 1,
-    marginLeft: scale(12),
     lineHeight: verticalScale(16),
   },
   divider: {
     height: verticalScale(1),
     backgroundColor: colors.line,
-    marginTop: verticalScale(12),
-    marginBottom: verticalScale(30),
+    marginBottom: verticalScale(20),
   },
   termsList: {
-    gap: scale(20),
-    marginLeft: scale(10),
-    marginRight: scale(16),
+    gap: scale(4),
   },
   termItem: {
     flexDirection: 'row',
@@ -355,8 +395,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  checkboxContainer: {
+    width: scale(36),
+    height: scale(36),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: scale(-2),
+  },
   termTextContainer: {
-    marginLeft: scale(14),
+    marginLeft: scale(6),
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
@@ -367,6 +414,13 @@ const styles = StyleSheet.create({
   },
   termRequired: {
     lineHeight: verticalScale(13),
+  },
+  chevronContainer: {
+    width: scale(36),
+    height: scale(36),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: scale(-4),
   },
   buttonContainer: {
     paddingHorizontal: scale(20),

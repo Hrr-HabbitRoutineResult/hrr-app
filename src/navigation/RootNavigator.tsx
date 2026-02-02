@@ -39,6 +39,8 @@ import LikedChallengeScreen from '../screens/LikedChallengeScreen';
 import CompletedChallengeScreen from '../screens/CompletedChallengeScreen';
 import BlockedUserScreen from '../screens/BlockedUserScreen';
 import ErrorScreen from '../screens/ErrorScreen';
+import TermsWebViewScreen from '../screens/Auth/TermsWebViewScreen';
+import { AuthOnboardingScreen } from '../screens/Auth/AuthOnboardingScreen';
 
 import { HomeTabParamList, RootStackParamList } from './types';
 import CustomTabBar from '../components/common/CustomTabBar';
@@ -99,11 +101,38 @@ const HomeTabs = () => (
   </Tab.Navigator>
 );
 
+const AuthOnboardingScreenWrapper = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  return (
+    <AuthOnboardingScreen
+      onOnboardingComplete={(showRecommendation) => {
+        if (showRecommendation) {
+          navigation.replace('HomeTabs');
+          // 추천 온보딩이 필요하면 표시
+          setTimeout(() => {
+            navigation.navigate('Onboarding');
+          }, 100);
+        } else {
+          navigation.replace('HomeTabs');
+        }
+      }}
+    />
+  );
+};
+
 /**
  * RootNavigator
  * @param showRecommendation 최초 회원가입 후 추천 온보딩 표시 여부
+ * @param isAuthenticated 로그인 여부
  */
-const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: boolean }) => (
+const RootNavigator = ({
+  showRecommendation = false,
+  isAuthenticated = true
+}: {
+  showRecommendation?: boolean;
+  isAuthenticated?: boolean;
+}) => (
   <CreateChallengeProvider>
     <NavigationContainer
       linking={linking}
@@ -112,8 +141,14 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         RNBootSplash.hide({ fade: true });
       }}
     >
-      {/* showRecommendation이 true이면 온보딩을 첫 화면으로 설정 */}
-      <Stack.Navigator initialRouteName={showRecommendation ? 'Onboarding' : 'HomeTabs'}>
+      {/* 로그인 여부에 따라 첫 화면 설정 */}
+      <Stack.Navigator
+        initialRouteName={
+          !isAuthenticated ? 'AuthOnboarding' :
+            showRecommendation ? 'Onboarding' :
+              'HomeTabs'
+        }
+      >
         <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
@@ -144,6 +179,8 @@ const RootNavigator = ({ showRecommendation = false }: { showRecommendation?: bo
         <Stack.Screen name="CompletedChallenge" component={CompletedChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ErrorScreen" component={ErrorScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="TermsWebView" component={TermsWebViewScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AuthOnboarding" component={AuthOnboardingScreenWrapper} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>

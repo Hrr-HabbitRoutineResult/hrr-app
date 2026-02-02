@@ -15,6 +15,9 @@ declare module 'react-native-config' {
     NAVER_APP_NAME?: string;
     NAVER_SERVICE_URL_SCHEME?: string;
     KAKAO_APP_KEY?: string;
+    TERMS_SERVICE_URL?: string;
+    TERMS_PRIVACY_URL?: string;
+    TERMS_MARKETING_URL?: string;
   }
 
   export const Config: NativeConfig;
