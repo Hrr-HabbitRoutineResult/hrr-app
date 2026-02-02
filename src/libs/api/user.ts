@@ -125,6 +125,7 @@ export interface VerificationHistoryItem {
   content: string | null;
   photoUrl: string | null;
   textUrl: string | null;
+  textImages?: string[];
   verifiedAt: string;
 }
 

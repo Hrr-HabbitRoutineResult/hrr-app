@@ -59,13 +59,20 @@ const CertificationHistoryScreen = () => {
   const historySource = isMe ? myVerificationHistory : otherUserHistory;
 
   const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (historySource || []).map((item) => ({
-      id: item.verificationId,
-      title: item.title,
-      description: item.content || '',
-      date: format.date(item.verifiedAt),
-      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
-    }));
+    return (historySource || []).map((item) => {
+      const thumbnailUrl = item.photoUrl ||
+        (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
+          ? item.textImages[0]
+          : null);
+
+      return {
+        id: item.verificationId,
+        title: item.title,
+        description: item.content || '',
+        date: format.date(item.verifiedAt),
+        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
+      };
+    });
   }, [historySource]);
 
   const renderContent = () => {

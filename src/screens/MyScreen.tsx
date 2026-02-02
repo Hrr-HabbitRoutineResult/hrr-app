@@ -87,13 +87,20 @@ const MyScreen = () => {
   }, [myOngoingChallenges]);
 
   const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (myVerificationHistory || []).map((item) => ({
-      id: item.verificationId,
-      title: item.title,
-      description: item.content || '',
-      date: format.date(item.verifiedAt),
-      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
-    }));
+    return (myVerificationHistory || []).map((item) => {
+      const thumbnailUrl = item.photoUrl ||
+        (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
+          ? item.textImages[0]
+          : null);
+
+      return {
+        id: item.verificationId,
+        title: item.title,
+        description: item.content || '',
+        date: format.date(item.verifiedAt),
+        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
+      };
+    });
   }, [myVerificationHistory]);
 
   return (

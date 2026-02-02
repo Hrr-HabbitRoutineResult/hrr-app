@@ -241,13 +241,20 @@ const UserScreen = () => {
   }, [ongoingChallenges]);
 
   const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (verificationHistory || []).map((item) => ({
-      id: item.verificationId,
-      title: item.title,
-      description: item.content || '',
-      date: format.date(item.verifiedAt),
-      thumbnail: item.photoUrl ? { uri: item.photoUrl } : null,
-    }));
+    return (verificationHistory || []).map((item) => {
+      const thumbnailUrl = item.photoUrl ||
+        (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
+          ? item.textImages[0]
+          : null);
+
+      return {
+        id: item.verificationId,
+        title: item.title,
+        description: item.content || '',
+        date: format.date(item.verifiedAt),
+        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
+      };
+    });
   }, [verificationHistory]);
 
   const renderTabContent = () => {
