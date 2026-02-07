@@ -516,6 +516,12 @@ ${deepLink}`;
       return;
     }
 
+    // 퇴출 당한 챌린지
+    if (data.actionButtonStatus === 'REJECT') {
+      Alert.alert('알림', '퇴출 당한 챌린지입니다.');
+      return;
+    }
+
     // 라운드 시작 전
     if (data.actionButtonStatus === 'UPCOMING') {
       Alert.alert('알림', '라운드가 아직 시작되지 않았습니다.');

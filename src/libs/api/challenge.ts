@@ -69,7 +69,7 @@ export interface ChallengeDetail {
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
-  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED';
+  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED' | 'REJECT';
   owner: {
     id: number;
     nickname: string;
