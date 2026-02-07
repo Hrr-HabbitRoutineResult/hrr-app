@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, Pressable, Animated, Easing, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, Pressable, Animated, Easing, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
+import { Text } from '../components/common/Text';
 import { colors, typography, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { format } from '../libs/format';
@@ -284,7 +285,7 @@ const UserScreen = () => {
           />
           {certificationItems.length === 0 ? (
             <View style={styles.emptyCertificationContainer}>
-              <Text style={styles.tabContentText} allowFontScaling={false}>인증 기록이 없습니다</Text>
+              <Text variant="xsReg" color={colors.text.tertiary}>인증 기록이 없습니다</Text>
             </View>
           ) : certificationViewMode === 'grid' ? (
             <View style={styles.photoGridContainer}>
@@ -449,10 +450,9 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   emptyCertificationContainer: {
-    padding: spacing.xl,
+    paddingVertical: verticalScale(60),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.xl,
   },
   photoGridContainer: {
     marginHorizontal: -scale(20),

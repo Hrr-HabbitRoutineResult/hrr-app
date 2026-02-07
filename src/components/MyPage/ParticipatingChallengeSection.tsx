@@ -37,9 +37,9 @@ const ParticipatingChallengeSection = ({
   const renderEmptyState = () => (
     <TouchableOpacity style={styles.emptyCard} onPress={onPressEmpty} activeOpacity={0.8}>
       <View style={styles.emptyContent}>
-        <PlusIcon width={scale(24)} height={scale(24)} fill={colors.text.secondary} />
-        <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
-          새로운 챌린지에 가입해보세요
+        <PlusIcon width={scale(20)} height={scale(20)} fill={colors.text.secondary} />
+        <Text variant="xsReg" color={colors.text.secondary}>
+          새로운 챌린지에 가입해 보세요
         </Text>
       </View>
     </TouchableOpacity>

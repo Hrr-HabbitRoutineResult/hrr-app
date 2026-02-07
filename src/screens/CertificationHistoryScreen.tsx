@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
@@ -7,6 +7,7 @@ import { Header } from '../components/common/Header';
 import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
 import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
 import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
+import { Text } from '../components/common/Text';
 import { colors, spacing, typography } from '../design/tokens';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
@@ -87,7 +88,7 @@ const CertificationHistoryScreen = () => {
     if (certificationItems.length === 0) {
       return (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText} allowFontScaling={false}>인증 기록이 없습니다</Text>
+          <Text variant="xsReg" color={colors.text.tertiary}>아직 인증 기록이 없습니다</Text>
         </View>
       );
     }
@@ -156,13 +157,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(20),
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    paddingVertical: verticalScale(60),
     alignItems: 'center',
-  },
-  emptyText: {
-    ...typography.md,
-    color: colors.text.secondary,
+    justifyContent: 'center',
   },
   photoGridContainer: {
     marginHorizontal: -scale(20),

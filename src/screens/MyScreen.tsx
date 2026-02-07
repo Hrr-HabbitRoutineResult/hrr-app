@@ -159,7 +159,7 @@ const MyScreen = () => {
                 <ActivityIndicator style={styles.loadingIndicator} />
               ) : certificationItems.length === 0 ? (
                 <View style={styles.emptyCertificationContainer}>
-                  <Text variant="md" color={colors.text.secondary}>인증 기록이 없습니다</Text>
+                  <Text variant="xsReg" color={colors.text.tertiary}>아직 인증 기록이 없습니다</Text>
                 </View>
               ) : certificationViewMode === 'grid' ? (
                 <View style={styles.photoGridContainer}>
@@ -219,10 +219,9 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(32),
   },
   emptyCertificationContainer: {
-    padding: spacing.xl,
+    paddingVertical: verticalScale(60),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.xl,
   },
   loadingIndicator: {
     marginTop: spacing.xl,
