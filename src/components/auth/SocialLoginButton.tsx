@@ -70,12 +70,10 @@ export const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
 const styles = StyleSheet.create({
   button: {
     width: '100%',
+    height: scale(54),
     maxWidth: scale(350),
     borderRadius: scale(8),
-    paddingTop: verticalScale(18),
-    paddingRight: scale(16),
-    paddingBottom: verticalScale(18),
-    paddingLeft: scale(16),
+    paddingHorizontal: scale(16),
     marginBottom: verticalScale(12),
     justifyContent: 'center',
     alignItems: 'center',
