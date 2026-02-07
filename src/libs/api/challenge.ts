@@ -1521,6 +1521,25 @@ export const reportUser = async (
 };
 
 /**
+ * 부실인증 신고
+ */
+export const reportWeakVerification = async (
+  verificationId: number
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      `/api/v1/report/verification/weak?targetId=${verificationId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '부실인증 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
  * 댓글 작성자 차단 응답
  */
 export interface BlockCommentResponse {

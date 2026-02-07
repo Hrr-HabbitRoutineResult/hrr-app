@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { getErrorMessage } from '../../utils/errorHandler';
+import { getErrorMessage, getErrorInfo } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
@@ -30,6 +30,7 @@ import {
   GetCommentsResponse,
   reportVerificationPost,
   reportUser,
+  reportWeakVerification,
   ReportReason
 } from '../../libs/api/challenge';
 import { format } from '../../libs/format';
@@ -294,6 +295,34 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     );
   };
 
+  // 부실인증 신고하기
+  const handleReportPoorVerification = async () => {
+    setIsActionSheetVisible(false);
+
+    if (!verification) return;
+
+    Alert.alert(
+      '부실인증 신고',
+      '해당 게시글을 부실인증으로 신고하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '신고',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await reportWeakVerification(verification.verificationId);
+              Alert.alert('신고 완료', '신고가 접수되었습니다.');
+            } catch (error: any) {
+              const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+              Alert.alert(title, message);
+            }
+          }
+        },
+      ]
+    );
+  };
+
   // 게시글 신고하기
   const handleReportPost = () => {
     setIsActionSheetVisible(false);
@@ -320,8 +349,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportPostBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
-      Alert.alert('신고 실패', errorMessage);
+      const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+      Alert.alert(title, message);
     }
   };
 
@@ -339,8 +368,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportUserBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
-      Alert.alert('신고 실패', errorMessage);
+      const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+      Alert.alert(title, message);
     }
   };
 
@@ -1023,6 +1052,18 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 <TouchableOpacity
                   style={styles.actionButton}
                   activeOpacity={0.9}
+                  onPress={handleReportPoorVerification}
+                >
+                  <Text variant="md" color={colors.primary.sub}>
+                    부실인증 신고하기
+                  </Text>
+                </TouchableOpacity>
+
+                <View style={styles.actionDivider} />
+
+                <TouchableOpacity
+                  style={styles.actionButton}
+                  activeOpacity={0.9}
                   onPress={handleReportPost}
                 >
                   <Text variant="md" color={colors.primary.sub}>
@@ -1383,7 +1424,7 @@ const styles = StyleSheet.create({
   },
   actionButtonsContainer: {
     width: scale(350),
-    height: verticalScale(100),
+    height: verticalScale(148),
     backgroundColor: colors.white,
     borderRadius: scale(10),
     borderWidth: 1.5,
