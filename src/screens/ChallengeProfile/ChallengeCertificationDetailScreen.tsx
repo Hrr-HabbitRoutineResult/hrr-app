@@ -14,6 +14,7 @@ import { TextField } from '../../components/common/TextField';
 import { CommentItem } from '../../components/challenge/CommentItem';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
+import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import {
@@ -238,13 +239,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     setIsActionSheetVisible(true);
   };
 
-  const handleCloseActionSheet = () => {
-    setIsActionSheetVisible(false);
-  };
-
   const handleEdit = () => {
-    setIsActionSheetVisible(false);
-
     if (!verification) return;
 
     // 타입에 따라 다른 수정 화면으로 이동
@@ -260,8 +255,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    setIsActionSheetVisible(false);
-
     if (!verification) return;
 
     Alert.alert(
@@ -297,8 +290,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
   // 부실인증 신고하기
   const handleReportPoorVerification = async () => {
-    setIsActionSheetVisible(false);
-
     if (!verification) return;
 
     Alert.alert(
@@ -325,13 +316,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
   // 게시글 신고하기
   const handleReportPost = () => {
-    setIsActionSheetVisible(false);
     setIsReportPostBottomSheetVisible(true);
   };
 
   // 사용자 신고하기
   const handleReportUser = () => {
-    setIsActionSheetVisible(false);
     setIsReportUserBottomSheetVisible(true);
   };
 
@@ -602,6 +591,37 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       </SafeAreaView>
     );
   }
+
+  // 액션 시트 아이템 구성
+  const actionSheetItems: ActionSheetItem[] = verification.isMine
+    ? [
+      {
+        label: '수정',
+        onPress: handleEdit,
+      },
+      {
+        label: '삭제',
+        onPress: handleDelete,
+        destructive: true,
+      },
+    ]
+    : [
+      {
+        label: '부실인증 신고하기',
+        onPress: handleReportPoorVerification,
+        destructive: true,
+      },
+      {
+        label: '게시글 신고하기',
+        onPress: handleReportPost,
+        destructive: true,
+      },
+      {
+        label: '사용자 신고하기',
+        onPress: handleReportUser,
+        destructive: true,
+      },
+    ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -1013,91 +1033,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       )}
 
       {/* 게시글 더보기 액션 시트 */}
-      <Modal
+      <ActionSheet
         visible={isActionSheetVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseActionSheet}
-      >
-        <Pressable style={styles.actionSheetOverlay} onPress={handleCloseActionSheet}>
-          <View style={styles.actionSheetContainer}>
-            {/* 내 게시글: 수정/삭제 버튼 */}
-            {verification?.isMine ? (
-              <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleEdit}
-                >
-                  <Text variant="md" color={colors.text.primary}>
-                    수정
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionDivider} />
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleDelete}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    삭제
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              /* 남의 게시글: 신고하기 버튼 */
-              <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleReportPoorVerification}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    부실인증 신고하기
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionDivider} />
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleReportPost}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    게시글 신고하기
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionDivider} />
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleReportUser}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    사용자 신고하기
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* 취소 버튼 */}
-            <TouchableOpacity
-              style={styles.cancelButton}
-              activeOpacity={0.9}
-              onPress={handleCloseActionSheet}
-            >
-              <Text variant="md" color={colors.text.primary}>
-                취소
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+        onClose={() => setIsActionSheetVisible(false)}
+        items={actionSheetItems}
+      />
 
       {/* 채택 확인 바텀시트 */}
       <BottomSheet
@@ -1409,44 +1349,6 @@ const styles = StyleSheet.create({
   sendIconButton: {
     width: scale(40),
     height: verticalScale(40),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionSheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(32, 32, 32, 0.5)',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: verticalScale(40),
-  },
-  actionSheetContainer: {
-    alignItems: 'center',
-  },
-  actionButtonsContainer: {
-    width: scale(350),
-    height: verticalScale(148),
-    backgroundColor: colors.white,
-    borderRadius: scale(10),
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    marginBottom: verticalScale(12),
-  },
-  actionButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionDivider: {
-    height: 1,
-    backgroundColor: colors.line,
-  },
-  cancelButton: {
-    width: scale(350),
-    height: verticalScale(48),
-    backgroundColor: colors.white,
-    borderRadius: scale(10),
-    borderWidth: 1.5,
-    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
   },

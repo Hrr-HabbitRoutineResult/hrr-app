@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, Pressable, Animated, Easing, Platform } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -23,8 +23,8 @@ import {
   blockUserById,
   unblockUserById,
   reportUserById,
-  ReportReason,
 } from '../libs/api/user';
+import { ReportReason } from '../libs/api/challenge';
 import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
 import { Header } from '../components/common/Header';
 import ProfileCard from '../components/MyPage/ProfileCard';
@@ -36,10 +36,9 @@ import MoreIcon from '../../assets/icons/more.svg';
 import { BlockUserBottomSheet } from '../components/user/BlockUserBottomSheet';
 import { UnblockUserBottomSheet } from '../components/user/UnblockUserBottomSheet';
 import { ToastNotification } from '../components/common/ToastNotification';
-import { ReportUserBottomSheet } from '../components/MyPage/ReportUserBottomSheet';
+import { ReportBottomSheet } from '../components/common/ReportBottomSheet';
+import { ActionSheet, ActionSheetItem } from '../components/common/ActionSheet';
 import RefreshableScrollView from '../components/common/RefreshableScrollView';
-
-const SHEET_ANIM_MS = 220;
 
 type UserScreenRouteProp = RouteProp<RootStackParamList, 'User'>;
 
@@ -60,37 +59,11 @@ const UserScreen = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
 
-  const [sheetVisible, setSheetVisible] = useState(false);
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [isBlockSheetVisible, setIsBlockSheetVisible] = useState(false);
   const [isUnblockSheetVisible, setIsUnblockSheetVisible] = useState(false);
   const [isReportSheetVisible, setIsReportSheetVisible] = useState(false);
   const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-
-  const sheetAnim = useRef(new Animated.Value(0)).current;
-
-  const openSheet = () => {
-    setSheetVisible(true);
-    Animated.timing(sheetAnim, {
-      toValue: 1,
-      duration: SHEET_ANIM_MS,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const closeSheet = (callback?: () => void) => {
-    Animated.timing(sheetAnim, {
-      toValue: 0,
-      duration: SHEET_ANIM_MS,
-      easing: Easing.in(Easing.cubic),
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) {
-        setSheetVisible(false);
-        callback?.();
-      }
-    });
-  };
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -160,9 +133,7 @@ const UserScreen = () => {
   };
 
   const handleBlock = () => {
-    closeSheet(() => {
-      setIsBlockSheetVisible(true);
-    });
+    setIsBlockSheetVisible(true);
   };
 
   const handleConfirmBlock = async () => {
@@ -196,20 +167,19 @@ const UserScreen = () => {
   };
 
   const handleReport = () => {
-    closeSheet(() => {
-      setIsReportSheetVisible(true);
-    });
+    setIsReportSheetVisible(true);
   };
 
-  const handleReportSubmit = async (reason: string, detail: string) => {
+  const handleReportSubmit = async (reason: ReportReason, description: string) => {
     if (!user) return;
     try {
       await reportUserById({
         targetId: user.userId,
-        reason: reason as ReportReason,
-        description: detail,
+        reason: reason as any,
+        description: description,
       });
-      setToast({ visible: true, message: '신고가 접수되었어요' });
+      setIsReportSheetVisible(false);
+      Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error) {
       const errorMessage = getErrorMessage(error, '신고 접수에 실패했습니다.');
       Alert.alert('오류', errorMessage);
@@ -285,7 +255,7 @@ const UserScreen = () => {
           />
           {certificationItems.length === 0 ? (
             <View style={styles.emptyCertificationContainer}>
-              <Text variant="xsReg" color={colors.text.tertiary}>인증 기록이 없습니다</Text>
+              <Text variant="xsReg" color={colors.text.tertiary}>아직 인증 기록이 없습니다</Text>
             </View>
           ) : certificationViewMode === 'grid' ? (
             <View style={styles.photoGridContainer}>
@@ -327,15 +297,18 @@ const UserScreen = () => {
     );
   }
 
-  const backdropOpacity = sheetAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.35],
-  });
-
-  const translateY = sheetAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [240, 0],
-  });
+  const actionSheetItems: ActionSheetItem[] = [
+    {
+      label: '차단하기',
+      onPress: handleBlock,
+      destructive: true,
+    },
+    {
+      label: '신고하기',
+      onPress: handleReport,
+      destructive: true,
+    },
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -345,7 +318,7 @@ const UserScreen = () => {
         showDivider
         rightContent={
           <TouchableOpacity
-            onPress={openSheet}
+            onPress={() => setActionSheetVisible(true)}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <MoreIcon />
@@ -372,36 +345,11 @@ const UserScreen = () => {
         {renderTabContent()}
       </RefreshableScrollView>
 
-      <Modal
-        transparent
-        visible={sheetVisible}
-        animationType="none"
-        onRequestClose={() => closeSheet()}
-      >
-        <View style={styles.sheetRoot}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => closeSheet()}>
-            <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
-          </Pressable>
-
-          <Animated.View style={[styles.sheetWrap, { transform: [{ translateY }] }]}>
-            <View style={styles.sheetGroup}>
-              <Pressable style={styles.sheetItem} onPress={handleBlock}>
-                <Text style={styles.sheetItemTextDestructive} allowFontScaling={false}>차단하기</Text>
-              </Pressable>
-              <View style={styles.sheetDivider} />
-              <Pressable style={styles.sheetItem} onPress={handleReport}>
-                <Text style={styles.sheetItemTextDestructive} allowFontScaling={false}>신고하기</Text>
-              </Pressable>
-            </View>
-            <View style={{ height: 10 }} />
-            <Pressable style={styles.sheetCancel} onPress={() => closeSheet()}>
-              <Text style={styles.sheetItemText} allowFontScaling={false}>취소</Text>
-            </Pressable>
-            <View style={{ height: Platform.OS === 'ios' ? 10 : 16 }} />
-          </Animated.View>
-        </View>
-      </Modal>
-
+      <ActionSheet
+        visible={actionSheetVisible}
+        onClose={() => setActionSheetVisible(false)}
+        items={actionSheetItems}
+      />
       <BlockUserBottomSheet
         visible={isBlockSheetVisible}
         onClose={() => setIsBlockSheetVisible(false)}
@@ -414,8 +362,9 @@ const UserScreen = () => {
         onConfirm={handleConfirmUnblock}
         username={user?.nickname}
       />
-      <ReportUserBottomSheet
+      <ReportBottomSheet
         visible={isReportSheetVisible}
+        type="user"
         onClose={() => setIsReportSheetVisible(false)}
         onSubmit={handleReportSubmit}
       />
@@ -456,48 +405,6 @@ const styles = StyleSheet.create({
   },
   photoGridContainer: {
     marginHorizontal: -scale(20),
-  },
-  // Sheet styles
-  sheetRoot: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  sheetWrap: {
-    paddingHorizontal: 12,
-    paddingBottom: 6,
-  },
-  sheetGroup: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  sheetItem: {
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sheetItemText: {
-    fontSize: 16,
-    color: colors.text.primary,
-  },
-  sheetItemTextDestructive: {
-    fontSize: 16,
-    color: colors.destructive.Android,
-  },
-  sheetDivider: {
-    height: 1,
-    backgroundColor: colors.background,
-  },
-  sheetCancel: {
-    backgroundColor: colors.white,
-    borderRadius: 12,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 
