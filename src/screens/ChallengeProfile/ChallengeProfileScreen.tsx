@@ -307,7 +307,21 @@ export const ChallengeProfileScreen: React.FC = () => {
     // 요일 순서대로 정렬
     const sortedDays = [...days].sort((a, b) => dayOrder[a] - dayOrder[b]);
 
-    return sortedDays.map(d => dayMap[d] || d).join('/');
+    return sortedDays.map(d => dayMap[d] || d).join('\u200A/\u200A');
+  };
+
+  // 날짜 포맷 함수 (YYYY-MM-DD -> YYYY. M. D. (요일))
+  const formatDateWithDay = (dateStr: string) => {
+    const [year, month, day] = dateStr.split('-');
+    const date = new Date(dateStr);
+    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][date.getDay()];
+    return `${year}. ${parseInt(month)}. ${parseInt(day)}. (${dayOfWeek})`;
+  };
+
+  // 챌린지 기간 포맷
+  const formatChallengePeriod = () => {
+    if (!data?.startDate || !data?.endDate) return '';
+    return `${formatDateWithDay(data.startDate)} ~ ${formatDateWithDay(data.endDate)}`;
   };
 
   // 시간 포맷 함수 (HH:MM:SS -> HH:MM)
@@ -826,7 +840,7 @@ ${deepLink}`;
             )}
 
             {/* 챌린지 인증현황 타이틀 */}
-            <View style={styles.section}>
+            <View style={[styles.section, { marginTop: verticalScale(16) }]}>
               <TouchableOpacity
                 style={styles.sectionTitleRow}
                 activeOpacity={0.7}
@@ -915,7 +929,7 @@ ${deepLink}`;
               ) : (
                 <View style={styles.emptyFeedContainerPadding}>
                   <Text variant="xsReg" color={colors.text.tertiary}>
-                    아직 인증 게시글이 없습니다.
+                    아직 인증된 게시글이 없습니다.
                   </Text>
                 </View>
               )}
@@ -994,10 +1008,29 @@ ${deepLink}`;
                     </Text>
                   </View>
                 </View>
+
+                {/* 주의사항 */}
+                <View style={[styles.section, { marginTop: verticalScale(24), marginBottom: verticalScale(24) }]}>
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+                    주의사항
+                  </Text>
+                  <View style={styles.contentBox}>
+                    <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
+                      챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실 인증'으로 신고할 수 있습니다. 하나의 게시글에 부실 인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총 3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는 제한됩니다.
+                    </Text>
+                  </View>
+                </View>
               </>
             ) : (
               // 참가 전 UI
               <>
+                {/* 챌린지 기간 */}
+                <View style={styles.challengePeriodSection}>
+                  <Text variant="xsReg" color={colors.text.primary}>
+                    {formatChallengePeriod()}
+                  </Text>
+                </View>
+
                 {/* 챌린지 일정 정보 */}
                 <View style={styles.scheduleSection}>
                   <View style={styles.scheduleItem}>
@@ -1027,6 +1060,18 @@ ${deepLink}`;
                   <View style={styles.contentBox}>
                     <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
                       {challengeData.rules}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 주의사항 */}
+                <View style={[styles.section, { marginTop: verticalScale(24), marginBottom: verticalScale(24) }]}>
+                  <Text variant="header4" color={colors.text.primary} style={styles.sectionTitle}>
+                    주의사항
+                  </Text>
+                  <View style={styles.contentBox}>
+                    <Text variant="xsReg" color={colors.text.secondary} style={styles.rulesText}>
+                      챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실 인증'으로 신고할 수 있습니다. 하나의 게시글에 부실 인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총 3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는 제한됩니다.
                     </Text>
                   </View>
                 </View>
@@ -1318,11 +1363,15 @@ const styles = StyleSheet.create({
   sectionDividerAfterTimeRange: {
     marginTop: verticalScale(28),
   },
+  challengePeriodSection: {
+    paddingHorizontal: scale(25),
+    paddingTop: verticalScale(31),
+  },
   scheduleSection: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(28),
+    paddingTop: verticalScale(23),
     gap: scale(12),
   },
   daySelectionSection: {
@@ -1503,10 +1552,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderRadius: scale(10),
     marginHorizontal: scale(24),
-    marginTop: verticalScale(-12),
   },
   textFeedSection: {
-    marginTop: verticalScale(-20),
+    marginTop: verticalScale(0),
   },
   sectionTitleRow: {
     paddingVertical: verticalScale(10),
