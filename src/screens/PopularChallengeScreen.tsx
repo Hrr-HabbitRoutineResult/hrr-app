@@ -124,14 +124,13 @@ const styles = StyleSheet.create({
     height: verticalScale(92),
     marginHorizontal: scale(20),
     borderRadius: scale(20),
-    padding: scale(24),
-    justifyContent: 'flex-start',
+    paddingLeft: scale(20),
     marginBottom: verticalScale(20),
+    justifyContent: 'center',
   },
   top10Title: {
     ...typography.header1,
     color: colors.primary.sub,
-    paddingBottom: verticalScale(4),
   },
   top10Subtitle: {
     ...typography.md,
