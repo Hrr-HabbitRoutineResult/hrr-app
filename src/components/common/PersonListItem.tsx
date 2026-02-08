@@ -4,6 +4,7 @@ import { Avatar } from '../MyPage/Avatar';
 import { Text } from './Text';
 import { Button } from './Button';
 import { colors, spacing, radius } from '../../design/tokens';
+import { scale } from '../../utils/scaling';
 
 interface PersonListItemProps {
     avatarUrl?: string;
@@ -24,7 +25,7 @@ const PersonListItem = ({ avatarUrl, nickname, tier, isFollowing = false, onPres
                 onPress={onPressFollow}
                 style={[styles.followButton, { borderRadius: radius.xl }]}
             >
-                <Text variant="xxs" color={isFollowing ? colors.primary.main : colors.white}>
+                <Text variant="xsMd" color={isFollowing ? colors.primary.main : colors.white}>
                     {isFollowing ? '팔로잉' : '팔로우'}
                 </Text>
             </Button>
@@ -35,9 +36,9 @@ const PersonListItem = ({ avatarUrl, nickname, tier, isFollowing = false, onPres
         <View style={styles.container}>
             <Avatar uri={avatarUrl} size={40} />
             <View style={styles.infoContainer}>
-                <Text style={styles.nickname}>{nickname}</Text>
+                <Text variant="smMd" style={styles.nickname}>{nickname}</Text>
                 {tier && <View style={styles.dot} />}
-                {tier && <Text variant="xsReg" color={colors.text.tertiary} style={styles.tierText}>{tier}</Text>}
+                {tier && <Text variant="smMd" color={colors.text.tertiary} style={styles.tierText}>{tier}</Text>}
             </View>
             {showFollowButton && renderButton()}
         </View>
@@ -62,15 +63,15 @@ const styles = StyleSheet.create({
         // typography.xsReg and color is already set via props
     },
     followButton: {
-        width: 120,
-        height: 40,
+        width: 100,
+        height: 32,
     },
     dot: {
-        width: 2,
-        height: 2,
-        borderRadius: 1,
-        backgroundColor: colors.text.secondary,
-        marginHorizontal: spacing.xs,
+        width: scale(2),
+        height: scale(2),
+        borderRadius: scale(1),
+        backgroundColor: colors.text.primary,
+        marginHorizontal: 5,
     },
 });
 

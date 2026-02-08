@@ -4,6 +4,7 @@ import { Avatar } from '../MyPage/Avatar';
 import { Text } from '../common/Text';
 import { colors, spacing, radius } from '../../design/tokens';
 import { format } from '../../libs/format';
+import { scale } from '../../utils/scaling';
 
 interface BlockedUserListItemProps {
     avatarUrl?: string;
@@ -73,11 +74,11 @@ const styles = StyleSheet.create({
         borderColor: '#FF6B61',
     },
     dot: {
-        width: 2,
-        height: 2,
-        borderRadius: 1,
-        backgroundColor: colors.text.secondary,
-        marginHorizontal: spacing.xs,
+        width: scale(2),
+        height: scale(2),
+        borderRadius: scale(1),
+        backgroundColor: colors.text.primary,
+        marginHorizontal: 5,
     },
 });
 
