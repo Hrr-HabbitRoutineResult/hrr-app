@@ -76,13 +76,11 @@ const styles = StyleSheet.create({
   },
   bodyTitle: {
     ...typography.header3,
-    lineHeight: verticalScale(23),
     marginBottom: verticalScale(12),
     textAlign: 'left',
   },
   bodyDescription: {
     ...typography.smReg,
-    lineHeight: verticalScale(20),
     textAlign: 'left',
     marginBottom: verticalScale(12),
   },

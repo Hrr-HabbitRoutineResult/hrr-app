@@ -27,7 +27,6 @@ const styles = StyleSheet.create({
     ...typography.smReg,
     color: colors.icon.gray,
     textAlign: 'center',
-    lineHeight: verticalScale(21),
     marginTop: verticalScale(32),
   },
 });

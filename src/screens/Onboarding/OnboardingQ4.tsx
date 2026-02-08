@@ -207,7 +207,6 @@ const styles = StyleSheet.create({
   },
   q4Title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
     marginBottom: verticalScale(12),
   },
   q4Subtitle: {
@@ -249,7 +248,6 @@ const styles = StyleSheet.create({
   },
   goalTitle: {
     marginBottom: verticalScale(4),
-    lineHeight: verticalScale(20),
   },
   goalDescription: {
     lineHeight: verticalScale(18),

@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
   },
   q1Title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
     marginBottom: verticalScale(12),
   },
   q1Subtitle: {

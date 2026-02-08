@@ -236,7 +236,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
   },
   scrollContainer: {
     flex: 1,
@@ -277,7 +276,6 @@ const styles = StyleSheet.create({
   },
   privacyTitle: {
     marginBottom: verticalScale(4),
-    lineHeight: verticalScale(20),
   },
   privacyDescription: {
     lineHeight: verticalScale(18),

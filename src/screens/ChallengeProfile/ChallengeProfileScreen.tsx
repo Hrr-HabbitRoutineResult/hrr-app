@@ -1317,11 +1317,9 @@ const styles = StyleSheet.create({
   },
   challengeName: {
     marginBottom: verticalScale(4),
-    lineHeight: verticalScale(26),
   },
   challengeDescription: {
     marginBottom: verticalScale(23),
-    lineHeight: verticalScale(16),
   },
   participantInfo: {
     flexDirection: 'column',
@@ -1348,7 +1346,6 @@ const styles = StyleSheet.create({
   },
   hostNickname: {
     flex: 1,
-    lineHeight: verticalScale(20),
   },
   chevronContainer: {
     width: scale(48),
@@ -1571,11 +1568,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    lineHeight: verticalScale(20),
     marginBottom: verticalScale(12),
   },
   sectionTitleNoMargin: {
-    lineHeight: verticalScale(20),
   },
   contentBox: {
     backgroundColor: colors.background,
@@ -1597,14 +1592,11 @@ const styles = StyleSheet.create({
   },
   rankNumber: {
     width: scale(24),
-    lineHeight: verticalScale(20),
   },
   rankingNickname: {
     flex: 1,
-    lineHeight: verticalScale(20),
   },
   rankingScore: {
-    lineHeight: verticalScale(20),
   },
   buttonDivider: {
     height: verticalScale(1),
@@ -1641,7 +1633,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(10),
   },
   modalDescription: {
-    lineHeight: verticalScale(18),
   },
   modalTextFieldContainer: {
     marginLeft: -4,

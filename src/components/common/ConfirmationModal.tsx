@@ -95,11 +95,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   modalTitle: {
-    lineHeight: verticalScale(22),
     marginBottom: verticalScale(-24),
   },
   modalDescription: {
-    lineHeight: verticalScale(18),
   },
   modalButtons: {
     flexDirection: 'row',

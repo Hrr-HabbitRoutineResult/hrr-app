@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
   },
   q2Title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
     marginBottom: verticalScale(12),
   },
   q2Subtitle: {
@@ -229,7 +228,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(4),
   },
   timeText: {
-    lineHeight: verticalScale(20),
   },
   timeSeparator: {
     width: scale(8),

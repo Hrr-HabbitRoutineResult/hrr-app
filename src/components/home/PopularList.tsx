@@ -111,7 +111,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...typography.header4,
     color: colors.text.primary,
-    lineHeight: verticalScale(20),
   },
   iconContainer: {
     paddingTop: verticalScale(13),
@@ -123,8 +122,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: verticalScale(80),
     overflow: 'hidden',
-    position: 'relative',
-  },
+    position: 'relative',  },
   emptyBackground: {
     position: 'absolute',
     width: '100%',

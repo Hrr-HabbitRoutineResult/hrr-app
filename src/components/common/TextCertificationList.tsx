@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
-    lineHeight: verticalScale(20),
   },
   description: {
     lineHeight: verticalScale(18),

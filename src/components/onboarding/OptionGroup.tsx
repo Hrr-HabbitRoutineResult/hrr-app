@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   buttonText: {
-    lineHeight: verticalScale(20),
   },
 });
 

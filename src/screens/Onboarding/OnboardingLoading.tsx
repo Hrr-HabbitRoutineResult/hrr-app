@@ -186,7 +186,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
     marginBottom: verticalScale(12),
   },
   subtitle: {

@@ -748,7 +748,6 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(18),
   },
   timeNotice: {
-    lineHeight: verticalScale(12),
   },
   participantsInputContainer: {
     flexDirection: 'row',

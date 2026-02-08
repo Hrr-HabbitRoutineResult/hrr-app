@@ -1260,7 +1260,6 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: verticalScale(6),
-    lineHeight: verticalScale(20),
   },
   content: {
     marginBottom: verticalScale(16),

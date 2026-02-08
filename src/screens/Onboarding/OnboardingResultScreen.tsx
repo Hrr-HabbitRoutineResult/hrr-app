@@ -333,7 +333,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    lineHeight: verticalScale(30),
     marginBottom: verticalScale(6),
   },
   subtitle: {
@@ -403,7 +402,6 @@ const styles = StyleSheet.create({
     gap: scale(12),
   },
   challengeTitle: {
-    lineHeight: verticalScale(24),
   },
   challengeDescription: {
     lineHeight: verticalScale(18),

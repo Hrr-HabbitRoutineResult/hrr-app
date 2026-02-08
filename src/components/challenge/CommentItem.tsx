@@ -362,7 +362,6 @@ const styles = StyleSheet.create({
   },
   commentText: {
     marginBottom: verticalScale(4),
-    lineHeight: verticalScale(18),
   },
   actionsRow: {
     flexDirection: 'row',

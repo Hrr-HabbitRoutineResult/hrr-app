@@ -346,7 +346,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(28),
   },
   title: {
-    lineHeight: verticalScale(30),
     includeFontPadding: false,
   },
   descriptionContainer: {
@@ -375,7 +374,6 @@ const styles = StyleSheet.create({
   },
   allAgreeText: {
     flex: 1,
-    lineHeight: verticalScale(16),
   },
   divider: {
     height: verticalScale(1),
@@ -410,10 +408,8 @@ const styles = StyleSheet.create({
   },
   termText: {
     marginRight: scale(4),
-    lineHeight: verticalScale(16),
   },
   termRequired: {
-    lineHeight: verticalScale(13),
   },
   chevronContainer: {
     width: scale(36),
