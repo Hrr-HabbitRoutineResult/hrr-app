@@ -5,7 +5,7 @@ import { Text } from '../common/Text';
 import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 
 type SettingItemProps = {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   onPress?: () => void;
 };

@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
   },
   slogan: {
     textAlign: 'center',
-    lineHeight: verticalScale(20),
   },
   buttonContainer: {
     paddingHorizontal: scale(20),

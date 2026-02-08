@@ -69,7 +69,7 @@ export interface ChallengeDetail {
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
-  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED';
+  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED' | 'REJECT';
   owner: {
     id: number;
     nickname: string;
@@ -1514,6 +1514,25 @@ export const reportUser = async (
 
     if (!response.data.isSuccess) {
       throw new Error(response.data.message || '사용자 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 부실인증 신고
+ */
+export const reportWeakVerification = async (
+  verificationId: number
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      `/api/v1/report/verification/weak?targetId=${verificationId}`
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '부실인증 신고에 실패했습니다.');
     }
   } catch (error: any) {
     throw error;

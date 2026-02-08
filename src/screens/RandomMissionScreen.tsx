@@ -380,7 +380,6 @@ const styles = StyleSheet.create({
   mainTitle: {
     marginTop: verticalScale(28),
     marginBottom: verticalScale(32),
-    lineHeight: verticalScale(30),
   },
   imageContainer: {
     width: '100%',

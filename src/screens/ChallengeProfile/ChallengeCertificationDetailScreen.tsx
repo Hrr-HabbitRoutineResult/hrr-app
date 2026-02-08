@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { getErrorMessage } from '../../utils/errorHandler';
+import { getErrorMessage, getErrorInfo } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -14,8 +14,10 @@ import { TextField } from '../../components/common/TextField';
 import { CommentItem } from '../../components/challenge/CommentItem';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
+import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
+import { useUserStore } from '../../store/userSlice';
 import {
   getVerificationDetail,
   VerificationDetailResponse,
@@ -30,6 +32,7 @@ import {
   GetCommentsResponse,
   reportVerificationPost,
   reportUser,
+  reportWeakVerification,
   ReportReason
 } from '../../libs/api/challenge';
 import { format } from '../../libs/format';
@@ -59,6 +62,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationDetailScreenRouteProp>();
   const { verification: initialVerification } = route.params;
+  const insets = useSafeAreaInsets();
+  const { userInfo } = useUserStore();
 
   const commentInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -72,6 +77,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Android 시스템 네비게이션 바로 인한 높이 조정
+  const commentInputBottomPadding = Platform.OS === 'android'
+    ? verticalScale(36) - insets.bottom
+    : verticalScale(36);
 
   // 댓글 관련 state
   const [comments, setComments] = useState<GetCommentsResponse['result'] | null>(null);
@@ -233,17 +243,20 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  // 프로필 클릭 핸들러 -> 본인이면 My, 다른 유저면 User 화면으로 이동
+  const handleProfilePress = (userId: number) => {
+    if (userInfo?.userId === userId) {
+      navigation.navigate('HomeTabs', { screen: '마이' });
+    } else {
+      navigation.navigate('User', { userId });
+    }
+  };
+
   const handleMorePress = () => {
     setIsActionSheetVisible(true);
   };
 
-  const handleCloseActionSheet = () => {
-    setIsActionSheetVisible(false);
-  };
-
   const handleEdit = () => {
-    setIsActionSheetVisible(false);
-
     if (!verification) return;
 
     // 타입에 따라 다른 수정 화면으로 이동
@@ -259,8 +272,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    setIsActionSheetVisible(false);
-
     if (!verification) return;
 
     Alert.alert(
@@ -294,15 +305,39 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     );
   };
 
+  // 부실인증 신고하기
+  const handleReportPoorVerification = async () => {
+    if (!verification) return;
+
+    Alert.alert(
+      '부실인증 신고',
+      '해당 게시글을 부실인증으로 신고하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '신고',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await reportWeakVerification(verification.verificationId);
+              Alert.alert('신고 완료', '신고가 접수되었습니다.');
+            } catch (error: any) {
+              const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+              Alert.alert(title, message);
+            }
+          }
+        },
+      ]
+    );
+  };
+
   // 게시글 신고하기
   const handleReportPost = () => {
-    setIsActionSheetVisible(false);
     setIsReportPostBottomSheetVisible(true);
   };
 
   // 사용자 신고하기
   const handleReportUser = () => {
-    setIsActionSheetVisible(false);
     setIsReportUserBottomSheetVisible(true);
   };
 
@@ -320,8 +355,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportPostBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
-      Alert.alert('신고 실패', errorMessage);
+      const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+      Alert.alert(title, message);
     }
   };
 
@@ -339,8 +374,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setIsReportUserBottomSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '신고에 실패했습니다.');
-      Alert.alert('신고 실패', errorMessage);
+      const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+      Alert.alert(title, message);
     }
   };
 
@@ -574,6 +609,37 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     );
   }
 
+  // 액션 시트 아이템 구성
+  const actionSheetItems: ActionSheetItem[] = verification.isMine
+    ? [
+      {
+        label: '수정',
+        onPress: handleEdit,
+      },
+      {
+        label: '삭제',
+        onPress: handleDelete,
+        destructive: true,
+      },
+    ]
+    : [
+      {
+        label: '부실인증 신고하기',
+        onPress: handleReportPoorVerification,
+        destructive: true,
+      },
+      {
+        label: '게시글 신고하기',
+        onPress: handleReportPost,
+        destructive: true,
+      },
+      {
+        label: '사용자 신고하기',
+        onPress: handleReportUser,
+        destructive: true,
+      },
+    ];
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Header
@@ -606,7 +672,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 사용자 정보 */}
         <TouchableOpacity
           style={styles.userSection}
-          onPress={() => navigation.navigate('User', { userId: verification.user.userId })}
+          onPress={() => handleProfilePress(verification.user.userId)}
           activeOpacity={0.7}
         >
           <View style={styles.userAvatar}>
@@ -791,7 +857,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     onDelete={handleDeleteComment}
                     onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
-                    onProfilePress={(userId) => navigation.navigate('User', { userId })}
+                    onProfilePress={handleProfilePress}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
                     canSelectComment={verification?.canSelectComment}
@@ -838,7 +904,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                             onDelete={handleDeleteComment}
                             onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
-                            onProfilePress={(userId) => navigation.navigate('User', { userId })}
+                            onProfilePress={handleProfilePress}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
                             canSelectComment={verification?.canSelectComment}
@@ -872,191 +938,129 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
-          style={styles.keyboardAvoidingView}
-        >
-          <View style={[
-            styles.commentInputContainer,
-            isKeyboardVisible && styles.commentInputContainerKeyboard,
-          ]}>
-            <TextField
-              ref={commentInputRef}
-              variant="default"
-              placeholder="댓글을 입력하세요"
-              value={commentText}
-              onChangeText={setCommentText}
-              editable={!isSubmittingComment}
-              leftIcon={
-                <View style={styles.lockIconContainer}>
-                  <TouchableOpacity
-                    onPress={() => setIsCommentLocked(!isCommentLocked)}
-                    activeOpacity={0.7}
-                    style={styles.lockIconButton}
-                  >
-                    {isCommentLocked ? (
-                      <LockIcon width={10} height={12} />
-                    ) : (
-                      <UnlockIcon width={10} height={12} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-              rightIcon={
-                <View style={styles.sendIconContainer}>
-                  <TouchableOpacity
-                    onPress={handleSubmitComment}
-                    activeOpacity={0.7}
-                    style={styles.sendIconButton}
-                    disabled={isSubmittingComment}
-                  >
-                    {isSubmittingComment ? (
-                      <ActivityIndicator size="small" color={colors.primary.main} />
-                    ) : (
-                      <SendIcon width={30} height={30} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onRightIconPress={handleSubmitComment}
-              containerStyle={styles.textFieldContainer}
-              inputContainerStyle={styles.commentInputField}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={[
-          styles.keyboardAvoidingView,
-          isKeyboardVisible && { bottom: keyboardHeight }
-        ]}>
-          <View style={[
-            styles.commentInputContainer,
-            isKeyboardVisible && styles.commentInputContainerKeyboard,
-          ]}>
-            <TextField
-              ref={commentInputRef}
-              variant="default"
-              placeholder="댓글을 입력하세요"
-              value={commentText}
-              onChangeText={setCommentText}
-              editable={!isSubmittingComment}
-              leftIcon={
-                <View style={styles.lockIconContainer}>
-                  <TouchableOpacity
-                    onPress={() => setIsCommentLocked(!isCommentLocked)}
-                    activeOpacity={0.7}
-                    style={styles.lockIconButton}
-                  >
-                    {isCommentLocked ? (
-                      <LockIcon width={10} height={12} />
-                    ) : (
-                      <UnlockIcon width={10} height={12} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-              rightIcon={
-                <View style={styles.sendIconContainer}>
-                  <TouchableOpacity
-                    onPress={handleSubmitComment}
-                    activeOpacity={0.7}
-                    style={styles.sendIconButton}
-                    disabled={isSubmittingComment}
-                  >
-                    {isSubmittingComment ? (
-                      <ActivityIndicator size="small" color={colors.primary.main} />
-                    ) : (
-                      <SendIcon width={30} height={30} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onRightIconPress={handleSubmitComment}
-              containerStyle={styles.textFieldContainer}
-              inputContainerStyle={styles.commentInputField}
-            />
-          </View>
-        </View>
+      {verification.canWriteComment && (
+        <>
+          {Platform.OS === 'ios' ? (
+            <KeyboardAvoidingView
+              behavior="padding"
+              keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
+              style={styles.keyboardAvoidingView}
+            >
+              <View style={[
+                styles.commentInputContainer,
+                { paddingBottom: commentInputBottomPadding },
+                isKeyboardVisible && styles.commentInputContainerKeyboard,
+              ]}>
+                <TextField
+                  ref={commentInputRef}
+                  variant="default"
+                  placeholder="댓글을 입력하세요"
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  editable={!isSubmittingComment}
+                  leftIcon={
+                    <View style={styles.lockIconContainer}>
+                      <TouchableOpacity
+                        onPress={() => setIsCommentLocked(!isCommentLocked)}
+                        activeOpacity={0.7}
+                        style={styles.lockIconButton}
+                      >
+                        {isCommentLocked ? (
+                          <LockIcon width={10} height={12} />
+                        ) : (
+                          <UnlockIcon width={10} height={12} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+                  rightIcon={
+                    <View style={styles.sendIconContainer}>
+                      <TouchableOpacity
+                        onPress={handleSubmitComment}
+                        activeOpacity={0.7}
+                        style={styles.sendIconButton}
+                        disabled={isSubmittingComment}
+                      >
+                        {isSubmittingComment ? (
+                          <ActivityIndicator size="small" color={colors.primary.main} />
+                        ) : (
+                          <SendIcon width={30} height={30} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onRightIconPress={handleSubmitComment}
+                  containerStyle={styles.textFieldContainer}
+                  inputContainerStyle={styles.commentInputField}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          ) : (
+            <View style={[
+              styles.keyboardAvoidingView,
+              isKeyboardVisible && { bottom: keyboardHeight }
+            ]}>
+              <View style={[
+                styles.commentInputContainer,
+                { paddingBottom: commentInputBottomPadding },
+                isKeyboardVisible && styles.commentInputContainerKeyboard,
+              ]}>
+                <TextField
+                  ref={commentInputRef}
+                  variant="default"
+                  placeholder="댓글을 입력하세요"
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  editable={!isSubmittingComment}
+                  leftIcon={
+                    <View style={styles.lockIconContainer}>
+                      <TouchableOpacity
+                        onPress={() => setIsCommentLocked(!isCommentLocked)}
+                        activeOpacity={0.7}
+                        style={styles.lockIconButton}
+                      >
+                        {isCommentLocked ? (
+                          <LockIcon width={10} height={12} />
+                        ) : (
+                          <UnlockIcon width={10} height={12} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+                  rightIcon={
+                    <View style={styles.sendIconContainer}>
+                      <TouchableOpacity
+                        onPress={handleSubmitComment}
+                        activeOpacity={0.7}
+                        style={styles.sendIconButton}
+                        disabled={isSubmittingComment}
+                      >
+                        {isSubmittingComment ? (
+                          <ActivityIndicator size="small" color={colors.primary.main} />
+                        ) : (
+                          <SendIcon width={30} height={30} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onRightIconPress={handleSubmitComment}
+                  containerStyle={styles.textFieldContainer}
+                  inputContainerStyle={styles.commentInputField}
+                />
+              </View>
+            </View>
+          )}
+        </>
       )}
 
       {/* 게시글 더보기 액션 시트 */}
-      <Modal
+      <ActionSheet
         visible={isActionSheetVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseActionSheet}
-      >
-        <Pressable style={styles.actionSheetOverlay} onPress={handleCloseActionSheet}>
-          <View style={styles.actionSheetContainer}>
-            {/* 내 게시글: 수정/삭제 버튼 */}
-            {verification?.isMine ? (
-              <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleEdit}
-                >
-                  <Text variant="md" color={colors.text.primary}>
-                    수정
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionDivider} />
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleDelete}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    삭제
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              /* 남의 게시글: 신고하기 버튼 */
-              <View style={styles.actionButtonsContainer}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleReportPost}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    게시글 신고하기
-                  </Text>
-                </TouchableOpacity>
-
-                <View style={styles.actionDivider} />
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  activeOpacity={0.9}
-                  onPress={handleReportUser}
-                >
-                  <Text variant="md" color={colors.primary.sub}>
-                    사용자 신고하기
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* 취소 버튼 */}
-            <TouchableOpacity
-              style={styles.cancelButton}
-              activeOpacity={0.9}
-              onPress={handleCloseActionSheet}
-            >
-              <Text variant="md" color={colors.text.primary}>
-                취소
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+        onClose={() => setIsActionSheetVisible(false)}
+        items={actionSheetItems}
+      />
 
       {/* 채택 확인 바텀시트 */}
       <BottomSheet
@@ -1256,7 +1260,6 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: verticalScale(6),
-    lineHeight: verticalScale(20),
   },
   content: {
     marginBottom: verticalScale(16),
@@ -1337,7 +1340,6 @@ const styles = StyleSheet.create({
   },
   commentInputContainer: {
     paddingHorizontal: scale(12),
-    paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.line,
@@ -1346,7 +1348,7 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(0),
   },
   textFieldContainer: {
-    marginTop: verticalScale(16),
+    marginTop: verticalScale(4),
   },
   commentInputField: {
     height: verticalScale(44),
@@ -1368,44 +1370,6 @@ const styles = StyleSheet.create({
   sendIconButton: {
     width: scale(40),
     height: verticalScale(40),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionSheetOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(32, 32, 32, 0.5)',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: verticalScale(40),
-  },
-  actionSheetContainer: {
-    alignItems: 'center',
-  },
-  actionButtonsContainer: {
-    width: scale(350),
-    height: verticalScale(100),
-    backgroundColor: colors.white,
-    borderRadius: scale(10),
-    borderWidth: 1.5,
-    borderColor: colors.line,
-    marginBottom: verticalScale(12),
-  },
-  actionButton: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionDivider: {
-    height: 1,
-    backgroundColor: colors.line,
-  },
-  cancelButton: {
-    width: scale(350),
-    height: verticalScale(48),
-    backgroundColor: colors.white,
-    borderRadius: scale(10),
-    borderWidth: 1.5,
-    borderColor: colors.line,
     justifyContent: 'center',
     alignItems: 'center',
   },

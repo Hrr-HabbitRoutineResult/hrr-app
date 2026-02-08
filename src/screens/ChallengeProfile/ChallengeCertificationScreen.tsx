@@ -336,7 +336,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
               ) : (
                 <View style={styles.emptyContainer}>
                   <Text variant="xsReg" color={colors.text.tertiary}>
-                    아직 인증 게시글이 없습니다.
+                    아직 인증된 게시글이 없습니다.
                   </Text>
                 </View>
               )}
@@ -527,7 +527,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
               ) : (
                 <View style={styles.emptyContainer}>
                   <Text variant="xsReg" color={colors.text.tertiary}>
-                    아직 인증 게시글이 없습니다.
+                    아직 인증된 게시글이 없습니다.
                   </Text>
                 </View>
               )}

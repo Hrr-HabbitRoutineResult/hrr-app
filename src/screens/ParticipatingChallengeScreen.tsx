@@ -6,7 +6,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { Header } from '../components/common/Header';
 import { Text } from '../components/common/Text';
-import { colors, spacing, typography } from '../design/tokens';
+import { colors, spacing, typography, radius } from '../design/tokens';
+import { scale, verticalScale } from '../utils/scaling';
 import { useUserStore } from '../store/userSlice';
 import { getOngoingChallengesById, OngoingChallengeItem as ApiChallengeItem } from '../libs/api/user';
 import PlusIcon from '../../assets/icons/plus.svg';
@@ -15,6 +16,7 @@ import { ChallengeCard, ChallengeCardItem } from '../components/challenge/Challe
 
 const CARD_MARGIN = spacing.md;
 const CARD_PADDING = spacing.xs;
+const CARD_H = verticalScale(148);
 const { width: screenWidth } = Dimensions.get('window');
 
 type ParticipatingChallengeScreenRouteProp = RouteProp<RootStackParamList, 'ParticipatingChallenge'>;
@@ -83,10 +85,12 @@ const ParticipatingChallengeScreen = () => {
     <View style={styles.emptyContainer}>
       {isMe ? (
         <TouchableOpacity style={styles.emptyCard} onPress={() => navigation.navigate('ChallengeList', {})} activeOpacity={0.8}>
-          <PlusIcon width={24} height={24} fill={colors.text.secondary} />
-          <Text variant="smReg" color={colors.text.secondary} style={styles.emptyText}>
-            새로운 챌린지에 가입해보세요
-          </Text>
+          <View style={styles.emptyContent}>
+            <PlusIcon width={scale(20)} height={scale(20)} fill={colors.text.secondary} />
+            <Text variant="xsReg" color={colors.text.secondary}>
+              새로운 챌린지에 가입해 보세요
+            </Text>
+          </View>
         </TouchableOpacity>
       ) : (
         <Text style={styles.emptyText}>참가중인 챌린지가 없습니다.</Text>
@@ -139,10 +143,13 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     width: '100%',
-    height: 148,
-    borderRadius: 16,
+    height: CARD_H,
+    borderRadius: radius.lg,
     backgroundColor: colors.background,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContent: {
     alignItems: 'center',
     gap: spacing.sm,
   },

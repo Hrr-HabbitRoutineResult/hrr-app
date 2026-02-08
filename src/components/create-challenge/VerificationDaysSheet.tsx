@@ -133,6 +133,5 @@ const styles = StyleSheet.create({
     gap: scale(6),
   },
   selectAllText: {
-    lineHeight: verticalScale(20),
   },
 });

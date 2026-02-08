@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ViewStyle,
   TouchableOpacityProps,
+  GestureResponderEvent,
 } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text, TypographyVariant } from './Text';
@@ -12,11 +13,11 @@ import { colors } from '../../design/tokens';
 type ButtonVariant = 'black' | 'primary' | 'white' | 'gray' | 'outlinePrimary';
 type ButtonSize = 'small' | 'medium';
 
-interface ButtonProps extends TouchableOpacityProps {
+interface ButtonProps extends Omit<TouchableOpacityProps, 'onPress'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   disabled?: boolean;
-  onPress: () => void;
+  onPress?: (event: GestureResponderEvent) => void;
   children: React.ReactNode;
   textVariant?: TypographyVariant;
   textColor?: string;

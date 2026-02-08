@@ -113,6 +113,15 @@ const FollowerListScreen = () => {
         setSelectedItem(null);
     }, [selectedItem, unfollowUser, refetchData]);
 
+    // 프로필 클릭 핸들러 -> 본인이면 My, 다른 유저면 User 화면으로 이동
+    const handleProfilePress = (userId: number) => {
+        if (userInfo?.userId === userId) {
+            navigation.navigate('HomeTabs', { screen: '마이' });
+        } else {
+            navigation.navigate('User', { userId });
+        }
+    };
+
 
     const tabs: TabItem[] = [
         { key: 'follower', label: '팔로워' },
@@ -134,11 +143,11 @@ const FollowerListScreen = () => {
     return (
         <View style={styles.container}>
             <Header title="팔로우" onBack={() => navigation.goBack()} useSafeArea showDivider={true} />
-            <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+            <TabBar tabs={tabs} activeTab={activeTab} onTabChange={(tabKey) => setActiveTab(tabKey as 'follower' | 'following')} />
             <FlatList
                 data={data}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.id })}>
+                    <TouchableOpacity onPress={() => handleProfilePress(item.id)}>
                         <PersonListItem
                             avatarUrl={item.profilePhoto}
                             nickname={item.nickname}
@@ -165,7 +174,7 @@ const FollowerListScreen = () => {
                         ]}
                     >
                         <TouchableOpacity onPress={handleConfirmAction} style={styles.popoverButton}>
-                            <Text variant="sm" color={selectedItem?.isFollowing ? colors.text.error : colors.text.primary}>
+                            <Text variant="smReg" color={selectedItem?.isFollowing ? colors.primary.sub : colors.text.primary}>
                                 {selectedItem?.isFollowing ? '언팔로우하기' : '팔로우하기'}
                             </Text>
                         </TouchableOpacity>

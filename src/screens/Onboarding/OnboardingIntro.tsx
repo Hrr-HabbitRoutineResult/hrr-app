@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    lineHeight: verticalScale(30),
   },
   highlightContainer: {
     position: 'relative',

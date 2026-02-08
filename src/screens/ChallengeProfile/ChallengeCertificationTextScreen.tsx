@@ -829,7 +829,6 @@ const styles = StyleSheet.create({
   },
   modalErrorText: {
     textAlign: 'left',
-    lineHeight: verticalScale(18),
   },
   modalInput: {
     ...typography.smReg,

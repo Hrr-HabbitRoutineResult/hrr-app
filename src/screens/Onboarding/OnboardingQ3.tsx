@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
   },
   q3Title: {
     textAlign: 'left',
-    lineHeight: verticalScale(32),
     marginBottom: verticalScale(12),
   },
   q3Subtitle: {

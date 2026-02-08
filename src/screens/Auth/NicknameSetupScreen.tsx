@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(28),
   },
   title: {
-    lineHeight: verticalScale(30),
     includeFontPadding: false,
   },
   inputContainer: {

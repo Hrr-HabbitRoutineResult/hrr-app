@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
@@ -23,9 +23,9 @@ interface TabBarProps {
 // 공통 TabBar 컴포넌트
 // scrollable=false -> flexDirection: row로 균등 분배 (2개 탭에 적합)
 // scrollable=true -> 가로 스크롤 가능, 고정 크기 탭 (6개 이상 탭에 적합) 사용
-export const TabBar: React.FC<TabBarProps> = ({ 
-  tabs, 
-  activeTab, 
+export const TabBar: React.FC<TabBarProps> = ({
+  tabs,
+  activeTab,
   onTabChange,
   scrollable = false,
   tabWidth = scale(80),
@@ -33,11 +33,39 @@ export const TabBar: React.FC<TabBarProps> = ({
   tabGap = scale(4),
   horizontalPadding = scale(20),
 }) => {
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // activeTab이 변경될 때마다 해당 탭으로 스크롤
+  useEffect(() => {
+    if (scrollable && scrollViewRef.current) {
+      const activeIndex = tabs.findIndex(tab => tab.key === activeTab);
+      if (activeIndex !== -1) {
+        // 화면 너비 가져오기
+        const screenWidth = Dimensions.get('window').width;
+
+        // 활성 탭의 중앙 x 위치 계산
+        const tabCenterX = activeIndex * (tabWidth + tabGap) + tabWidth / 2;
+
+        // 화면 중앙에 탭이 오도록 스크롤 위치 계산
+        const scrollX = tabCenterX - screenWidth / 2 + horizontalPadding;
+
+        // 약간의 지연을 주어 레이아웃이 완료된 후 스크롤
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            x: Math.max(0, scrollX), // 0보다 작지 않도록
+            animated: true,
+          });
+        }, 100);
+      }
+    }
+  }, [activeTab, scrollable, tabs, tabWidth, tabGap, horizontalPadding]);
+
   // scrollable=true 일 때 사용
   if (scrollable) {
     return (
       <>
         <ScrollView
+          ref={scrollViewRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[

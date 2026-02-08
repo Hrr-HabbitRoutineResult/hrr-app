@@ -83,7 +83,6 @@ const styles = StyleSheet.create({
     ...typography.xxs,
     color: colors.text.primary,
     textAlign: 'center',
-    lineHeight: verticalScale(12),
   },
 });
 

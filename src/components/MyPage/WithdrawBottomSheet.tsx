@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { BottomSheet } from '../common/BottomSheet';
+import { Button } from '../common/Button';
 import { Text } from '../common/Text';
-import { colors, typography, spacing, radius } from '../../design/tokens';
+import { colors, typography } from '../../design/tokens';
 
 interface WithdrawBottomSheetProps {
   visible: boolean;
@@ -15,106 +17,82 @@ export const WithdrawBottomSheet: React.FC<WithdrawBottomSheetProps> = ({
   onClose,
   onConfirm,
 }) => {
-  const renderFooter = () => (
-    <>
-      <View style={styles.buttonDivider} />
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={onClose}
-          activeOpacity={0.8}
-        >
-          <Text variant="smMd" color={colors.white}>
-            돌아가기
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.withdrawButton}
-          onPress={onConfirm}
-          activeOpacity={0.8}
-        >
-          <Text variant="smMd" color={colors.text.primary}>
-            탈퇴
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </>
-  );
-
   return (
-    <BottomSheet visible={visible} onClose={onClose} height={420} footer={renderFooter()}>
-      <View style={styles.header}>
-        <Text variant="header4" color={colors.text.tertiary}>
+    <BottomSheet visible={visible} onClose={onClose} height={440}>
+      <View style={styles.content}>
+        <Text variant="header4" color={colors.text.tertiary} style={styles.title}>
           회원 탈퇴
         </Text>
-      </View>
-      <View style={styles.headerDivider} />
+        <View style={styles.divider} />
 
-      <View style={styles.body}>
-        <Text variant="header3" color={colors.text.primary} style={styles.bodyTitle}>
-          회원 탈퇴를 하시겠어요?
-        </Text>
-        <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
-          계정은 즉시 비활성화되며, {'\n'}30일 동안 로그인하지 않으면 모든 정보가 완전히 삭제돼요.{'\n'}
-        </Text>
-        <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
-                  30일 이내 다시 로그인하면
-                  {'\n'}
-                  계정과 기록을 그대로 복구할 수 있어요.
-                </Text>
+        <View style={styles.body}>
+          <Text variant="header3" color={colors.text.primary} style={styles.bodyTitle}>
+            회원 탈퇴를 하시겠어요?
+          </Text>
+          <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
+            계정은 즉시 비활성화되며, {'\n'}30일 동안 로그인하지 않으면 모든 정보가 완전히 삭제돼요.
+          </Text>
+          <Text variant="smReg" color={colors.text.tertiary} style={styles.bodyDescription}>
+            30일 이내 다시 로그인하면{'\n'}계정과 기록을 그대로 복구할 수 있어요.
+          </Text>
+        </View>
+
+        <View style={styles.footerDivider} />
+        <View style={styles.footer}>
+          <Button variant="black" onPress={onClose} style={styles.button}>
+            돌아가기
+          </Button>
+          <Button variant="white" onPress={onConfirm} style={styles.button}>
+            탈퇴
+          </Button>
+        </View>
       </View>
     </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    paddingBottom: spacing.md,
-    alignItems: 'center',
+  content: {
+    flex: 1,
+    marginHorizontal: scale(-20),
+    marginTop: verticalScale(-16),
   },
-  headerDivider: {
+  title: {
+    textAlign: 'center',
+    paddingTop: verticalScale(4),
+    paddingBottom: verticalScale(16),
+  },
+  divider: {
     height: 1,
     backgroundColor: colors.line,
+    marginHorizontal: scale(20),
   },
   body: {
-    paddingHorizontal: 0, // Removed horizontal padding
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
+    flex: 1,
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(20),
   },
   bodyTitle: {
-    marginBottom: spacing.md,
-    textAlign: 'left', // Added for left alignment
+    ...typography.header3,
+    marginBottom: verticalScale(12),
+    textAlign: 'left',
   },
   bodyDescription: {
-    lineHeight: typography.smReg.lineHeight,
-    textAlign: 'left', // Added for left alignment
+    ...typography.smReg,
+    textAlign: 'left',
+    marginBottom: verticalScale(12),
   },
-  buttonDivider: {
+  footerDivider: {
     height: 1,
     backgroundColor: colors.line,
   },
-  buttonContainer: {
+  footer: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    gap: spacing.sm,
+    paddingHorizontal: scale(24),
+    paddingTop: verticalScale(12),
+    gap: scale(8),
   },
-  backButton: {
+  button: {
     flex: 1,
-    height: 48,
-    backgroundColor: colors.text.primary,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  withdrawButton: {
-    flex: 1,
-    height: 48,
-    backgroundColor: colors.white, // White background
-    borderRadius: radius.md,
-    borderWidth: 1, // Keep border for distinction, if not, change to 0
-    borderColor: colors.line, // Changed border color for white button
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

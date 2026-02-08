@@ -21,13 +21,12 @@ const AccountSettingsScreen = () => {
   const performLogout = async () => {
     try {
       await handleLogout();
-      // 모든 스택 비우고 온보딩 화면으로 이동
+      // 모든 스택 비우고 최초 온보딩 화면으로 이동
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Onboarding' }],
+        routes: [{ name: 'AuthOnboarding' }],
       });
     } catch (error) {
-      console.error('로그아웃 실패:', error);
       const errorMessage = getErrorMessage(error, '로그아웃에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
@@ -41,13 +40,16 @@ const AccountSettingsScreen = () => {
       Alert.alert('회원 탈퇴', '회원 탈퇴가 완료되었습니다.', [
         {
           text: '확인', onPress: async () => {
-            await handleLogout(); // 회원 탈퇴 후 로그아웃 처리 (토큰 삭제 및 온보딩으로 이동)
-            // handleLogout 내에서 이미 navigation.reset을 수행하므로 여기서 추가 호출 불필요
+            await handleLogout(); // 회원 탈퇴 후 로그아웃 처리 (토큰 삭제)
+            // 앱 초기 진입 화면(온보딩)으로 이동
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'AuthOnboarding' }],
+            });
           }
         },
       ], { cancelable: false });
     } catch (error: any) {
-      console.error('회원 탈퇴 실패:', error);
       const errorMessage = getErrorMessage(error, '회원 탈퇴에 실패했습니다.');
       Alert.alert('오류', errorMessage);
     }
@@ -59,18 +61,17 @@ const AccountSettingsScreen = () => {
         title="계정 설정"
         onBack={() => navigation.goBack()}
         useSafeArea
+        showDivider={true}
       />
       <View style={styles.content}>
         <SettingSection>
           <SettingItem
             label="로그아웃"
             onPress={() => setLogoutModalVisible(true)}
-          // 아이콘 없음
           />
           <SettingItem
             label="회원 탈퇴"
             onPress={() => setWithdrawSheetVisible(true)}
-          // 아이콘 없음
           />
         </SettingSection>
       </View>
@@ -100,8 +101,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    // justifyContent: 'center', // Removed to align to top
-    // alignItems: 'center', // Removed to align to top
   }
 });
 

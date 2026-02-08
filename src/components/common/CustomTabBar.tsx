@@ -58,7 +58,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
   // Android 시스템 네비게이션 바로 인한 높이 조정
   const tabBarHeight = Platform.OS === 'android' ? verticalScale(60) : verticalScale(84);
   const bottomInset = Platform.OS === 'android' ? 0 : insets.bottom;
-  const iconTranslateY = Platform.OS === 'android' ? -verticalScale(4) : -verticalScale(8);
 
   return (
     <View style={[styles.tabBarContainer, { height: tabBarHeight, paddingBottom: bottomInset }]}>
@@ -95,7 +94,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => 
             onLongPress={onLongPress}
             style={styles.tabItem}
           >
-            <View style={[styles.iconLabelContainer, { transform: [{ translateY: iconTranslateY }] }]}>
+            <View style={styles.iconLabelContainer}>
               <View>{renderTabIcon(route.name as keyof HomeTabParamList, isFocused)}</View>
               <View style={styles.labelContainer}>
                 <Text style={{

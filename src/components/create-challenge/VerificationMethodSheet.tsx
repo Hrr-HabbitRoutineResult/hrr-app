@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
   },
   methodTitle: {
     marginBottom: verticalScale(4),
-    lineHeight: verticalScale(20),
   },
   methodDescription: {
     lineHeight: verticalScale(18),

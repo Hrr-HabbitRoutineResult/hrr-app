@@ -187,7 +187,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.header4,
     color: colors.text.primary,
-    lineHeight: verticalScale(20),
   },
 });
 

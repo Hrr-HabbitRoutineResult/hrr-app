@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     width: scale(2),
     height: scale(2),
     borderRadius: scale(1),
-    backgroundColor: colors.text.secondary,
-    marginTop: verticalScale(1),
+    backgroundColor: colors.text.primary,
+    marginHorizontal: 5,
   },
 });

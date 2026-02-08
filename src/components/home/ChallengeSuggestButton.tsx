@@ -26,6 +26,7 @@ export const ChallengeSuggestButton = ({ onPress }: { onPress: () => void }) => 
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
+    height: scale(60),
     overflow: 'hidden',
     position: 'relative',
   },
@@ -35,9 +36,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   textContainer: {
-    paddingTop: verticalScale(21),
-    paddingBottom: verticalScale(20),
+    height: '100%',
     paddingLeft: scale(24),
+    justifyContent: 'center',
   },
   text: {
     ...typography.md,

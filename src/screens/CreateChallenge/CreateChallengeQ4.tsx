@@ -307,7 +307,6 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(8),
   },
   observerModeDescription: {
-    lineHeight: verticalScale(18),
   },
   radioIconContainer: {
     marginTop: verticalScale(2),
