@@ -938,117 +938,121 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
-          style={styles.keyboardAvoidingView}
-        >
-          <View style={[
-            styles.commentInputContainer,
-            { paddingBottom: commentInputBottomPadding },
-            isKeyboardVisible && styles.commentInputContainerKeyboard,
-          ]}>
-            <TextField
-              ref={commentInputRef}
-              variant="default"
-              placeholder="댓글을 입력하세요"
-              value={commentText}
-              onChangeText={setCommentText}
-              editable={!isSubmittingComment}
-              leftIcon={
-                <View style={styles.lockIconContainer}>
-                  <TouchableOpacity
-                    onPress={() => setIsCommentLocked(!isCommentLocked)}
-                    activeOpacity={0.7}
-                    style={styles.lockIconButton}
-                  >
-                    {isCommentLocked ? (
-                      <LockIcon width={10} height={12} />
-                    ) : (
-                      <UnlockIcon width={10} height={12} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-              rightIcon={
-                <View style={styles.sendIconContainer}>
-                  <TouchableOpacity
-                    onPress={handleSubmitComment}
-                    activeOpacity={0.7}
-                    style={styles.sendIconButton}
-                    disabled={isSubmittingComment}
-                  >
-                    {isSubmittingComment ? (
-                      <ActivityIndicator size="small" color={colors.primary.main} />
-                    ) : (
-                      <SendIcon width={30} height={30} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onRightIconPress={handleSubmitComment}
-              containerStyle={styles.textFieldContainer}
-              inputContainerStyle={styles.commentInputField}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      ) : (
-        <View style={[
-          styles.keyboardAvoidingView,
-          isKeyboardVisible && { bottom: keyboardHeight }
-        ]}>
-          <View style={[
-            styles.commentInputContainer,
-            { paddingBottom: commentInputBottomPadding },
-            isKeyboardVisible && styles.commentInputContainerKeyboard,
-          ]}>
-            <TextField
-              ref={commentInputRef}
-              variant="default"
-              placeholder="댓글을 입력하세요"
-              value={commentText}
-              onChangeText={setCommentText}
-              editable={!isSubmittingComment}
-              leftIcon={
-                <View style={styles.lockIconContainer}>
-                  <TouchableOpacity
-                    onPress={() => setIsCommentLocked(!isCommentLocked)}
-                    activeOpacity={0.7}
-                    style={styles.lockIconButton}
-                  >
-                    {isCommentLocked ? (
-                      <LockIcon width={10} height={12} />
-                    ) : (
-                      <UnlockIcon width={10} height={12} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
-              rightIcon={
-                <View style={styles.sendIconContainer}>
-                  <TouchableOpacity
-                    onPress={handleSubmitComment}
-                    activeOpacity={0.7}
-                    style={styles.sendIconButton}
-                    disabled={isSubmittingComment}
-                  >
-                    {isSubmittingComment ? (
-                      <ActivityIndicator size="small" color={colors.primary.main} />
-                    ) : (
-                      <SendIcon width={30} height={30} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              }
-              onRightIconPress={handleSubmitComment}
-              containerStyle={styles.textFieldContainer}
-              inputContainerStyle={styles.commentInputField}
-            />
-          </View>
-        </View>
+      {verification.canWriteComment && (
+        <>
+          {Platform.OS === 'ios' ? (
+            <KeyboardAvoidingView
+              behavior="padding"
+              keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
+              style={styles.keyboardAvoidingView}
+            >
+              <View style={[
+                styles.commentInputContainer,
+                { paddingBottom: commentInputBottomPadding },
+                isKeyboardVisible && styles.commentInputContainerKeyboard,
+              ]}>
+                <TextField
+                  ref={commentInputRef}
+                  variant="default"
+                  placeholder="댓글을 입력하세요"
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  editable={!isSubmittingComment}
+                  leftIcon={
+                    <View style={styles.lockIconContainer}>
+                      <TouchableOpacity
+                        onPress={() => setIsCommentLocked(!isCommentLocked)}
+                        activeOpacity={0.7}
+                        style={styles.lockIconButton}
+                      >
+                        {isCommentLocked ? (
+                          <LockIcon width={10} height={12} />
+                        ) : (
+                          <UnlockIcon width={10} height={12} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+                  rightIcon={
+                    <View style={styles.sendIconContainer}>
+                      <TouchableOpacity
+                        onPress={handleSubmitComment}
+                        activeOpacity={0.7}
+                        style={styles.sendIconButton}
+                        disabled={isSubmittingComment}
+                      >
+                        {isSubmittingComment ? (
+                          <ActivityIndicator size="small" color={colors.primary.main} />
+                        ) : (
+                          <SendIcon width={30} height={30} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onRightIconPress={handleSubmitComment}
+                  containerStyle={styles.textFieldContainer}
+                  inputContainerStyle={styles.commentInputField}
+                />
+              </View>
+            </KeyboardAvoidingView>
+          ) : (
+            <View style={[
+              styles.keyboardAvoidingView,
+              isKeyboardVisible && { bottom: keyboardHeight }
+            ]}>
+              <View style={[
+                styles.commentInputContainer,
+                { paddingBottom: commentInputBottomPadding },
+                isKeyboardVisible && styles.commentInputContainerKeyboard,
+              ]}>
+                <TextField
+                  ref={commentInputRef}
+                  variant="default"
+                  placeholder="댓글을 입력하세요"
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  editable={!isSubmittingComment}
+                  leftIcon={
+                    <View style={styles.lockIconContainer}>
+                      <TouchableOpacity
+                        onPress={() => setIsCommentLocked(!isCommentLocked)}
+                        activeOpacity={0.7}
+                        style={styles.lockIconButton}
+                      >
+                        {isCommentLocked ? (
+                          <LockIcon width={10} height={12} />
+                        ) : (
+                          <UnlockIcon width={10} height={12} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onLeftIconPress={() => setIsCommentLocked(!isCommentLocked)}
+                  rightIcon={
+                    <View style={styles.sendIconContainer}>
+                      <TouchableOpacity
+                        onPress={handleSubmitComment}
+                        activeOpacity={0.7}
+                        style={styles.sendIconButton}
+                        disabled={isSubmittingComment}
+                      >
+                        {isSubmittingComment ? (
+                          <ActivityIndicator size="small" color={colors.primary.main} />
+                        ) : (
+                          <SendIcon width={30} height={30} />
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  }
+                  onRightIconPress={handleSubmitComment}
+                  containerStyle={styles.textFieldContainer}
+                  inputContainerStyle={styles.commentInputField}
+                />
+              </View>
+            </View>
+          )}
+        </>
       )}
 
       {/* 게시글 더보기 액션 시트 */}
