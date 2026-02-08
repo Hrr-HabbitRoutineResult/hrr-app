@@ -8,9 +8,11 @@ import { Header } from '../components/common/Header';
 import { colors } from '../design/tokens';
 import { getBlockedUsers, unblockUserById, BlockedUser } from '../libs/api/user';
 import BlockedUserListItem from '../components/user/BlockedUserListItem';
+import { useUserStore } from '../store/userSlice';
 
 const BlockedUserScreen = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    const { userInfo } = useUserStore();
     const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -44,13 +46,22 @@ const BlockedUserScreen = () => {
         }
     };
 
+    // 프로필 클릭 핸들러 -> 본인이면 My, 다른 유저면 User 화면으로 이동
+    const handleProfilePress = (userId: number) => {
+        if (userInfo?.userId === userId) {
+            navigation.navigate('HomeTabs', { screen: '마이' });
+        } else {
+            navigation.navigate('User', { userId });
+        }
+    };
+
     return (
         <View style={styles.container}>
             <Header title="차단한 사용자" onBack={() => navigation.goBack()} useSafeArea />
             <FlatList
                 data={blockedUsers}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => navigation.navigate('User', { userId: item.userId })}>
+                    <TouchableOpacity onPress={() => handleProfilePress(item.userId)}>
                         <BlockedUserListItem
                             nickname={item.nickname}
                             level={item.level}

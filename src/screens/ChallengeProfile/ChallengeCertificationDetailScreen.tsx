@@ -17,6 +17,7 @@ import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
 import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
+import { useUserStore } from '../../store/userSlice';
 import {
   getVerificationDetail,
   VerificationDetailResponse,
@@ -62,6 +63,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const route = useRoute<ChallengeCertificationDetailScreenRouteProp>();
   const { verification: initialVerification } = route.params;
   const insets = useSafeAreaInsets();
+  const { userInfo } = useUserStore();
 
   const commentInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -239,6 +241,15 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
   const handleBack = () => {
     navigation.goBack();
+  };
+
+  // 프로필 클릭 핸들러 -> 본인이면 My, 다른 유저면 User 화면으로 이동
+  const handleProfilePress = (userId: number) => {
+    if (userInfo?.userId === userId) {
+      navigation.navigate('HomeTabs', { screen: '마이' });
+    } else {
+      navigation.navigate('User', { userId });
+    }
   };
 
   const handleMorePress = () => {
@@ -661,7 +672,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 사용자 정보 */}
         <TouchableOpacity
           style={styles.userSection}
-          onPress={() => navigation.navigate('User', { userId: verification.user.userId })}
+          onPress={() => handleProfilePress(verification.user.userId)}
           activeOpacity={0.7}
         >
           <View style={styles.userAvatar}>
@@ -846,7 +857,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     onDelete={handleDeleteComment}
                     onBlock={handleBlockUser}
                     onAdopt={handleAdoptComment}
-                    onProfilePress={(userId) => navigation.navigate('User', { userId })}
+                    onProfilePress={handleProfilePress}
                     isQuestion={verification?.isQuestion}
                     isResolved={verification?.isResolved}
                     canSelectComment={verification?.canSelectComment}
@@ -893,7 +904,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                             onDelete={handleDeleteComment}
                             onBlock={handleBlockUser}
                             onAdopt={handleAdoptComment}
-                            onProfilePress={(userId) => navigation.navigate('User', { userId })}
+                            onProfilePress={handleProfilePress}
                             isQuestion={verification?.isQuestion}
                             isResolved={verification?.isResolved}
                             canSelectComment={verification?.canSelectComment}
