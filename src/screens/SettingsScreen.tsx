@@ -47,10 +47,10 @@ const SettingsScreen = () => {
     {
       title: '내 활동',
       items: [
-        {
-          label: '계정 공개 범위',
-          icon: <IcLockIcon width={24} height={24} />,
-        },
+        // {
+        //   label: '계정 공개 범위',
+        //   icon: <IcLockIcon width={24} height={24} />,
+        // },
         {
           label: '차단한 사용자',
           icon: <IcBlockIcon width={24} height={24} />,
