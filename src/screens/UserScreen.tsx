@@ -288,12 +288,12 @@ const UserScreen = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <Header onBack={() => navigation.goBack()} title="프로필" showDivider />
+      <View style={styles.container}>
+        <Header onBack={() => navigation.goBack()} title="프로필" showDivider useSafeArea />
         <View style={[styles.container, { justifyContent: 'center' }]}>
           <ActivityIndicator />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -311,7 +311,7 @@ const UserScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
       <Header
         onBack={() => navigation.goBack()}
         title="프로필"
@@ -324,12 +324,14 @@ const UserScreen = () => {
             <MoreIcon />
           </TouchableOpacity>
         }
+        useSafeArea
       />
       <RefreshableScrollView
         style={styles.container}
         onRefresh={fetchData}
         contentContainerStyle={{
           paddingHorizontal: scale(20),
+          paddingBottom: verticalScale(40),
         }}
       >
         <ProfileCard
@@ -373,7 +375,7 @@ const UserScreen = () => {
         message={toast.message}
         onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -390,7 +392,6 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(8),
   },
   tabContentListWrapper: {
-    flex: 1,
     backgroundColor: colors.white,
     marginTop: verticalScale(32),
   },

@@ -214,7 +214,6 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(8),
   },
   tabContentListWrapper: {
-    flex: 1,
     backgroundColor: colors.white,
     marginTop: verticalScale(32),
   },
