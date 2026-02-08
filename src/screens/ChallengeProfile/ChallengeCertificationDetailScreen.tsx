@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { getErrorMessage, getErrorInfo } from '../../utils/errorHandler';
 import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -61,6 +61,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationDetailScreenRouteProp>();
   const { verification: initialVerification } = route.params;
+  const insets = useSafeAreaInsets();
 
   const commentInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -74,6 +75,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Android 시스템 네비게이션 바로 인한 높이 조정
+  const commentInputBottomPadding = Platform.OS === 'android'
+    ? verticalScale(36) - insets.bottom
+    : verticalScale(36);
 
   // 댓글 관련 state
   const [comments, setComments] = useState<GetCommentsResponse['result'] | null>(null);
@@ -929,6 +935,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         >
           <View style={[
             styles.commentInputContainer,
+            { paddingBottom: commentInputBottomPadding },
             isKeyboardVisible && styles.commentInputContainerKeyboard,
           ]}>
             <TextField
@@ -983,6 +990,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         ]}>
           <View style={[
             styles.commentInputContainer,
+            { paddingBottom: commentInputBottomPadding },
             isKeyboardVisible && styles.commentInputContainerKeyboard,
           ]}>
             <TextField
@@ -1318,7 +1326,6 @@ const styles = StyleSheet.create({
   },
   commentInputContainer: {
     paddingHorizontal: scale(12),
-    paddingBottom: verticalScale(32),
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.line,
@@ -1327,7 +1334,7 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(0),
   },
   textFieldContainer: {
-    marginTop: verticalScale(16),
+    marginTop: verticalScale(4),
   },
   commentInputField: {
     height: verticalScale(44),
