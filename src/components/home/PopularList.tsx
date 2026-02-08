@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
     height: verticalScale(80),
     overflow: 'hidden',
     position: 'relative',
-    marginTop: spacing.sm,
   },
   emptyBackground: {
     position: 'absolute',
