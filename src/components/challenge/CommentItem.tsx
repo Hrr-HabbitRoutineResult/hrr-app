@@ -84,8 +84,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   // 대댓글인 경우 왼쪽 여백 추가
   const isReply = comment.depth > 0;
 
-  // 마스킹된 댓글 여부 (userId가 null이면 차단/삭제/탈퇴 중 하나)
-  const isMasked = comment.userId === null;
+  // 마스킹된 댓글 여부 (차단/삭제/탈퇴한 사용자 -> 익명 댓글은 제외)
+  const isMasked = comment.userId === null && !comment.anonymous;
 
   // 차단된 사용자 여부 (userName 표시 안 해도 됨)
   const isBlocked = comment.content === "차단된 사용자의 댓글입니다.";
@@ -169,11 +169,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 activeOpacity={0.7}
                 disabled={!comment.userId}
               >
-                {comment.anonymous && !isMasked && (
+                {/* {comment.anonymous && !isMasked && (
                   <View style={styles.lockIconContainer}>
                     <LockIcon width={10} height={12} />
                   </View>
-                )}
+                )} */}
                 <Text
                   variant="smMd"
                   color={isMasked ? colors.text.secondary : colors.text.primary}
