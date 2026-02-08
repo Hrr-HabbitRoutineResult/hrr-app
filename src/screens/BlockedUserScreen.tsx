@@ -9,12 +9,15 @@ import { colors } from '../design/tokens';
 import { getBlockedUsers, unblockUserById, BlockedUser } from '../libs/api/user';
 import BlockedUserListItem from '../components/user/BlockedUserListItem';
 import { useUserStore } from '../store/userSlice';
+import { ConfirmationModal } from '../components/common/ConfirmationModal';
 
 const BlockedUserScreen = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
     const { userInfo } = useUserStore();
     const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [unblockedUserIds, setUnblockedUserIds] = useState<Set<number>>(new Set());
+    const [selectedUser, setSelectedUser] = useState<{ userId: number; nickname: string } | null>(null);
 
     const fetchBlockedUsers = useCallback(async () => {
         setIsLoading(true);
@@ -35,14 +38,22 @@ const BlockedUserScreen = () => {
         }, [fetchBlockedUsers])
     );
 
-    const handleUnblock = async (userId: number) => {
+    const handleUnblockPress = (userId: number, nickname: string) => {
+        setSelectedUser({ userId, nickname });
+    };
+
+    const handleUnblockConfirm = async () => {
+        if (!selectedUser) return;
+
         try {
-            await unblockUserById(userId);
-            // After unblocking, refetch the list to update the UI
-            fetchBlockedUsers();
+            await unblockUserById(selectedUser.userId);
+            // 차단 해제된 사용자를 Set에 추가
+            setUnblockedUserIds(prev => new Set(prev).add(selectedUser.userId));
+            setSelectedUser(null);
         } catch (error) {
             const errorMessage = getErrorMessage(error, '차단 해제에 실패했습니다.');
             Alert.alert('오류', errorMessage);
+            setSelectedUser(null);
         }
     };
 
@@ -57,15 +68,19 @@ const BlockedUserScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Header title="차단한 사용자" onBack={() => navigation.goBack()} useSafeArea />
+            <Header title="차단한 사용자" onBack={() => navigation.goBack()} useSafeArea showDivider={true} />
             <FlatList
                 data={blockedUsers}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handleProfilePress(item.userId)}>
+                    <TouchableOpacity
+                        onPress={() => handleProfilePress(item.userId)}
+                        disabled={unblockedUserIds.has(item.userId)}
+                    >
                         <BlockedUserListItem
                             nickname={item.nickname}
                             level={item.level}
-                            onUnblock={() => handleUnblock(item.userId)}
+                            isUnblocked={unblockedUserIds.has(item.userId)}
+                            onUnblock={() => handleUnblockPress(item.userId, item.nickname)}
                         // avatarUrl is not provided by the API for blocked users
                         />
                     </TouchableOpacity>
@@ -73,7 +88,20 @@ const BlockedUserScreen = () => {
                 keyExtractor={(item) => String(item.userId)}
                 contentContainerStyle={styles.listContent}
                 refreshing={isLoading}
-                onRefresh={fetchBlockedUsers}
+                onRefresh={() => {
+                    setUnblockedUserIds(new Set());
+                    fetchBlockedUsers();
+                }}
+            />
+            <ConfirmationModal
+                visible={selectedUser !== null}
+                onClose={() => setSelectedUser(null)}
+                title={`${selectedUser?.nickname ?? ''} 님을 차단 해제하시겠어요?`}
+                description=""
+                buttons={[
+                    { text: '해제', onPress: handleUnblockConfirm, style: 'destructive' },
+                    { text: '취소', onPress: () => setSelectedUser(null) },
+                ]}
             />
         </View>
     );

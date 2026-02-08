@@ -1,18 +1,19 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Avatar } from '../MyPage/Avatar';
 import { Text } from '../common/Text';
-import { Button } from '../common/Button';
 import { colors, spacing, radius } from '../../design/tokens';
+import { format } from '../../libs/format';
 
 interface BlockedUserListItemProps {
     avatarUrl?: string;
     nickname: string;
     level: string;
+    isUnblocked?: boolean;
     onUnblock: () => void;
 }
 
-const BlockedUserListItem = ({ avatarUrl, nickname, level, onUnblock }: BlockedUserListItemProps) => {
+const BlockedUserListItem = ({ avatarUrl, nickname, level, isUnblocked = false, onUnblock }: BlockedUserListItemProps) => {
 
     return (
         <View style={styles.container}>
@@ -20,16 +21,22 @@ const BlockedUserListItem = ({ avatarUrl, nickname, level, onUnblock }: BlockedU
             <View style={styles.infoContainer}>
                 <Text style={styles.nickname}>{nickname}</Text>
                 <View style={styles.dot} />
-                <Text variant="xsReg" color={colors.text.tertiary} style={styles.tierText}>{level}</Text>
+                <Text variant="xsReg" color={colors.text.tertiary} style={styles.tierText}>{format.level(level)}</Text>
             </View>
-            <Button 
-                size="small" 
-                variant="outlinePrimary"
+            <TouchableOpacity
                 onPress={onUnblock}
-                style={[styles.button, { borderRadius: radius.xl }]}
+                style={[
+                    styles.button,
+                    isUnblocked ? styles.buttonUnblocked : styles.buttonBlocked
+                ]}
             >
-                <Text variant="xxs" color={colors.primary.main}>차단 해제</Text>
-            </Button>
+                <Text
+                    variant="xxs"
+                    color={isUnblocked ? colors.primary.main : colors.white}
+                >
+                    {isUnblocked ? '차단 해제' : '차단됨'}
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -53,6 +60,17 @@ const styles = StyleSheet.create({
     button: {
         width: 100,
         height: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: radius.xl,
+    },
+    buttonBlocked: {
+        backgroundColor: '#FF6B61',
+    },
+    buttonUnblocked: {
+        backgroundColor: colors.white,
+        borderWidth: 1,
+        borderColor: '#FF6B61',
     },
     dot: {
         width: 2,

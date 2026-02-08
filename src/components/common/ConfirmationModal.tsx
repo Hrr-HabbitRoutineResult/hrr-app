@@ -14,7 +14,7 @@ interface ConfirmationModalProps {
   visible: boolean;
   onClose: () => void;
   title: string;
-  description: string;
+  description?: string;
   buttons: ModalButton[];
 }
 
@@ -49,9 +49,11 @@ export const ConfirmationModal = ({
           >
             {title}
           </Text>
-          <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
-            {description}
-          </Text>
+          {description && (
+            <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
+              {description}
+            </Text>
+          )}
           <View style={styles.modalButtons}>
             {buttons.map((button, index) => (
               <TouchableOpacity
@@ -62,7 +64,7 @@ export const ConfirmationModal = ({
               >
                 <Text
                   variant="smMd"
-                  color={colors.text.primary}
+                  color={button.style === 'destructive' ? '#FF473B' : colors.text.primary}
                 >
                   {button.text}
                 </Text>

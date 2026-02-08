@@ -38,7 +38,7 @@ const SettingsScreen = () => {
           onPress: () => navigation.navigate('LikedChallenge'),
         },
         {
-          label: '종료된 챌린지',
+          label: '종료한 챌린지',
           icon: <IcCheckIcon width={24} height={24} />,
           onPress: () => navigation.navigate('CompletedChallenge'),
         },
@@ -62,10 +62,10 @@ const SettingsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header 
+      <Header
         title="설정"
         onBack={() => navigation.goBack()}
-        useSafeArea 
+        useSafeArea
         showDivider={true}
       />
       <ScrollView style={styles.content}>

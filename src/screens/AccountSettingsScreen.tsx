@@ -61,6 +61,7 @@ const AccountSettingsScreen = () => {
         title="계정 설정"
         onBack={() => navigation.goBack()}
         useSafeArea
+        showDivider={true}
       />
       <View style={styles.content}>
         <SettingSection>
@@ -100,8 +101,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    // justifyContent: 'center', // Removed to align to top
-    // alignItems: 'center', // Removed to align to top
   }
 });
 
