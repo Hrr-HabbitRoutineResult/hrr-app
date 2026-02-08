@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Text } from './Text';
-import { colors, radius, spacing } from '../../design/tokens';
+import { colors } from '../../design/tokens';
+import { scale, verticalScale } from '../../utils/scaling';
 
 interface ModalButton {
   text: string;
@@ -41,25 +42,32 @@ export const ConfirmationModal = ({
           onPress={(e) => e.stopPropagation()}
           activeOpacity={1}
         >
-          <View style={styles.contentWrapper}>
-            <View style={styles.textContainer}>
-              <Text style={styles.title}>{title}</Text>
-              <Text style={styles.description}>{description}</Text>
-            </View>
-            <View style={styles.buttonContainer}>
-              {buttons.map((button, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.modalButton}
-                  onPress={button.onPress}
-                  activeOpacity={0.7}
+          <Text
+            variant="header3"
+            color={colors.text.primary}
+            style={styles.modalTitle}
+          >
+            {title}
+          </Text>
+          <Text variant="xsReg" color={colors.text.tertiary} style={styles.modalDescription}>
+            {description}
+          </Text>
+          <View style={styles.modalButtons}>
+            {buttons.map((button, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.modalButton}
+                onPress={button.onPress}
+                activeOpacity={0.7}
+              >
+                <Text
+                  variant="smMd"
+                  color={colors.text.primary}
                 >
-                  <Text style={[styles.buttonText, button.style === 'destructive' && styles.destructiveButtonText]}>
-                    {button.text}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {button.text}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -73,50 +81,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.xxxl,
+    paddingHorizontal: scale(20),
   },
   modalContent: {
     width: '100%',
+    height: verticalScale(180),
     backgroundColor: colors.white,
-    borderRadius: 20,
-    overflow: 'hidden',
+    borderRadius: scale(20),
+    paddingTop: verticalScale(28),
+    paddingLeft: scale(24),
+    justifyContent: 'space-between',
   },
-  contentWrapper: {
-    paddingVertical: spacing.xl, // Increased vertical padding by one step
-    paddingHorizontal: spacing.md,
+  modalTitle: {
+    lineHeight: verticalScale(22),
+    marginBottom: verticalScale(-24),
   },
-  textContainer: {
-    alignItems: 'flex-start',
-    marginBottom: spacing.xl,
+  modalDescription: {
+    lineHeight: verticalScale(18),
   },
-  title: {
-    fontSize: 18,
-    color: colors.text.primary,
-    textAlign: 'left',
-    marginBottom: spacing.xxs,
-    fontWeight: '650', // Increased font weight
-  },
-  description: {
-    fontSize: 13,
-    color: colors.text.tertiary, // Changed to tertiary color
-    textAlign: 'left',
-    lineHeight: 18,
-  },
-  buttonContainer: {
+  modalButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    gap: scale(4),
+    paddingBottom: verticalScale(12),
+    paddingRight: scale(16),
   },
   modalButton: {
-    paddingVertical: spacing.xxs,
-    paddingHorizontal: spacing.md,
-    marginLeft: spacing.sm,
-  },
-  buttonText: {
-    fontSize: 14,
-    color: colors.text.primary,
-    fontWeight: '600', // Increased font weight
-  },
-  destructiveButtonText: {
-    color: colors.primary.main,
+    paddingHorizontal: scale(16),
+    paddingVertical: verticalScale(12),
+    minWidth: scale(60),
+    height: verticalScale(48),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
