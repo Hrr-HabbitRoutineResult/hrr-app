@@ -1,4 +1,4 @@
-# Hrr(흐르르) - Habbit Routuine Result
+# Hrr(흐르르) - Habbit Routine Result
 <img width="1024" height="500" alt="image" src="https://github.com/user-attachments/assets/423d8caa-bb7d-4dc7-869a-6f0dc24518c4" />
 
 ### 흐르르 따라 흐르는 나의 성장
