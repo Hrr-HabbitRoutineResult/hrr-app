@@ -21,14 +21,6 @@
 
 ---
 
-## 📸 스크린샷
-
-| 홈 | 챌린지 탐색 | 인증 | 랭킹 |
-|:---:|:---:|:---:|:---:|
-| ![홈](./assets/screenshots/home.png) | ![탐색](./assets/screenshots/explore.png) | ![인증](./assets/screenshots/verify.png) | ![랭킹](./assets/screenshots/ranking.png) |
-
----
-
 ## ✨ 주요 기능
 
 ### 챌린지
