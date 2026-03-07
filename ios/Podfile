@@ -16,6 +16,9 @@ end
 
 target 'HrrApp' do
   config = use_native_modules!
+  
+   # react-native-appsflyer 명시적으로 추가
+  pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
 
   use_react_native!(
     :path => config[:reactNativePath],

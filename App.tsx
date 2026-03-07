@@ -8,8 +8,9 @@ import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RootNavigator from './src/navigation/RootNavigator';
 import { LOGOUT_EVENT } from './src/libs/auth/logout';
-
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import appsFlyer from 'react-native-appsflyer';
+import Config from 'react-native-config';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -17,11 +18,38 @@ function App() {
   useEffect(() => {
     // 앱 초기화 작업
     const init = async () => {
-      // TODO: 실제 초기화 작업 추가하기
-      await new Promise((resolve) => setTimeout(() => resolve(undefined), 2500)); // 2.5초
+      try {
+        // AppsFlyer SDK 초기화
+        appsFlyer.initSdk(
+          {
+            devKey: Config.APPSFLYER_DEV_KEY,
+            isDebug: __DEV__,
+            appId: Config.APPSFLYER_APP_ID,
+            onInstallConversionDataListener: true,
+            onDeepLinkListener: true,
+          },
+          (result: unknown) => {
+            if (__DEV__) console.log("AppsFlyer 초기화 성공:", result);
+          },
+          (error: unknown) => {
+            if (__DEV__) console.error("AppsFlyer 초기화 실패:", error);
+          }
+        );
+
+        // 딥링크 리스너 등록
+        appsFlyer.onDeepLink((res: unknown) => {
+          if (__DEV__) console.log("딥링크 데이터 수신:", res);
+          // TODO: res.data.deep_link_value를 읽어서 화면 이동 로직 구현
+        });
+
+        // 기존 초기화 대기 로직
+        await new Promise((resolve) => setTimeout(() => resolve(undefined), 2500));
+
+      } catch (error) {
+        console.error("초기화 프로세스 중 에러:", error);
+      }
     };
 
-    // 초기화 완료 후에는 스플래시 화면 부드럽게 숨기기
     init().finally(() => {
       BootSplash.hide({ fade: true });
     });
@@ -106,8 +134,8 @@ function AppContent() {
   }
 
   return (
-    <RootNavigator 
-      showRecommendation={showRecommendation} 
+    <RootNavigator
+      showRecommendation={showRecommendation}
       isAuthenticated={isOnboardingComplete}
     />
   );
