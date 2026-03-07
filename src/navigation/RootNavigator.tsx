@@ -49,9 +49,11 @@ const Tab = createBottomTabNavigator<HomeTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
 // Deep Link 설정
-// TODO: 도메인 배포 후 prefixes에 도메인 추가
 const linking = {
-  prefixes: ['hrr://'],
+  prefixes: [
+    'hrr://',
+    'https://hrr.onelink.me',
+  ],
   config: {
     screens: {
       HomeTabs: 'home',

@@ -20,6 +20,7 @@ declare module 'react-native-config' {
     TERMS_MARKETING_URL?: string;
     APPSFLYER_DEV_KEY?: string;
     APPSFLYER_APP_ID?: string;
+    APPSFLYER_ONELINK_URL?: string;
   }
 
   export const Config: NativeConfig;

@@ -354,7 +354,10 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleShare = async () => {
     try {
-      const deepLink = `hrr://challenge/${challengeId}`;
+      const oneLinkBase = Config.APPSFLYER_ONELINK_URL;
+      const encodedDeepLink = encodeURIComponent(`hrr://challenge/${challengeId}`);
+      const deepLink = `${oneLinkBase}?af_dp=${encodedDeepLink}&deep_link_value=challenge&deep_link_sub1=${challengeId}`;
+
       const shareMessage =
         `🔥 ${data.title} 챌린지에 참여해요!
 
