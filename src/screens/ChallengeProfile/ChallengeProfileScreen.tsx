@@ -273,7 +273,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   }, [selectedRound]);
 
   const handleBack = () => {
-    navigation.goBack();
+    if (!navigation.canGoBack()) {
+      navigation.replace('HomeTabs');
+    } else {
+      navigation.goBack();
+    }
   };
 
   if (isLoading) {
@@ -643,6 +647,7 @@ ${deepLink}`;
       <Header
         onBack={handleBack}
         useSafeArea={true}
+        backIcon={!navigation.canGoBack() ? 'close' : 'arrow'}
         rightContent={
           <View style={styles.headerRightContent}>
             <TouchableOpacity

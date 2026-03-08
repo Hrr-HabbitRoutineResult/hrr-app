@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from './Text';
 import { colors } from '../../design/tokens';
 import BackIcon from '../../../assets/icons/back.svg';
+import DeleteIcon from '../../../assets/icons/delete-black.svg';
 
 interface HeaderProps {
   onBack?: () => void;              // 뒤로가기 버튼 클릭 핸들러
@@ -17,6 +18,7 @@ interface HeaderProps {
   showDivider?: boolean;            // 구분선 표시 여부
   rightContent?: React.ReactNode;   // 오른쪽 영역에 표시할 커스텀 컨텐츠 (건너뛰기 버튼, 아이콘 등)
   useSafeArea?: boolean;            // TopAppBar처럼 안전 영역을 직접 처리할지 여부 (기본값: false)
+  backIcon?: 'arrow' | 'close';     // 뒤로가기 버튼 아이콘 타입 (기본값: 'arrow')
 }
 
 // 공통 Header 컴포넌트
@@ -26,6 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   showDivider = false,
   rightContent,
   useSafeArea = false,
+  backIcon = 'arrow',
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -57,7 +60,11 @@ export const Header: React.FC<HeaderProps> = ({
           style={styles.backButton}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <BackIcon width={9} height={18} />
+          {backIcon === 'close' ? (
+            <DeleteIcon width={15} height={15} />
+          ) : (
+            <BackIcon width={9} height={18} />
+          )}
         </TouchableOpacity>
       ) : (
         <View style={styles.backButtonPlaceholder} />
