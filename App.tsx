@@ -1,4 +1,4 @@
-import { StatusBar, useColorScheme, AppState, DeviceEventEmitter, Platform, Linking } from 'react-native';
+import { StatusBar, AppState, DeviceEventEmitter, Platform, Linking } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
@@ -17,8 +17,6 @@ function getQueryParam(url: string, param: string): string | null {
 }
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
   useEffect(() => {
     // 앱 초기화 작업
     const init = async () => {
@@ -102,7 +100,7 @@ function App() {
           style={{ flex: 1 }}
           edges={Platform.OS === 'android' ? ['bottom'] : []}
         >
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
           <AppContent />
         </SafeAreaView>
       </GestureHandlerRootView>
