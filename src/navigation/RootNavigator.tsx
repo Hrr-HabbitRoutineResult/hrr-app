@@ -3,7 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import RNBootSplash from 'react-native-bootsplash'; // ← 추가
+import RNBootSplash from 'react-native-bootsplash';
+import { navigationRef, flushPendingDeepLink } from './navigationRef';
 
 import HomeScreen from '../screens/HomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
@@ -137,10 +138,12 @@ const RootNavigator = ({
 }) => (
   <CreateChallengeProvider>
     <NavigationContainer
+      ref={navigationRef}
       linking={linking}
       onReady={() => {
         // 네비가 준비되면 스플래시를 숨김
         RNBootSplash.hide({ fade: true });
+        flushPendingDeepLink();
       }}
     >
       {/* 로그인 여부에 따라 첫 화면 설정 */}

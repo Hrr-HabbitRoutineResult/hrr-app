@@ -1,8 +1,5 @@
-import { StatusBar, StyleSheet, useColorScheme, AppState, DeviceEventEmitter, Platform } from 'react-native';
-import {
-  SafeAreaProvider,
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+import { StatusBar, useColorScheme, AppState, DeviceEventEmitter, Platform, Linking } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,6 +8,13 @@ import { LOGOUT_EVENT } from './src/libs/auth/logout';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import appsFlyer from 'react-native-appsflyer';
 import Config from 'react-native-config';
+import { navigate, navigationRef, setAuthReady } from './src/navigation/navigationRef';
+
+// URL에서 query parameter 추출
+function getQueryParam(url: string, param: string): string | null {
+  const match = url.match(new RegExp(`[?&]${param}=([^&]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -19,6 +23,22 @@ function App() {
     // 앱 초기화 작업
     const init = async () => {
       try {
+        // 앱이 종료된 상태에서 딥링크로 실행된 경우 처리
+        const initialURL = await Linking.getInitialURL();
+        if (initialURL) {
+          const deepLinkValue = getQueryParam(initialURL, 'deep_link_value');
+          const challengeId = getQueryParam(initialURL, 'deep_link_sub1');
+
+          if (deepLinkValue === 'challenge' && challengeId) {
+            setTimeout(() => {
+              navigationRef.reset({
+                index: 0,
+                routes: [{ name: 'ChallengeProfile', params: { challengeId: parseInt(challengeId, 10) } }],
+              });
+            }, 500);
+          }
+        }
+
         // AppsFlyer SDK 초기화
         appsFlyer.initSdk(
           {
@@ -29,17 +49,22 @@ function App() {
             onDeepLinkListener: true,
           },
           (result: unknown) => {
-            if (__DEV__) console.log("AppsFlyer 초기화 성공:", result);
+            if (__DEV__) console.log('AppsFlyer 초기화 성공:', result);
           },
           (error: unknown) => {
-            if (__DEV__) console.error("AppsFlyer 초기화 실패:", error);
+            if (__DEV__) console.error('AppsFlyer 초기화 실패:', error);
           }
         );
 
-        // 딥링크 리스너 등록
-        appsFlyer.onDeepLink((res: unknown) => {
-          if (__DEV__) console.log("딥링크 데이터 수신:", res);
-          // TODO: res.data.deep_link_value를 읽어서 화면 이동 로직 구현
+        // 앱 실행 중 딥링크 수신 처리 (iOS)
+        appsFlyer.onDeepLink((res: any) => {
+          if (__DEV__) console.log('딥링크 데이터 수신:', JSON.stringify(res));
+          const value = res?.data?.deep_link_value;
+          const challengeId = res?.data?.deep_link_sub1;
+
+          if (value === 'challenge' && challengeId) {
+            navigate('ChallengeProfile', { challengeId: parseInt(challengeId, 10) });
+          }
         });
 
         // 기존 초기화 대기 로직
@@ -53,6 +78,21 @@ function App() {
     init().finally(() => {
       BootSplash.hide({ fade: true });
     });
+
+    // 앱 실행 중 딥링크 수신 처리 (Android)
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      if (__DEV__) console.log('Linking url 수신:', url);
+      const deepLinkValue = getQueryParam(url, 'deep_link_value');
+      const challengeId = getQueryParam(url, 'deep_link_sub1');
+
+      if (deepLinkValue === 'challenge' && challengeId) {
+        navigate('ChallengeProfile', { challengeId: parseInt(challengeId, 10) });
+      }
+    });
+
+    return () => {
+      linkingSubscription.remove();
+    };
   }, []);
 
   return (
@@ -81,16 +121,12 @@ function AppContent() {
   const checkAuthStatus = async () => {
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
-
-      if (accessToken) {
-        setIsOnboardingComplete(true);
-      } else {
-        setIsOnboardingComplete(false);
-      }
-    } catch (error) {
+      setIsOnboardingComplete(!!accessToken);
+    } catch {
       setIsOnboardingComplete(false);
     } finally {
       setIsCheckingAuth(false);
+      setAuthReady();
     }
   };
 
@@ -104,13 +140,9 @@ function AppContent() {
       setIsCheckingAuth(false);
     });
 
-    // 앱이 포커스될 때마다 인증 상태 재확인 (로그아웃 시 상태 반영)
+    // 앱 상태 변경 이벤트 리스너 (앱 실행 중일 때 인증 상태 확인)
     const appStateSubscription = AppState.addEventListener('change', (nextAppState) => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        // 앱이 백그라운드에서 포그라운드로 돌아올 때 인증 상태 확인
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         checkAuthStatus();
       }
       appState.current = nextAppState;
