@@ -1,4 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -19,7 +21,8 @@
     android:allowBackup="false"
     android:theme="@style/AppTheme"
     android:usesCleartextTraffic="${usesCleartextTraffic}"
-    android:supportsRtl="true">
+    android:supportsRtl="true"
+    tools:replace="android:allowBackup">
     <activity
       android:name=".MainActivity"
       android:label="@string/app_name"
@@ -38,6 +41,15 @@
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="hrr" />
+      </intent-filter>
+      <!-- App Link (앱 설치 시 브라우저 대신 앱 직접 오픈) -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+          android:scheme="https"
+          android:host="hrr.onelink.me" />
       </intent-filter>
     </activity>
     

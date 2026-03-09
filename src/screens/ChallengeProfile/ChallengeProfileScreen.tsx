@@ -273,7 +273,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   }, [selectedRound]);
 
   const handleBack = () => {
-    navigation.goBack();
+    if (!navigation.canGoBack()) {
+      navigation.replace('HomeTabs');
+    } else {
+      navigation.goBack();
+    }
   };
 
   if (isLoading) {
@@ -354,7 +358,10 @@ export const ChallengeProfileScreen: React.FC = () => {
 
   const handleShare = async () => {
     try {
-      const deepLink = `hrr://challenge/${challengeId}`;
+      const oneLinkBase = Config.APPSFLYER_ONELINK_URL;
+      const encodedDeepLink = encodeURIComponent(`hrr://challenge/${challengeId}`);
+      const deepLink = `${oneLinkBase}?af_dp=${encodedDeepLink}&deep_link_value=challenge&deep_link_sub1=${challengeId}`;
+
       const shareMessage =
         `🔥 ${data.title} 챌린지에 참여해요!
 
@@ -640,6 +647,7 @@ ${deepLink}`;
       <Header
         onBack={handleBack}
         useSafeArea={true}
+        backIcon={!navigation.canGoBack() ? 'close' : 'arrow'}
         rightContent={
           <View style={styles.headerRightContent}>
             <TouchableOpacity

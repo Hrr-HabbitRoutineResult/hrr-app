@@ -1,3 +1,4 @@
+import AppsFlyerLib
 import KakaoSDKAuth
 import KakaoSDKCommon
 import NaverThirdPartyLogin
@@ -48,13 +49,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     return true
   }
 
-  // Deep link 처리 (앱이 실행 중일 때)
+  // URI scheme 딥링크 처리
   func application(
     _ app: UIApplication,
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
-    // 카카오 SDK가 URL을 처리할 수 있도록 먼저 시도
+    // AppsFlyer URI scheme 딥링크 트래킹
+    AppsFlyerLib.shared().handleOpen(url, options: options)
+
+    // 카카오 로그인 리다이렉트 처리
     if AuthApi.isKakaoTalkLoginUrl(url) {
       if AuthController.handleOpenUrl(url: url) {
         return true
@@ -67,7 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       return true
     }
 
-    // React Native Linking 모듈이 처리하도록 함
+    // 그 외 딥링크는 React Native Linking 모듈이 처리하도록 함
     return RCTLinkingManager.application(app, open: url, options: options)
   }
 
@@ -77,11 +81,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     continue userActivity: NSUserActivity,
     restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
   ) -> Bool {
-    if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
-      let url = userActivity.webpageURL
-    {
-      // React Native Linking 모듈이 자동으로 처리
-      return true
+    // AppsFlyer Universal Link 트래킹
+    AppsFlyerLib.shared().continue(userActivity, restorationHandler: nil)  // restorationHandler는 nil로 전달 (Swift 타입 추론 ambiguous 에러 방지)
+
+    if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
+      return RCTLinkingManager.application(
+        application, continue: userActivity, restorationHandler: restorationHandler)
     }
     return false
   }
