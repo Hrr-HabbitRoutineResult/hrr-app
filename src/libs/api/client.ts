@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axi
 import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reissueAccessToken } from './auth';
+import { resetToAuth } from '../../navigation/navigationRef';
 
 /**
  * 환경 변수에서 API_BASE_URL 가져오기
@@ -121,7 +122,7 @@ apiClient.interceptors.response.use(
           console.error('RefreshToken이 없습니다. 로그인 페이지로 이동.');
           processQueue(new Error('Refresh token not found'), null);
           isRefreshing = false;
-          // 여기서 사용자 로그아웃 처리 및 로그인 화면으로 리다이렉트 로직 필요
+          resetToAuth();
           return Promise.reject(error);
         }
 
@@ -149,7 +150,7 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
 
         await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'nickname', 'termsAgreed']);
-        // 여기서 사용자 로그아웃 처리 및 로그인 화면으로 리다이렉트 로직 필요
+        resetToAuth();
         return Promise.reject(refreshError);
       }
     }
