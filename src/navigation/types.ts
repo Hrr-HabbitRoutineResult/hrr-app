@@ -1,4 +1,5 @@
 import { VerificationDetail, VerificationDetailResponse } from '../libs/api/challenge';
+import { AuthOnboardingStep } from '../screens/Auth/AuthOnboardingScreen';
 
 export type RootStackParamList = {
   HomeTabs: { screen?: keyof HomeTabParamList } | undefined;
@@ -33,7 +34,7 @@ export type RootStackParamList = {
   BlockedUserScreen: undefined;
   ErrorScreen: undefined;
   TermsWebView: { title: string; url: string };
-  AuthOnboarding: undefined;
+  AuthOnboarding: { initialStep?: AuthOnboardingStep } | undefined;
 };
 
 export type HomeTabParamList = {

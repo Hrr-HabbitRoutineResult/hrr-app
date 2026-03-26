@@ -8,8 +8,9 @@ import { Header } from '../components/common/Header';
 import { colors, spacing } from '../design/tokens';
 import SettingSection from '../components/MyPage/SettingSection';
 import SettingItem from '../components/MyPage/SettingItem';
-import { handleLogout } from '../libs/auth/logout';
-import { withdraw } from '../libs/api/auth'; // Import withdraw API
+import { logout as logoutAPI } from '../libs/api/auth';
+import { withdraw } from '../libs/api/auth';
+import { clearSessionLocally } from '../libs/auth/session';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { WithdrawBottomSheet } from '../components/MyPage/WithdrawBottomSheet';
 
@@ -20,11 +21,12 @@ const AccountSettingsScreen = () => {
 
   const performLogout = async () => {
     try {
-      await handleLogout();
-      // 모든 스택 비우고 최초 온보딩 화면으로 이동
+      try { await logoutAPI(); } catch { /* 서버 실패는 무시 */ }
+      await clearSessionLocally();
+      // 로그인 화면으로 바로 이동
       navigation.reset({
         index: 0,
-        routes: [{ name: 'AuthOnboarding' }],
+        routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
       });
     } catch (error) {
       const errorMessage = getErrorMessage(error, '로그아웃에 실패했습니다.');
@@ -40,11 +42,12 @@ const AccountSettingsScreen = () => {
       Alert.alert('회원 탈퇴', '회원 탈퇴가 완료되었습니다.', [
         {
           text: '확인', onPress: async () => {
-            await handleLogout(); // 회원 탈퇴 후 로그아웃 처리 (토큰 삭제)
-            // 앱 초기 진입 화면(온보딩)으로 이동
+            try { await logoutAPI(); } catch { /* 서버 실패는 무시 */ }
+            await clearSessionLocally();
+            // 로그인 화면으로 바로 이동
             navigation.reset({
               index: 0,
-              routes: [{ name: 'AuthOnboarding' }],
+              routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
             });
           }
         },

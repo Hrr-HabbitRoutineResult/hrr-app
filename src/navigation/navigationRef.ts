@@ -1,4 +1,4 @@
-import { createNavigationContainerRef } from '@react-navigation/native';
+import { createNavigationContainerRef, CommonActions } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -23,6 +23,18 @@ export function setAuthReady() {
   if (__DEV__) console.log('setAuthReady 호출, pending:', pendingDeepLink);
   isAuthReady = true;
   flushPendingDeepLink();
+}
+
+// 토큰 만료 등으로 강제 로그아웃 시 스택을 초기화하고 로그인 화면으로 이동
+export function resetToAuth() {
+  if (navigationRef.isReady()) {
+    navigationRef.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
+      })
+    );
+  }
 }
 
 // NavigationContainer onReady와 setAuthReady 양쪽에서 호출

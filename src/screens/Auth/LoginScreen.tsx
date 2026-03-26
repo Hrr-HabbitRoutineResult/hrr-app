@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import {
   View,
   StyleSheet,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/common/Text';
-import { SocialLoginButton } from '../../components/auth/SocialLoginButton';
+import { SocialLoginButton, SocialProvider } from '../../components/auth/SocialLoginButton';
 import { colors } from '../../design/tokens';
 import LogoPrimarySvg from '../../../assets/images/logo-primary.svg';
+
+export const LAST_LOGIN_PROVIDER_KEY = 'lastLoginProvider';
 
 interface LoginScreenProps {
   onAppleLogin: () => void | Promise<void>;
@@ -22,6 +25,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   onNaverLogin,
   onKakaoLogin,
 }) => {
+  const [lastLoginProvider, setLastLoginProvider] = useState<SocialProvider | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(LAST_LOGIN_PROVIDER_KEY).then((value) => {
+      if (value) setLastLoginProvider(value as SocialProvider);
+    });
+  }, []);
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* 로고 + 슬로건 */}
@@ -37,10 +48,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       {/* 소셜 로그인 버튼들 */}
       <View style={styles.buttonContainer}>
         {Platform.OS === 'ios' && (
-          <SocialLoginButton provider="apple" onPress={onAppleLogin} />
+          <SocialLoginButton
+            provider="apple"
+            onPress={onAppleLogin}
+            showTooltip={lastLoginProvider === 'apple'}
+          />
         )}
-        <SocialLoginButton provider="naver" onPress={onNaverLogin} />
-        <SocialLoginButton provider="kakao" onPress={onKakaoLogin} />
+        <SocialLoginButton
+          provider="naver"
+          onPress={onNaverLogin}
+          showTooltip={lastLoginProvider === 'naver'}
+        />
+        <SocialLoginButton
+          provider="kakao"
+          onPress={onKakaoLogin}
+          showTooltip={lastLoginProvider === 'kakao'}
+        />
       </View>
     </SafeAreaView>
   );

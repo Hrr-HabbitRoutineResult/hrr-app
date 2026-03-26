@@ -329,15 +329,8 @@ export interface LogoutResponse {
  * 로그아웃 API 호출
  */
 export const logout = async (): Promise<LogoutResponse> => {
-  try {
-    const response = await apiClient.post<LogoutResponse>(
-      `/api/v1/auth/logout`,
-      {}
-    );
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
+  const response = await apiClient.post<LogoutResponse>('/api/v1/auth/logout', {});
+  return response.data;
 };
 
 /**

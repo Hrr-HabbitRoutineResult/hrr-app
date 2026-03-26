@@ -3441,7 +3441,7 @@ SPEC CHECKSUMS:
   React-utils: 96191b0f5e02b57c70a4bbf7b6f6721958e1d369
   React-webperformancenativemodule: 9c76ddf8d1a243e2eecd7ce1aeadb46ceccbdbd2
   ReactAppDependencyProvider: c5c4f5280e4ae0f9f4a739c64c4260fe0b3edaf1
-  ReactCodegen: 374f1c9242fbdd673b460d358b33860c0cc9d926
+  ReactCodegen: 8db31b6d2e995ca1a4db01987f9286b1b7241bee
   ReactCommon: 25c7f94aee74ddd93a8287756a8ac0830a309544
   RNAppleAuthentication: 9027af8aa92b4719ef1b6030a8e954d37079473a
   RNBootSplash: 98a34471966945e8dacd1da8f0c2f87cbc2e2df7
@@ -3459,4 +3459,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: d59ca6ad8d9759b6cf614f7234a3e49d219b4d30
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

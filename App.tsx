@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RootNavigator from './src/navigation/RootNavigator';
-import { LOGOUT_EVENT } from './src/libs/auth/logout';
+import { LOGOUT_EVENT } from './src/libs/auth/session';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import appsFlyer from 'react-native-appsflyer';
 import Config from 'react-native-config';
@@ -113,15 +113,22 @@ function AppContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   // 회원가입 직후 추천 온보딩을 보여줄지 여부
   const [showRecommendation, setShowRecommendation] = useState(false);
+  // 온보딩 슬라이드를 이미 본 적 있는지 여부 (앱 삭제 후 재설치 시에만 초기화)
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const appState = useRef(AppState.currentState);
 
   // 인증 상태 확인 함수
   const checkAuthStatus = async () => {
     try {
-      const accessToken = await AsyncStorage.getItem('accessToken');
+      const [[, accessToken], [, seenOnboarding]] = await AsyncStorage.multiGet([
+        'accessToken',
+        'hasSeenOnboarding',
+      ]);
       setIsOnboardingComplete(!!accessToken);
+      setHasSeenOnboarding(seenOnboarding === 'true');
     } catch {
       setIsOnboardingComplete(false);
+      setHasSeenOnboarding(false);
     } finally {
       setIsCheckingAuth(false);
       setAuthReady();
@@ -167,6 +174,7 @@ function AppContent() {
     <RootNavigator
       showRecommendation={showRecommendation}
       isAuthenticated={isOnboardingComplete}
+      hasSeenOnboarding={hasSeenOnboarding}
     />
   );
 }

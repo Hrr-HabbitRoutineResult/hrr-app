@@ -1,7 +1,9 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reissueAccessToken } from './auth';
+import { resetToAuth } from '../../navigation/navigationRef';
+import { clearSessionLocally } from '../auth/session';
 
 /**
  * 환경 변수에서 API_BASE_URL 가져오기
@@ -65,14 +67,13 @@ apiClient.interceptors.request.use(
   async (config) => {
     // 토큰 재발급 API가 아닌 경우에만 accessToken을 헤더에 추가
     // 이미 Authorization 헤더가 설정되어 있으면 (재시도 요청) 덮어쓰지 않음
-            if (config.url !== '/api/v1/auth/reissue' && !config.headers?.Authorization) {
-              const accessToken = await AsyncStorage.getItem('accessToken');
-              if (accessToken) {
-                config.headers.Authorization = `Bearer ${accessToken}`;
-              }
-            }
-            console.log('API 요청:', config.url, '헤더 Authorization:', config.headers?.Authorization); // 디버그 로그 추가
-            return config;
+    if (config.url !== '/api/v1/auth/reissue' && !config.headers?.Authorization) {
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+    }
+    return config;
   },
   (error) => {
     return Promise.reject(error);
@@ -95,10 +96,8 @@ apiClient.interceptors.response.use(
       originalRequest.url !== '/api/v1/auth/reissue' &&
       !originalRequest._retry
     ) {
-      console.log('401 Unauthorized 에러 발생. 토큰 재발급 시도...');
       // 이미 토큰 재발급이 진행 중인 경우
       if (isRefreshing) {
-        console.log('토큰 재발급이 이미 진행 중입니다. 요청 큐에 추가.');
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -116,36 +115,32 @@ apiClient.interceptors.response.use(
       // 클라이언트에서 토큰 재발급 진행
       originalRequest._retry = true;
       isRefreshing = true;
-      console.log('토큰 재발급 시작...');
 
       try {
         const refreshToken = await AsyncStorage.getItem('refreshToken');
-        console.log('AsyncStorage에서 refreshToken 조회:', refreshToken ? '있음' : '없음');
-        
+
         if (!refreshToken) {
           console.error('RefreshToken이 없습니다. 로그인 페이지로 이동.');
           processQueue(new Error('Refresh token not found'), null);
           isRefreshing = false;
-          // 여기서 사용자 로그아웃 처리 및 로그인 화면으로 리다이렉트 로직 필요
+          await clearSessionLocally();
+          resetToAuth();
           return Promise.reject(error);
         }
 
         const response = await reissueAccessToken(refreshToken);
-        console.log('reissueAccessToken 응답:', response);
-        
+
         if (response.isSuccess && response.result?.accessToken) {
           const newAccessToken = response.result.accessToken;
           await AsyncStorage.setItem('accessToken', newAccessToken);
-          console.log('새로운 accessToken 저장 완료:', newAccessToken);
-          
+
           processQueue(null, newAccessToken);
           isRefreshing = false;
-          
+
           if (!originalRequest.headers) {
-            originalRequest.headers = {};
+            originalRequest.headers = new AxiosHeaders();
           }
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          console.log('원래 요청을 새로운 accessToken으로 재시도');
           return apiClient(originalRequest);
         } else {
           console.error('토큰 재발급 실패: 응답 isSuccess false 또는 accessToken 없음');
@@ -155,10 +150,9 @@ apiClient.interceptors.response.use(
         console.error('토큰 재발급 중 예외 발생:', refreshError);
         processQueue(refreshError, null);
         isRefreshing = false;
-        
-        await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'nickname', 'termsAgreed']);
-        console.log('AsyncStorage에서 모든 토큰 및 사용자 정보 제거');
-        // 여기서 사용자 로그아웃 처리 및 로그인 화면으로 리다이렉트 로직 필요
+
+        await clearSessionLocally();
+        resetToAuth();
         return Promise.reject(refreshError);
       }
     }

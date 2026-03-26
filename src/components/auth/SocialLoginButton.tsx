@@ -11,11 +11,12 @@ import AppleIcon from '../../../assets/icons/social/apple.svg';
 import NaverIcon from '../../../assets/icons/social/naver.svg';
 import KakaoIcon from '../../../assets/icons/social/kakao.svg';
 
-type SocialProvider = 'apple' | 'naver' | 'kakao';
+export type SocialProvider = 'apple' | 'naver' | 'kakao';
 
 interface SocialLoginButtonProps {
   provider: SocialProvider;
   onPress: () => void;
+  showTooltip?: boolean;
 }
 
 const PROVIDER_CONFIG = {
@@ -42,39 +43,86 @@ const PROVIDER_CONFIG = {
 export const SocialLoginButton: React.FC<SocialLoginButtonProps> = ({
   provider,
   onPress,
+  showTooltip = false,
 }) => {
   const config = PROVIDER_CONFIG[provider];
   const IconComponent = config.Icon;
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        { backgroundColor: config.backgroundColor },
-      ]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      <View style={styles.buttonContent}>
-        <View style={styles.iconContainer}>
-          <IconComponent width={20} height={20} />
+    <View style={styles.wrapper}>
+      {showTooltip && (
+        <View style={styles.tooltipContainer}>
+          <View style={styles.tooltipBadge}>
+            <View style={styles.tooltipArrow} />
+            <Text variant="xsReg" color={colors.text.primary} allowFontScaling={false}>
+              최근 로그인
+            </Text>
+          </View>
         </View>
-        <Text variant="md" color={config.textColor} style={styles.buttonText} allowFontScaling={false}>
-          {config.text}
-        </Text>
-      </View>
-    </TouchableOpacity>
+      )}
+      <TouchableOpacity
+        style={[
+          styles.button,
+          { backgroundColor: config.backgroundColor },
+        ]}
+        onPress={onPress}
+        activeOpacity={0.8}
+      >
+        <View style={styles.buttonContent}>
+          <View style={styles.iconContainer}>
+            <IconComponent width={20} height={20} />
+          </View>
+          <Text variant="md" color={config.textColor} style={styles.buttonText} allowFontScaling={false}>
+            {config.text}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    width: '100%',
+    maxWidth: scale(350),
+    alignItems: 'center',
+    marginBottom: verticalScale(12),
+    overflow: 'visible',
+  },
+  tooltipContainer: {
+    position: 'absolute',
+    right: scale(12),
+    top: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  tooltipBadge: {
+    backgroundColor: colors.white,
+    borderRadius: scale(8),
+    paddingHorizontal: scale(10),
+    paddingVertical: verticalScale(4),
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  tooltipArrow: {
+    position: 'absolute',
+    left: -scale(5.5),
+    width: 0,
+    height: 0,
+    borderTopWidth: scale(5),
+    borderBottomWidth: scale(5),
+    borderRightWidth: scale(7),
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderRightColor: colors.white,
+  },
   button: {
     width: '100%',
     height: scale(54),
-    maxWidth: scale(350),
     borderRadius: scale(8),
     paddingHorizontal: scale(16),
-    marginBottom: verticalScale(12),
     justifyContent: 'center',
     alignItems: 'center',
   },
