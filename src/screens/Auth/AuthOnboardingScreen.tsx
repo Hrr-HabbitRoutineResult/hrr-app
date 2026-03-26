@@ -22,6 +22,8 @@ import { SocialLoginResponse } from '../../libs/api/auth';
 import { loginWithKakao, handleKakaoLogin as handleKakaoLoginWithToken } from '../../libs/auth/kakao';
 import { loginWithApple, handleAppleLogin as handleAppleLoginWithAuth } from '../../libs/auth/apple';
 import { loginWithNaver, handleNaverLogin as handleNaverLoginWithToken } from '../../libs/auth/naver';
+import { SocialProvider } from '../../components/auth/SocialLoginButton';
+import { LAST_LOGIN_PROVIDER_KEY } from './LoginScreen';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
 import OnboardingStep2 from '../../../assets/images/onboarding-step-2.svg';
 import OnboardingStep3 from '../../../assets/images/onboarding-step-3.svg';
@@ -95,12 +97,13 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
   }, [step, slideAnim]);
 
   // 소셜 로그인 공통 처리 (카카오/네이버/애플)
-  const processLogin = useCallback(async (response: SocialLoginResponse) => {
+  const processLogin = useCallback(async (response: SocialLoginResponse, provider: SocialProvider) => {
     if (response.isSuccess) {
       // 서버에서 받은 토큰/사용자 정보를 AsyncStorage에 저장
       await AsyncStorage.setItem('accessToken', response.result.accessToken);
       await AsyncStorage.setItem('refreshToken', response.result.refreshToken);
       await AsyncStorage.setItem('userId', String(response.result.userId));
+      await AsyncStorage.setItem(LAST_LOGIN_PROVIDER_KEY, provider);
 
       // nickname이 null이거나 undefined가 아닐 때만 저장
       if (response.result.nickname != null && response.result.nickname !== undefined) {
@@ -133,7 +136,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
 
       // 백엔드 로그인 API 호출
       const response = await handleKakaoLoginWithToken(kakaoAccessToken);
-      await processLogin(response);
+      await processLogin(response, 'kakao');
     } catch (error) {
       console.error('processKakaoLogin: error', error); // 에러 로그 추가
       Alert.alert('오류', '카카오 로그인 중 오류가 발생했습니다.');
@@ -149,7 +152,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
 
       // 백엔드 로그인 API 호출
       const response = await handleAppleLoginWithAuth(appleAuthData);
-      await processLogin(response);
+      await processLogin(response, 'apple');
     } catch (error) {
       Alert.alert('오류', '애플 로그인 중 오류가 발생했습니다.');
     } finally {
@@ -164,7 +167,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
 
       // 백엔드 로그인 API 호출
       const response = await handleNaverLoginWithToken(naverAccessToken, naverRefreshToken);
-      await processLogin(response);
+      await processLogin(response, 'naver');
     } catch (error) {
       Alert.alert('오류', '네이버 로그인 중 오류가 발생했습니다.');
     } finally {
