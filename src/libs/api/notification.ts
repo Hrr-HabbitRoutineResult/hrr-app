@@ -15,7 +15,14 @@ export interface NotificationItem {
   message: string;
   imageUrl: string;
   category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
-  type: 'CHALLENGE_EXTENSION' | 'CHALLENGE_EXTENSION_SUCCESS' | 'CHALLENGE_EXTENSION_CANCEL' | string;
+  type:
+  | 'CHALLENGE_EXTENSION'
+  | 'CHALLENGE_EXTENSION_SUCCESS'
+  | 'CHALLENGE_EXTENSION_CANCEL'
+  | 'VERIFICATION_DEADLINE_3H'
+  | 'VERIFICATION_DEADLINE_1H'
+  | 'VERIFICATION_DEADLINE_NOW'
+  | string;
   targetType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 화면 이동을 위한 타입
   targetId: number;
   contextType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 추가 처리를 위한 타입
