@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
 
 // react-native-config 환경 변수 로드
 apply from: "../../node_modules/react-native-config/android/dotenv.gradle"

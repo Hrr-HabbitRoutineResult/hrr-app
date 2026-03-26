@@ -16,7 +16,12 @@ end
 
 target 'HrrApp' do
   config = use_native_modules!
-  
+
+  # Firebase Swift 모듈 빌드를 위해 필요한 pod에만 modular_headers 적용
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+
    # react-native-appsflyer 명시적으로 추가
   pod 'react-native-appsflyer', :path => '../node_modules/react-native-appsflyer'
 
