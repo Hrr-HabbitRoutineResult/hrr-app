@@ -3,6 +3,7 @@ import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reissueAccessToken } from './auth';
 import { resetToAuth } from '../../navigation/navigationRef';
+import { clearSessionLocally } from '../auth/session';
 
 /**
  * 환경 변수에서 API_BASE_URL 가져오기
@@ -122,6 +123,7 @@ apiClient.interceptors.response.use(
           console.error('RefreshToken이 없습니다. 로그인 페이지로 이동.');
           processQueue(new Error('Refresh token not found'), null);
           isRefreshing = false;
+          await clearSessionLocally();
           resetToAuth();
           return Promise.reject(error);
         }
@@ -149,7 +151,7 @@ apiClient.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
 
-        await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'nickname', 'termsAgreed']);
+        await clearSessionLocally();
         resetToAuth();
         return Promise.reject(refreshError);
       }

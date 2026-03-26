@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import BootSplash from 'react-native-bootsplash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RootNavigator from './src/navigation/RootNavigator';
-import { LOGOUT_EVENT } from './src/libs/auth/logout';
+import { LOGOUT_EVENT } from './src/libs/auth/session';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import appsFlyer from 'react-native-appsflyer';
 import Config from 'react-native-config';
