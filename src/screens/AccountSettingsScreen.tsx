@@ -21,10 +21,10 @@ const AccountSettingsScreen = () => {
   const performLogout = async () => {
     try {
       await handleLogout();
-      // 모든 스택 비우고 최초 온보딩 화면으로 이동
+      // 로그인 화면으로 바로 이동
       navigation.reset({
         index: 0,
-        routes: [{ name: 'AuthOnboarding' }],
+        routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
       });
     } catch (error) {
       const errorMessage = getErrorMessage(error, '로그아웃에 실패했습니다.');
@@ -41,10 +41,10 @@ const AccountSettingsScreen = () => {
         {
           text: '확인', onPress: async () => {
             await handleLogout(); // 회원 탈퇴 후 로그아웃 처리 (토큰 삭제)
-            // 앱 초기 진입 화면(온보딩)으로 이동
+            // 로그인 화면으로 바로 이동
             navigation.reset({
               index: 0,
-              routes: [{ name: 'AuthOnboarding' }],
+              routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
             });
           }
         },

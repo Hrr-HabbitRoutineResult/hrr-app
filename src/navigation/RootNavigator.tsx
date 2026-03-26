@@ -104,11 +104,12 @@ const HomeTabs = () => (
   </Tab.Navigator>
 );
 
-const AuthOnboardingScreenWrapper = () => {
+const AuthOnboardingScreenWrapper = ({ route }: { route: { params?: { initialStep?: import('../screens/Auth/AuthOnboardingScreen').AuthOnboardingStep } } }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <AuthOnboardingScreen
+      initialStep={route.params?.initialStep}
       onOnboardingComplete={(showRecommendation) => {
         if (showRecommendation) {
           navigation.replace('HomeTabs');
@@ -131,10 +132,12 @@ const AuthOnboardingScreenWrapper = () => {
  */
 const RootNavigator = ({
   showRecommendation = false,
-  isAuthenticated = true
+  isAuthenticated = true,
+  hasSeenOnboarding = false,
 }: {
   showRecommendation?: boolean;
   isAuthenticated?: boolean;
+  hasSeenOnboarding?: boolean;
 }) => (
   <CreateChallengeProvider>
     <NavigationContainer
@@ -185,7 +188,13 @@ const RootNavigator = ({
         <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ErrorScreen" component={ErrorScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TermsWebView" component={TermsWebViewScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="AuthOnboarding" component={AuthOnboardingScreenWrapper} options={{ headerShown: false }} />
+        {/* 로그아웃, 토큰 만료 등으로 강제 로그아웃 시 로그인 화면으로 바로 진입 */}
+        <Stack.Screen
+          name="AuthOnboarding"
+          component={AuthOnboardingScreenWrapper}
+          initialParams={{ initialStep: hasSeenOnboarding ? 'login' : 'onboarding' }}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>

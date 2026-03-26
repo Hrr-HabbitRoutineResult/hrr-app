@@ -31,7 +31,7 @@ export function resetToAuth() {
     navigationRef.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: 'AuthOnboarding' }],
+        routes: [{ name: 'AuthOnboarding', params: { initialStep: 'login' } }],
       })
     );
   }

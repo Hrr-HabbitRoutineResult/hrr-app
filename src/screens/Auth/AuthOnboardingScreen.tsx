@@ -36,6 +36,7 @@ export type AuthOnboardingStep = 'onboarding' | 'login' | 'terms' | 'nickname' |
 
 interface AuthOnboardingScreenProps {
   onOnboardingComplete?: (showRecommendation?: boolean) => void;
+  initialStep?: AuthOnboardingStep;
 }
 
 const ONBOARDING_TEXTS = [
@@ -54,9 +55,9 @@ const ONBOARDING_IMAGES = [
   OnboardingStep4,
 ];
 
-export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOnboardingComplete }) => {
+export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOnboardingComplete, initialStep }) => {
   const insets = useSafeAreaInsets();
-  const [step, setStep] = useState<AuthOnboardingStep>('onboarding');
+  const [step, setStep] = useState<AuthOnboardingStep>(initialStep ?? 'onboarding');
 
   // 이미지 크기 및 레이아웃 공간 계산 (Safe Area 고려)
   // 이미지를 제외한 나머지 고정 공간 계산
@@ -200,8 +201,15 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     }).start();
   }, [currentOnboardingStep, slideAnim]);
 
-  const handleSkip = () => {
+  const goToLogin = () => {
+    // 온보딩 슬라이드를 한 번이라도 완료/스킵한 경우 true로 설정
+    AsyncStorage.setItem('hasSeenOnboarding', 'true');
+    // 로그인 화면으로 이동
     setStep('login');
+  };
+
+  const handleSkip = () => {
+    goToLogin();
   };
 
   const handleNext = () => {
@@ -209,8 +217,7 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
       if (prev < TOTAL_ONBOARDING_STEPS) {
         return prev + 1;
       } else {
-        // 마지막 단계 완료 시 로그인 화면으로 이동
-        setStep('login');
+        goToLogin();
         return prev;
       }
     });
