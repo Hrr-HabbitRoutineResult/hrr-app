@@ -136,6 +136,7 @@ export interface GetUnreadStatusResponse {
  * FCM 토큰 요청/응답 공통 타입
  */
 interface FcmTokenRequest {
+  userId: number;
   fcmToken: string;
 }
 
@@ -149,10 +150,10 @@ interface FcmTokenResponse {
 /**
  * FCM 토큰 등록
  */
-export const registerFcmToken = async (fcmToken: string): Promise<void> => {
+export const registerFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
   const response = await apiClient.post<FcmTokenResponse>(
-    '/api/v1/notifications/fcm-token',
-    { fcmToken } satisfies FcmTokenRequest
+    '/api/v1/fcm/token',
+    { userId, fcmToken } satisfies FcmTokenRequest
   );
 
   if (!response.data.isSuccess) {
@@ -163,10 +164,10 @@ export const registerFcmToken = async (fcmToken: string): Promise<void> => {
 /**
  * FCM 토큰 비활성화 (로그아웃 시 호출)
  */
-export const deactivateFcmToken = async (fcmToken: string): Promise<void> => {
+export const deactivateFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
   const response = await apiClient.patch<FcmTokenResponse>(
-    '/api/v1/notifications/fcm-token',
-    { fcmToken } satisfies FcmTokenRequest
+    '/api/v1/fcm/token',
+    { userId, fcmToken } satisfies FcmTokenRequest
   );
 
   if (!response.data.isSuccess) {

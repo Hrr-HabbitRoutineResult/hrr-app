@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 import { registerFcmToken, deactivateFcmToken } from './api/notification';
 
@@ -14,9 +15,8 @@ export const getFcmToken = async (): Promise<string | null> => {
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-    if (!enabled) {
-      return null;
-    }
+    if (!enabled) return null;
+    await messaging().registerDeviceForRemoteMessages();
   }
 
   const token = await messaging().getToken();
@@ -28,9 +28,12 @@ export const getFcmToken = async (): Promise<string | null> => {
  */
 export const registerFcmTokenSilently = async (): Promise<void> => {
   try {
-    const token = await getFcmToken();
-    if (!token) return;
-    await registerFcmToken(token);
+    const [token, storedUserId] = await Promise.all([
+      getFcmToken(),
+      AsyncStorage.getItem('userId'),
+    ]);
+    if (!token || !storedUserId) return;
+    await registerFcmToken(Number(storedUserId), token);
   } catch {
     // 토큰 등록 실패는 무시
   }
@@ -41,9 +44,12 @@ export const registerFcmTokenSilently = async (): Promise<void> => {
  */
 export const deactivateFcmTokenSilently = async (): Promise<void> => {
   try {
-    const token = await messaging().getToken();
-    if (!token) return;
-    await deactivateFcmToken(token);
+    const [token, storedUserId] = await Promise.all([
+      messaging().getToken(),
+      AsyncStorage.getItem('userId'),
+    ]);
+    if (!token || !storedUserId) return;
+    await deactivateFcmToken(Number(storedUserId), token);
   } catch {
     // 토큰 비활성화 실패는 무시
   }
