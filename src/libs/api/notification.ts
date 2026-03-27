@@ -15,7 +15,14 @@ export interface NotificationItem {
   message: string;
   imageUrl: string;
   category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
-  type: 'CHALLENGE_EXTENSION' | 'CHALLENGE_EXTENSION_SUCCESS' | 'CHALLENGE_EXTENSION_CANCEL' | string;
+  type:
+  | 'CHALLENGE_EXTENSION'
+  | 'CHALLENGE_EXTENSION_SUCCESS'
+  | 'CHALLENGE_EXTENSION_CANCEL'
+  | 'VERIFICATION_DEADLINE_3H'
+  | 'VERIFICATION_DEADLINE_1H'
+  | 'VERIFICATION_DEADLINE_NOW'
+  | string;
   targetType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 화면 이동을 위한 타입
   targetId: number;
   contextType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 추가 처리를 위한 타입
@@ -124,6 +131,49 @@ export interface GetUnreadStatusResponse {
     hasUnread: boolean;
   };
 }
+
+/**
+ * FCM 토큰 요청/응답 공통 타입
+ */
+interface FcmTokenRequest {
+  userId: number;
+  fcmToken: string;
+}
+
+interface FcmTokenResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+}
+
+/**
+ * FCM 토큰 등록
+ */
+export const registerFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
+  const response = await apiClient.post<FcmTokenResponse>(
+    '/api/v1/fcm/token',
+    { userId, fcmToken } satisfies FcmTokenRequest
+  );
+
+  if (!response.data.isSuccess) {
+    throw new Error(response.data.message || 'FCM 토큰 등록에 실패했습니다.');
+  }
+};
+
+/**
+ * FCM 토큰 비활성화 (로그아웃 시 호출)
+ */
+export const deactivateFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
+  const response = await apiClient.patch<FcmTokenResponse>(
+    '/api/v1/fcm/token',
+    { userId, fcmToken } satisfies FcmTokenRequest
+  );
+
+  if (!response.data.isSuccess) {
+    throw new Error(response.data.message || 'FCM 토큰 비활성화에 실패했습니다.');
+  }
+};
 
 /**
  * 읽지 않은 알림 상태 조회

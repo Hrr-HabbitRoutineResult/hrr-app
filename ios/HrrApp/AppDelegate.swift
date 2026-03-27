@@ -1,4 +1,5 @@
 import AppsFlyerLib
+import FirebaseCore
 import KakaoSDKAuth
 import KakaoSDKCommon
 import NaverThirdPartyLogin
@@ -19,6 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    FirebaseApp.configure()
+
     // 카카오 SDK 초기화
     if let kakaoAppKey = Bundle.main.object(forInfoDictionaryKey: "KAKAO_APP_KEY") as? String {
       KakaoSDK.initSDK(appKey: kakaoAppKey)

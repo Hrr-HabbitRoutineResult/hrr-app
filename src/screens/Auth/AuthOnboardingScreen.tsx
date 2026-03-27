@@ -22,6 +22,7 @@ import { SocialLoginResponse } from '../../libs/api/auth';
 import { loginWithKakao, handleKakaoLogin as handleKakaoLoginWithToken } from '../../libs/auth/kakao';
 import { loginWithApple, handleAppleLogin as handleAppleLoginWithAuth } from '../../libs/auth/apple';
 import { loginWithNaver, handleNaverLogin as handleNaverLoginWithToken } from '../../libs/auth/naver';
+import { registerFcmTokenSilently } from '../../libs/fcm';
 import { SocialProvider } from '../../components/auth/SocialLoginButton';
 import { LAST_LOGIN_PROVIDER_KEY } from './LoginScreen';
 import OnboardingStep1 from '../../../assets/images/onboarding-step-1.svg';
@@ -118,7 +119,8 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
         // 신규 사용자: 약관 동의 화면
         setStep('terms');
       } else {
-        // 기존 사용자: 온보딩 완료
+        // 기존 사용자: FCM 토큰 등록 후 온보딩 완료
+        await registerFcmTokenSilently();
         if (onOnboardingComplete) {
           onOnboardingComplete();
         }
@@ -330,8 +332,9 @@ export const AuthOnboardingScreen: React.FC<AuthOnboardingScreenProps> = ({ onOn
     setStep('terms');
   };
 
-  const handleNicknameComplete = (nickname: string) => {
-    // 닉네임까지 설정이 완료되면 RootNavigator로 전환하여 네비게이션 컨텍스트 확보
+  const handleNicknameComplete = async (_nickname: string) => {
+    // 신규 사용자: 닉네임 설정 -> FCM 토큰 등록 -> 온보딩 완료
+    await registerFcmTokenSilently();
     if (onOnboardingComplete) {
       onOnboardingComplete(true);
     }
