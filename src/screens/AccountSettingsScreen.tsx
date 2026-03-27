@@ -11,6 +11,7 @@ import SettingItem from '../components/MyPage/SettingItem';
 import { logout as logoutAPI } from '../libs/api/auth';
 import { withdraw } from '../libs/api/auth';
 import { clearSessionLocally } from '../libs/auth/session';
+import { deactivateFcmTokenSilently } from '../libs/fcm';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { WithdrawBottomSheet } from '../components/MyPage/WithdrawBottomSheet';
 
@@ -21,6 +22,7 @@ const AccountSettingsScreen = () => {
 
   const performLogout = async () => {
     try {
+      await deactivateFcmTokenSilently();
       try { await logoutAPI(); } catch { /* 서버 실패는 무시 */ }
       await clearSessionLocally();
       // 로그인 화면으로 바로 이동
