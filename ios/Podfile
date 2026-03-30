@@ -43,5 +43,13 @@ target 'HrrApp' do
         config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
       end
     end
+    installer.aggregate_targets.each do |target|
+      target.user_project.targets.each do |user_target|
+        user_target.build_configurations.each do |config|
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+        end
+      end
+      target.user_project.save
+    end
   end
 end
