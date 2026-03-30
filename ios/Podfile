@@ -37,12 +37,5 @@ target 'HrrApp' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
     )
-    installer.generated_projects.each do |project|
-      project.targets.each do |target|
-        target.build_configurations.each do |config|
-          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
-        end
-      end
-    end
   end
 end
