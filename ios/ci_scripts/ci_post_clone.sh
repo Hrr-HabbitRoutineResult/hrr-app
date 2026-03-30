@@ -11,7 +11,7 @@ brew install cocoapods
 
 # Node 패키지 설치
 cd "$CI_PRIMARY_REPOSITORY_PATH"
-npm install
+npm install --ignore-scripts
 
 # iOS 의존성 설치
 cd "$CI_PRIMARY_REPOSITORY_PATH/ios"
