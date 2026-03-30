@@ -6,7 +6,7 @@ import {
   FlatList,
   ListRenderItemInfo,
 } from 'react-native';
-import { colors, radius, spacing, typography } from '../../design/tokens';
+import { colors, radius, spacing } from '../../design/tokens';
 import { Text } from '../common/Text';
 import ComponentHeader from '../common/ComponentHeader';
 import PlusIcon from '../../../assets/icons/plus.svg';
@@ -34,16 +34,28 @@ const ParticipatingChallengeSection = ({
     return <ChallengeCard item={item} onPress={onPressItem} />;
   };
 
-  const renderEmptyState = () => (
-    <TouchableOpacity style={styles.emptyCard} onPress={onPressEmpty} activeOpacity={0.8}>
-      <View style={styles.emptyContent}>
-        <PlusIcon width={scale(20)} height={scale(20)} fill={colors.text.secondary} />
-        <Text variant="xsReg" color={colors.text.secondary}>
-          새로운 챌린지에 가입해 보세요
+  const renderEmptyState = () => {
+    if (onPressEmpty) {
+      return (
+        <TouchableOpacity style={styles.emptyCard} onPress={onPressEmpty} activeOpacity={0.8}>
+          <View style={styles.emptyContent}>
+            <PlusIcon width={scale(20)} height={scale(20)} fill={colors.text.tertiary} />
+            <Text variant="xsReg" color={colors.text.tertiary}>
+              새로운 챌린지에 가입해 보세요
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <View style={styles.emptyCard}>
+        <Text variant="xsReg" color={colors.text.tertiary}>
+          아직 참가중인 챌린지가 없어요!
         </Text>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <View>
@@ -78,14 +90,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   emptyContent: {
     alignItems: 'center',
     gap: spacing.sm,
-  },
-
-  emptyText: {
-    color: colors.text.secondary,
   },
 });
 

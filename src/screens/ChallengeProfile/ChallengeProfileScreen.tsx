@@ -949,6 +949,13 @@ ${deepLink}`;
             {isParticipated ? (
               // 참가 후 UI
               <>
+                {/* 챌린지 기간 */}
+                <View style={[styles.challengePeriodSection, { paddingTop: verticalScale(28) }]}>
+                  <Text variant="smReg" color={colors.text.primary}>
+                    {formatChallengePeriod()}
+                  </Text>
+                </View>
+
                 {/* 요일별 인증 상태 */}
                 <View style={styles.daySelectionSection}>
                   {['일', '월', '화', '수', '목', '금', '토'].map((day) => {
@@ -1034,7 +1041,7 @@ ${deepLink}`;
               <>
                 {/* 챌린지 기간 */}
                 <View style={styles.challengePeriodSection}>
-                  <Text variant="xsReg" color={colors.text.primary}>
+                  <Text variant="smReg" color={colors.text.primary}>
                     {formatChallengePeriod()}
                   </Text>
                 </View>
@@ -1383,7 +1390,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(28),
+    paddingTop: verticalScale(20),
   },
   dayButton: {
     width: scale(44),
