@@ -14,9 +14,11 @@ type NotificationItem = {
   description?: string;
 };
 
+const MASTER_ID = 'pause_all';
+
 const NOTIFICATION_ITEMS: NotificationItem[] = [
   {
-    id: 'pause_all',
+    id: MASTER_ID,
     label: '전체 일시 중단',
     description: '알림 수신이 일시 중단됩니다',
   },
@@ -26,18 +28,30 @@ const NOTIFICATION_ITEMS: NotificationItem[] = [
   },
   {
     id: 'certification',
-    label: '인증 알림',
+    label: '인증',
   },
 ];
 
+const INDIVIDUAL_IDS = NOTIFICATION_ITEMS.map(i => i.id).filter(id => id !== MASTER_ID);
+
 const NotificationSettingsScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>(
-    Object.fromEntries(NOTIFICATION_ITEMS.map(item => [item.id, false])),
+  const [pauseAll, setPauseAll] = useState(false);
+  const [individualStates, setIndividualStates] = useState<Record<string, boolean>>(
+    Object.fromEntries(INDIVIDUAL_IDS.map(id => [id, false])),
   );
 
   const handleToggle = (id: string, value: boolean) => {
-    setToggleStates(prev => ({ ...prev, [id]: value }));
+    if (id === MASTER_ID) {
+      setPauseAll(value);
+    } else {
+      setIndividualStates(prev => ({ ...prev, [id]: value }));
+    }
+  };
+
+  const getToggleValue = (id: string) => {
+    if (id === MASTER_ID) return pauseAll;
+    return pauseAll ? false : individualStates[id];
   };
 
   return (
@@ -59,6 +73,7 @@ const NotificationSettingsScreen = () => {
               key={item.id}
               style={[
                 styles.item,
+                item.description ? styles.itemPaddingWithDesc : styles.itemPaddingNoDesc,
                 index < NOTIFICATION_ITEMS.length - 1 && styles.itemGap,
               ]}
             >
@@ -75,8 +90,9 @@ const NotificationSettingsScreen = () => {
                 )}
               </View>
               <Toggle
-                value={toggleStates[item.id]}
+                value={getToggleValue(item.id)}
                 onValueChange={value => handleToggle(item.id, value)}
+                disabled={item.id !== MASTER_ID && pauseAll}
               />
             </View>
           ))}

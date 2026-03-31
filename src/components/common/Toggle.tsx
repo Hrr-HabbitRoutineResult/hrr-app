@@ -5,6 +5,7 @@ import { colors } from '../../design/tokens';
 type ToggleProps = {
   value: boolean;
   onValueChange: (value: boolean) => void;
+  disabled?: boolean;
 };
 
 const TOGGLE_WIDTH = 48;
@@ -13,7 +14,7 @@ const CIRCLE_SIZE = 18;
 const PADDING = 3;
 const TRAVEL = TOGGLE_WIDTH - CIRCLE_SIZE - PADDING * 2;
 
-const Toggle = ({ value, onValueChange }: ToggleProps) => {
+const Toggle = ({ value, onValueChange, disabled = false }: ToggleProps) => {
   const translateX = useRef(new Animated.Value(value ? TRAVEL : 0)).current;
   const backgroundAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
 
@@ -36,7 +37,7 @@ const Toggle = ({ value, onValueChange }: ToggleProps) => {
   });
 
   return (
-    <TouchableWithoutFeedback onPress={() => onValueChange(!value)}>
+    <TouchableWithoutFeedback onPress={() => !disabled && onValueChange(!value)}>
       <Animated.View style={[styles.track, { backgroundColor }]}>
         <Animated.View
           style={[styles.thumb, { transform: [{ translateX }] }]}
