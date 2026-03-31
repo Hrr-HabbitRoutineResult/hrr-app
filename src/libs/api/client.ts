@@ -143,16 +143,30 @@ apiClient.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } else {
+          // 토큰 재발급 실패 시 로그아웃
           console.error('토큰 재발급 실패: 응답 isSuccess false 또는 accessToken 없음');
-          throw new Error(response.message || 'Token reissue failed');
+          const reissueError = new Error(response.message || 'Token reissue failed');
+          processQueue(reissueError, null);
+          isRefreshing = false;
+          await clearSessionLocally();
+          resetToAuth();
+          return Promise.reject(reissueError);
         }
       } catch (refreshError: any) {
-        console.error('토큰 재발급 중 예외 발생:', refreshError);
         processQueue(refreshError, null);
         isRefreshing = false;
 
-        await clearSessionLocally();
-        resetToAuth();
+        // 서버가 401/403을 명시적으로 반환한 경우(토큰 만료/유효하지 않음)에만 로그아웃
+        const status = refreshError?.response?.status;
+        const isAuthFailure = status === 401 || status === 403;
+
+        if (isAuthFailure) {
+          await clearSessionLocally();
+          resetToAuth();
+        } else {
+          console.warn('토큰 재발급 실패 (네트워크/서버 오류):', refreshError?.message ?? refreshError);
+        }
+
         return Promise.reject(refreshError);
       }
     }
