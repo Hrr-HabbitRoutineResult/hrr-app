@@ -1,11 +1,22 @@
-import { Platform } from 'react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 import { registerFcmToken, deactivateFcmToken } from './api/notification';
 
+const requestAndroidNotificationPermission = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') return true;
+  // Android 12 이하는 별도 권한 요청 불필요
+  if ((Platform.Version as number) < 33) return true;
+
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+  );
+  return granted === PermissionsAndroid.RESULTS.GRANTED;
+};
+
 /**
  * iOS: 푸시 알림 권한을 요청하고 현재 기기의 FCM 토큰을 반환
- * Android: 권한 요청 없이 바로 토큰을 가져옴
+ * Android: POST_NOTIFICATIONS 런타임 권한 요청 후 FCM 토큰 반환
  *
  * @returns FCM 토큰 문자열, 또는 권한 거부/오류 시 null
  */
@@ -17,6 +28,11 @@ export const getFcmToken = async (): Promise<string | null> => {
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
     if (!enabled) return null;
     await messaging().registerDeviceForRemoteMessages();
+  }
+
+  if (Platform.OS === 'android') {
+    const granted = await requestAndroidNotificationPermission();
+    if (!granted) return null;
   }
 
   const token = await messaging().getToken();

@@ -176,6 +176,58 @@ export const deactivateFcmToken = async (userId: number, fcmToken: string): Prom
 };
 
 /**
+ * 알림 수신 설정
+ */
+export interface NotificationSettings {
+  isAllPaused: boolean;
+  isChallengeEnabled: boolean;
+  isVerificationEnabled: boolean;
+  isFollowEnabled: boolean;
+  isBadgeEnabled: boolean;
+}
+
+interface NotificationSettingsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: NotificationSettings;
+}
+
+/**
+ * 알림 수신 설정 조회
+ */
+export const getNotificationSettings = async (): Promise<NotificationSettings> => {
+  const response = await apiClient.get<NotificationSettingsResponse>(
+    '/api/v1/notifications/settings'
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(response.data.message || '알림 설정을 불러오는데 실패했습니다.');
+};
+
+/**
+ * 알림 수신 설정 변경
+ */
+export const updateNotificationSettings = async (
+  settings: NotificationSettings
+): Promise<NotificationSettings> => {
+  const response = await apiClient.patch<NotificationSettingsResponse>(
+    '/api/v1/notifications/settings',
+    settings
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(response.data.message || '알림 설정 변경에 실패했습니다.');
+};
+
+/**
  * 읽지 않은 알림 상태 조회
  */
 export const getUnreadStatus = async (): Promise<boolean> => {

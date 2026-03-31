@@ -39,6 +39,7 @@ import ProfileEditScreen from '../screens/ProfileEditScreen';
 import LikedChallengeScreen from '../screens/LikedChallengeScreen';
 import CompletedChallengeScreen from '../screens/CompletedChallengeScreen';
 import BlockedUserScreen from '../screens/BlockedUserScreen';
+import NotificationSettingsScreen from '../screens/NotificationSettingsScreen';
 import ErrorScreen from '../screens/ErrorScreen';
 import TermsWebViewScreen from '../screens/Auth/TermsWebViewScreen';
 import { AuthOnboardingScreen } from '../screens/Auth/AuthOnboardingScreen';
@@ -186,6 +187,7 @@ const RootNavigator = ({
         <Stack.Screen name="LikedChallenge" component={LikedChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CompletedChallenge" component={CompletedChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ErrorScreen" component={ErrorScreen} options={{ headerShown: false }} />
         <Stack.Screen name="TermsWebView" component={TermsWebViewScreen} options={{ headerShown: false }} />
         {/* 로그아웃, 토큰 만료 등으로 강제 로그아웃 시 로그인 화면으로 바로 진입 */}

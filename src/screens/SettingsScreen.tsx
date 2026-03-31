@@ -14,18 +14,29 @@ import IcHeartDefaultIcon from '../../assets/icons/settingpage/ic_heart default.
 import IcCheckIcon from '../../assets/icons/settingpage/ic_check.svg';
 import IcLockIcon from '../../assets/icons/settingpage/ic_lock.svg';
 import IcBlockIcon from '../../assets/icons/settingpage/ic_block.svg';
+import IcAlarmIcon from '../../assets/icons/settingpage/ic_alarm.svg';
 
 const SettingsScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const settingsData = [
     {
-      title: '', // No title for the first section
+      title: '',
       items: [
         {
           label: '계정 설정',
           icon: <IcMyIcon width={24} height={24} />,
           onPress: () => navigation.navigate('AccountSettings'),
+        },
+      ],
+    },
+    {
+      title: '서비스 설정',
+      items: [
+        {
+          label: '알림',
+          icon: <IcAlarmIcon width={24} height={24} />,
+          onPress: () => navigation.navigate('NotificationSettings'),
         },
       ],
     },
@@ -70,7 +81,7 @@ const SettingsScreen = () => {
       />
       <ScrollView style={styles.content}>
         {settingsData.map((section, sectionIndex) => (
-          <SettingSection key={sectionIndex} title={section.title}>
+          <SettingSection key={sectionIndex} title={section.title} isLast={sectionIndex === settingsData.length - 1}>
             {section.items.map((item, itemIndex) => (
               <SettingItem
                 key={itemIndex}
@@ -89,7 +100,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
   },
   content: {
     flex: 1,

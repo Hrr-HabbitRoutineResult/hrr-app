@@ -6,15 +6,16 @@ import { Text } from '../common/Text';
 type SettingSectionProps = {
   title?: string;
   children: React.ReactNode;
+  isLast?: boolean;
 };
 
-const SettingSection = ({ title, children }: SettingSectionProps) => {
+const SettingSection = ({ title, children, isLast }: SettingSectionProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.contentWrapper}>
         {title && (
           <Text
-            variant="xsMd"
+            variant="xsReg"
             color={colors.text.tertiary}
             style={styles.title}
           >
@@ -24,6 +25,7 @@ const SettingSection = ({ title, children }: SettingSectionProps) => {
 
         <View style={styles.card}>{children}</View>
       </View>
+      {!isLast && <View style={styles.divider} />}
     </View>
   );
 };
@@ -31,27 +33,22 @@ const SettingSection = ({ title, children }: SettingSectionProps) => {
 export default SettingSection;
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.xs,
-  },
+  container: {},
 
   contentWrapper: {
     backgroundColor: colors.white,
-    borderTopWidth: 0,
-    borderBottomWidth: 0,
-    borderColor: colors.line,
   },
 
   title: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md, // Add padding to separate title from top border
-    paddingBottom: spacing.xs, // Add padding to separate title from card content
+    backgroundColor: colors.white,
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
 
-  card: {
-    // backgroundColor: colors.white, // Moved to contentWrapper
-    // borderTopWidth: 1, // Moved to contentWrapper
-    // borderBottomWidth: 1, // Moved to contentWrapper
-    // borderColor: colors.line, // Moved to contentWrapper
+  card: {},
+
+  divider: {
+    height: 8,
+    backgroundColor: colors.background,
   },
 });
