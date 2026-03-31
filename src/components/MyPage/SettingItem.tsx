@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography } from '../../design/tokens';
 import { Text } from '../common/Text';
-import ChevronRightIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
+import ChevronRightIcon from '../../../assets/icons/settingpage/chevron-right-B1B2B3.svg';
 
 type SettingItemProps = {
   icon?: React.ReactNode;
@@ -19,12 +19,14 @@ const SettingItem = ({ icon, label, onPress }: SettingItemProps) => {
     >
       <View style={styles.left}>
         {icon && <View style={styles.iconWrap}>{icon}</View>}
-        <Text variant="smMd" color={colors.text.primary}>
+        <Text variant="md" color={colors.text.primary}>
           {label}
         </Text>
       </View>
 
-      <ChevronRightIcon width={14} height={14} />
+      <View style={styles.chevronWrap}>
+        <ChevronRightIcon width={10} height={17} />
+      </View>
     </TouchableOpacity>
   );
 };
@@ -36,20 +38,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     backgroundColor: colors.white,
   },
 
   left: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 10,
   },
 
   iconWrap: {
     width: 24,
     height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  chevronWrap: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -32,6 +32,7 @@ export type RootStackParamList = {
   LikedChallenge: undefined;
   CompletedChallenge: undefined;
   BlockedUserScreen: undefined;
+  NotificationSettings: undefined;
   ErrorScreen: undefined;
   TermsWebView: { title: string; url: string };
   AuthOnboarding: { initialStep?: AuthOnboardingStep } | undefined;
