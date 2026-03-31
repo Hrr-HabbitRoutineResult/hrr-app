@@ -69,7 +69,7 @@ const AccountSettingsScreen = () => {
         showDivider={true}
       />
       <View style={styles.content}>
-        <SettingSection>
+        <SettingSection isLast={true}>
           <SettingItem
             label="로그아웃"
             onPress={() => setLogoutModalVisible(true)}
