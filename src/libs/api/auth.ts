@@ -283,6 +283,7 @@ export interface TokenReissueResponse {
   message: string;
   result: {
     accessToken: string;
+    refreshToken?: string;
   };
 }
 

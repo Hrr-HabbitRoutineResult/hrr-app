@@ -134,6 +134,10 @@ apiClient.interceptors.response.use(
           const newAccessToken = response.result.accessToken;
           await AsyncStorage.setItem('accessToken', newAccessToken);
 
+          if (response.result.refreshToken) {
+            await AsyncStorage.setItem('refreshToken', response.result.refreshToken);
+          }
+
           processQueue(null, newAccessToken);
           isRefreshing = false;
 
