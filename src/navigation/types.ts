@@ -7,6 +7,7 @@ export type RootStackParamList = {
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
   ChallengeProfile: { challengeId: number };
+  ChallengeParticipants: { challengeId: number };
   ChallengeCertification: { challengeId: number };
   ChallengeRanking: { challengeId: number };
   ChallengeCertificationCamera: { challengeId: number };

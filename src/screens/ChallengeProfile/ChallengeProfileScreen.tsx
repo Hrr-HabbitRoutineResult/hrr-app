@@ -20,6 +20,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { Text } from '../../components/common/Text';
 import { TextField } from '../../components/common/TextField';
 import { Button } from '../../components/common/Button';
+import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
+import { BottomSheet } from '../../components/common/BottomSheet';
 import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
@@ -33,6 +35,7 @@ import {
   getChallengeRounds,
   getVerificationStat,
   getVerificationFeed,
+  leaveChallenge,
   ChallengeDetail,
   ChallengeProfile,
   RoundItem,
@@ -55,6 +58,7 @@ import ChevronRightTertiaryIcon from '../../../assets/icons/chevron-right-tertia
 import ChevronRightIcGreyIcon from '../../../assets/icons/chevron-right-ic-grey.svg';
 import InfoCircleIcon from '../../../assets/icons/challenge-profile/info-circle.svg';
 import QuestionMarkCircleIcon from '../../../assets/icons/challenge-profile/question-mark-circle.svg';
+import MoreIcon from '../../../assets/icons/more.svg';
 import { TextCertificationList } from '../../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../../components/common/PhotoCertificationGrid';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
@@ -85,6 +89,9 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [certificationType, setCertificationType] = useState<'text' | 'image'>('image');
   const [isParticipated, setIsParticipated] = useState(false);
+  const [showProfileActions, setShowProfileActions] = useState(false);
+  const [showLeaveBottomSheet, setShowLeaveBottomSheet] = useState(false);
+  const [isLeavingChallenge, setIsLeavingChallenge] = useState(false);
 
   const [rounds, setRounds] = useState<RoundItem[]>([]);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
@@ -202,6 +209,11 @@ export const ChallengeProfileScreen: React.FC = () => {
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
+      // 챌린지가 바뀐 동안 이전 챌린지의 라운드/인증 정보가 노출되지 않도록 초기화
+      setRounds([]);
+      setSelectedRound(null);
+      setVerificationStat(null);
+      setVerificationFeed([]);
       // 챌린지 기본 정보 조회
       const detailResult = await getChallengeDetail(challengeId);
       setData(detailResult);
@@ -219,6 +231,11 @@ export const ChallengeProfileScreen: React.FC = () => {
       // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
       if (detailResult.isObserverMode || detailResult.isParticipant) {
         await fetchRoundsAndStats();
+      } else {
+        setRounds([]);
+        setSelectedRound(null);
+        setVerificationStat(null);
+        setVerificationFeed([]);
       }
     } catch (error: any) {
       console.error('데이터 로딩 실패:', error);
@@ -247,6 +264,11 @@ export const ChallengeProfileScreen: React.FC = () => {
       // 관찰자 모드이거나 참가한 경우 인증현황 데이터 조회
       if (detailResult.isObserverMode || detailResult.isParticipant) {
         await fetchRoundsAndStats();
+      } else {
+        setRounds([]);
+        setSelectedRound(null);
+        setVerificationStat(null);
+        setVerificationFeed([]);
       }
     } catch (error: any) {
       console.error('데이터 새로고침 실패:', error);
@@ -514,6 +536,15 @@ ${deepLink}`;
     return data.startDate <= todayStr;
   };
 
+  const isChallengeOngoing = (): boolean => {
+    if (!data) {
+      return false;
+    }
+
+    const todayStr = getTodayYYYYMMDD_KST();
+    return data.startDate <= todayStr && todayStr <= data.endDate;
+  };
+
   // 인증하기 버튼 활성화 여부 결정
   const isCertificationButtonDisabled = (): boolean => {
     if (!profile || !data) {
@@ -638,8 +669,42 @@ ${deepLink}`;
     setPasswordError(undefined); // 입력 시 에러 메시지 초기화
   };
 
+  const handleLeaveChallenge = async () => {
+    if (isLeavingChallenge) return;
+
+    try {
+      setIsLeavingChallenge(true);
+      const result = await leaveChallenge(challengeId);
+      setShowLeaveBottomSheet(false);
+      setIsParticipated(false);
+      setData(current => current ? {
+        ...current,
+        isParticipant: false,
+        currentParticipantCount: result.currentParticipantCount,
+      } : current);
+      await refreshAllData();
+      Alert.alert('완료', '챌린지에서 나갔습니다.');
+    } catch (error: any) {
+      Alert.alert('오류', getErrorMessage(error, '챌린지 나가기에 실패했습니다.'));
+    } finally {
+      setIsLeavingChallenge(false);
+    }
+  };
+
   const hostProfileImage = data.owner.profileImageUrl;
   const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
+  const currentRoundNumber = (data.isObserverMode || data.isParticipant)
+    ? rounds.find(round => round.isCurrentRound)?.roundNumber
+    : undefined;
+  const isOwner = data.owner.id === userInfo?.userId;
+  const canLeaveChallenge = isParticipated && !isOwner && !isChallengeStarted();
+  const profileActionItems: ActionSheetItem[] = canLeaveChallenge
+    ? [{
+        label: '나가기',
+        destructive: true,
+        onPress: () => requestAnimationFrame(() => setShowLeaveBottomSheet(true)),
+      }]
+    : [];
 
   return (
     <SafeAreaView style={styles.container} edges={[]}>
@@ -668,6 +733,17 @@ ${deepLink}`;
                 <LikeUnselectedIcon width={20} height={18} />
               )}
             </TouchableOpacity>
+            {profileActionItems.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setShowProfileActions(true)}
+                style={styles.headerIconButton}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="챌린지 메뉴"
+              >
+                <MoreIcon width={20} height={20} />
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -691,6 +767,14 @@ ${deepLink}`;
             <View style={styles.heroOverlay} />
           </View>
 
+          {currentRoundNumber !== undefined && (
+            <View style={styles.currentRoundBadge}>
+              <Text variant="caption" color={colors.primary.sub}>
+                {currentRoundNumber}R
+              </Text>
+            </View>
+          )}
+
           {/* 텍스트 컨텐츠 */}
           <View style={styles.heroContent}>
             <View style={styles.heroTextContent}>
@@ -704,14 +788,35 @@ ${deepLink}`;
 
             {/* 참가자 정보 */}
             <View style={styles.participantInfo}>
-              <View style={styles.participantItem}>
+              <TouchableOpacity
+                style={styles.participantItem}
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (!isParticipated) {
+                    Alert.alert('알림', '챌린지에 참가한 뒤에 참가자를 확인할 수 있어요.');
+                    return;
+                  }
+                  if (!isChallengeOngoing()) {
+                    Alert.alert(
+                      '알림',
+                      data.startDate > getTodayYYYYMMDD_KST()
+                        ? '챌린지가 시작된 뒤에 참가자를 확인할 수 있어요.'
+                        : '종료된 챌린지의 참가자는 확인할 수 없어요.'
+                    );
+                    return;
+                  }
+                  navigation.navigate('ChallengeParticipants', { challengeId });
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="참가자 목록"
+              >
                 <View style={styles.iconContainer24}>
                   <PeopleIcon width={11.56} height={13} />
                 </View>
                 <Text variant="xxs" color={colors.white}>
                   {challengeData.participants}/{challengeData.maxParticipants}
                 </Text>
-              </View>
+              </TouchableOpacity>
               {/* 관찰자 모드 (참가 전이면 항상 표시, isObserverMode 값에 따라 활성화/비활성화) */}
               {!isParticipated && (
                 <View style={styles.participantItem}>
@@ -835,7 +940,7 @@ ${deepLink}`;
                     {showCertificationTooltip && (
                       <View style={styles.tooltip}>
                         <Text variant="xsReg" color={colors.text.secondary}>
-                          최근 인증일의 인증 완료 인원 기준입니다
+                          직전 인증 요일의 인증완료 인원 기준입니다
                         </Text>
                       </View>
                     )}
@@ -1173,7 +1278,7 @@ ${deepLink}`;
       <View style={styles.buttonContainer}>
         {isParticipated ? (
           <Button
-            variant={isCertificationButtonDisabled() ? 'gray' : 'black'}
+            variant={isCertificationButtonDisabled() ? 'gray' : 'primary'}
             size="medium"
             onPress={handleCertification}
           >
@@ -1265,6 +1370,51 @@ ${deepLink}`;
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+
+      <ActionSheet
+        visible={showProfileActions}
+        onClose={() => setShowProfileActions(false)}
+        items={profileActionItems}
+      />
+
+      <BottomSheet
+        visible={showLeaveBottomSheet}
+        onClose={() => {
+          if (!isLeavingChallenge) setShowLeaveBottomSheet(false);
+        }}
+        height={250}
+        scrollEnabled={false}
+        animationType="slide"
+      >
+        <View style={styles.leaveSheetContent}>
+          <Text variant="header4" color={colors.text.primary} style={styles.leaveSheetTitle}>
+            챌린지 나가기
+          </Text>
+          <View style={styles.leaveSheetDivider} />
+          <View style={styles.leaveSheetButtons}>
+            <Button
+              variant="white"
+              size="medium"
+              onPress={() => setShowLeaveBottomSheet(false)}
+              disabled={isLeavingChallenge}
+              textVariant="smMd"
+              style={styles.leaveSheetButton}
+            >
+              취소
+            </Button>
+            <Button
+              variant="primary"
+              size="medium"
+              onPress={handleLeaveChallenge}
+              disabled={isLeavingChallenge}
+              textVariant="smMd"
+              style={styles.leaveSheetButton}
+            >
+              나가기
+            </Button>
+          </View>
+        </View>
+      </BottomSheet>
     </SafeAreaView>
   );
 };
@@ -1273,6 +1423,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  leaveSheetContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  leaveSheetTitle: {
+    textAlign: 'center',
+  },
+  leaveSheetDivider: {
+    alignSelf: 'stretch',
+    height: StyleSheet.hairlineWidth,
+    marginTop: verticalScale(16),
+    marginHorizontal: scale(-20),
+    backgroundColor: colors.line,
+  },
+  leaveSheetButtons: {
+    width: '100%',
+    marginTop: verticalScale(16),
+    gap: verticalScale(8),
+  },
+  leaveSheetButton: {
+    width: '100%',
   },
   scrollView: {
     flex: 1,
@@ -1316,6 +1488,19 @@ const styles = StyleSheet.create({
     bottom: verticalScale(0),
     backgroundColor: '#000000',
     opacity: 0.6,
+  },
+  currentRoundBadge: {
+    position: 'absolute',
+    top: verticalScale(12),
+    left: scale(16),
+    minWidth: scale(32),
+    height: verticalScale(24),
+    paddingHorizontal: scale(8),
+    borderRadius: scale(12),
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
   },
   heroContent: {
     position: 'relative',
@@ -1678,4 +1863,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-

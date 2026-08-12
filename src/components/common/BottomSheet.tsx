@@ -17,6 +17,7 @@ interface BottomSheetProps {
   height?: number;
   scrollEnabled?: boolean;
   footer?: React.ReactNode;
+  animationType?: 'none' | 'slide' | 'fade';
 }
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -29,6 +30,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   height,
   scrollEnabled = true,
   footer,
+  animationType = 'fade',
 }) => {
   const sheetHeight = height ? verticalScale(height) : DEFAULT_SHEET_HEIGHT;
 
@@ -36,7 +38,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType={animationType}
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>

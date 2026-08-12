@@ -69,7 +69,7 @@ export interface ChallengeDetail {
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
-  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED' | 'REJECT';
+  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'WAITLISTED' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED' | 'WITHDRAW' | 'REJECT';
   owner: {
     id: number;
     nickname: string;
@@ -187,6 +187,74 @@ export const getChallengeProfile = async (challengeId: number): Promise<Challeng
   }
 };
 
+export interface ChallengeParticipant {
+  id: number;
+  nickname: string;
+  profilePhoto?: string;
+  isOwner: boolean;
+  isMe: boolean;
+  isFollowing: boolean;
+}
+
+interface ChallengeParticipantResponseItem {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+  isOwner: boolean;
+  isMe: boolean;
+  isFollowing: boolean;
+}
+
+export interface ChallengeParticipantsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: ChallengeParticipantResponseItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+type ChallengeParticipantsResult = Omit<ChallengeParticipantsResponse['result'], 'content'> & {
+  content: ChallengeParticipant[];
+};
+
+/**
+ * 참가 중인 챌린저 목록 조회
+ * - 참가자 본인만 조회할 수 있다.
+ */
+export const getChallengeParticipants = async (
+  challengeId: number,
+  page: number = 1,
+  size: number = 20
+): Promise<ChallengeParticipantsResult> => {
+  const response = await apiClient.get<ChallengeParticipantsResponse>(
+    `/api/v1/challenges/${challengeId}/participants`,
+    { params: { page, size } }
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return {
+      ...response.data.result,
+      content: response.data.result.content.map(participant => ({
+        id: participant.userId,
+        nickname: participant.nickname,
+        profilePhoto: participant.profileImageUrl ?? undefined,
+        isOwner: participant.isOwner,
+        isMe: participant.isMe,
+        isFollowing: participant.isFollowing,
+      })),
+    };
+  }
+
+  throw new Error(response.data.message || '참가자를 불러오는데 실패했습니다.');
+};
+
 /**
  * 챌린지 찜하기
  */
@@ -271,6 +339,35 @@ export const joinChallenge = async (challengeId: number, password?: string): Pro
 
     throw error;
   }
+};
+
+export interface ChallengeLeaveResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    challengeId: number;
+    currentParticipantCount: number;
+  };
+}
+
+/**
+ * 챌린지 나가기
+ * - 방장이 아닌 참가자만 시작일 이전에 요청할 수 있다.
+ */
+export const leaveChallenge = async (
+  challengeId: number
+): Promise<ChallengeLeaveResponse['result']> => {
+  const response = await apiClient.post<ChallengeLeaveResponse>(
+    `/api/v1/challenges/${challengeId}/leave`
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(response.data.message || '챌린지 나가기에 실패했습니다.');
 };
 
 /**
@@ -882,6 +979,7 @@ export const getVerificationDetail = async (
 export interface RoundItem {
   roundNumber: number;
   isCurrentRound: boolean;
+  isParticipated: boolean;
 }
 
 /**

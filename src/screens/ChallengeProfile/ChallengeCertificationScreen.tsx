@@ -208,8 +208,6 @@ export const ChallengeCertificationScreen: React.FC = () => {
     ? challengerFeed[0].type === 'TEXT' ? 'text' : 'image'
     : 'image';
 
-  // TODO: 참여한 라운드 정보를 알 수 있는 API 필요
-  const isParticipated = (round: number) => true; // 임시로 모든 라운드 참여 가능
   const isFirstRound = (round: RoundItem) => round.isCurrentRound;
 
   const handleRoundPress = (round: number) => {
@@ -426,7 +424,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   scrollEventThrottle={16}
                 >
                   {rounds.map((round) => {
-                    const participated = isParticipated(round.roundNumber);
+                    const participated = round.isParticipated;
                     const isFirst = isFirstRound(round);
                     const isSelected = selectedRound === round.roundNumber;
 
@@ -666,4 +664,3 @@ const styles = StyleSheet.create({
     borderWidth: scale(0),
   },
 });
-
