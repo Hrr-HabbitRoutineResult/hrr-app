@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Image, Alert, ActivityIndicator, Platform } from 'react-native';
+import { View, StyleSheet, Image, Alert, Platform, TouchableOpacity } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { scale, verticalScale } from '../utils/scaling';
 import { getErrorMessage } from '../utils/errorHandler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import LinearGradient from 'react-native-linear-gradient';
 import RNBlobUtil from 'react-native-blob-util';
-import { Header } from '../components/common/Header';
 import { Button } from '../components/common/Button';
 import { Text } from '../components/common/Text';
-import { colors } from '../design/tokens';
-import RandomMissionFrame from '../../assets/images/random-mission-frame.svg';
-import MissionCompleteSvg from '../../assets/images/mission-complete.svg';
+import { colors, typography } from '../design/tokens';
+import BackIcon from '../../assets/icons/back.svg';
+import IconExercise from '../../assets/icons/homescreen/categorychips/ic_exercise.svg';
+import IconStudy from '../../assets/icons/homescreen/categorychips/ic_study.svg';
+import IconHobby from '../../assets/icons/homescreen/categorychips/ic_hobby.svg';
+import IconJob from '../../assets/icons/homescreen/categorychips/ic_job.svg';
+import IconLifestyle from '../../assets/icons/homescreen/categorychips/ic_lifestyle.svg';
+import MissionArrivedIcon from '../../assets/images/random-mission-arrived.svg';
+import MissionCompleteIcon from '../../assets/images/random-mission-complete.svg';
 import {
   getDailyMission,
   DailyMissionInfo,
@@ -26,7 +30,7 @@ const RandomMissionScreen = () => {
   const navigation = useNavigation();
   const { setRandomMissionCompleted, randomMissionCompleted } = useUserStore();
   const [missionData, setMissionData] = useState<DailyMissionInfo | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageTimestamp, setImageTimestamp] = useState<Date | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -36,7 +40,7 @@ const RandomMissionScreen = () => {
       try {
         const data = await getDailyMission();
         setMissionData(data);
-      } catch (error) {
+      } catch {
         // 네트워크/서버 오류가 나더라도 화면은 유지하고 로딩 상태만 해제
       } finally {
         setIsLoading(false);
@@ -60,7 +64,10 @@ const RandomMissionScreen = () => {
     const asset = await openCamera();
     if (asset?.uri) {
       setSelectedImage(asset.uri);
-      setImageTimestamp(new Date());
+      const capturedAt = asset.timestamp ? new Date(asset.timestamp) : null;
+      setImageTimestamp(
+        capturedAt && !Number.isNaN(capturedAt.getTime()) ? capturedAt : new Date(),
+      );
     }
   };
 
@@ -113,7 +120,7 @@ const RandomMissionScreen = () => {
             uploadHeaders['x-amz-acl'] = 'public-read';
           }
         }
-      } catch (e) {
+      } catch {
         // 파싱 실패 시에도 업로드 가능하므로 무시
       }
 
@@ -173,7 +180,7 @@ const RandomMissionScreen = () => {
       }
 
       // 2. 랜덤 미션 인증 API 호출
-      const result = await verifyDailyMission({
+      await verifyDailyMission({
         missionId: missionData.missionId,
         imageKey: s3Key,
       });
@@ -181,17 +188,9 @@ const RandomMissionScreen = () => {
       // 3. 랜덤 미션 완료 상태 업데이트
       setRandomMissionCompleted(true);
 
-      Alert.alert('인증 완료', result, [
-        {
-          text: '확인',
-          onPress: () => {
-            // 인증 완료 후 화면 초기화 및 뒤로가기
-            setSelectedImage(null);
-            setImageTimestamp(null);
-            navigation.goBack();
-          },
-        },
-      ]);
+      // 성공 팝업 대신 시안의 미션 완료 상태를 바로 보여준다.
+      setSelectedImage(null);
+      setImageTimestamp(null);
     } catch (error: any) {
       const errorMessage = getErrorMessage(error, '인증에 실패했습니다.');
       Alert.alert('인증 실패', errorMessage);
@@ -218,6 +217,15 @@ const RandomMissionScreen = () => {
     return (
       <SafeAreaView style={styles.certificationContainer} edges={['top', 'left', 'right']}>
         <View style={styles.certificationContent}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="촬영 닫기"
+            onPress={handleBack}
+            style={styles.cameraClose}
+            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+          >
+            <Text variant="header2" color={colors.white} style={styles.cameraCloseText}>×</Text>
+          </TouchableOpacity>
           {/* 이미지 썸네일 */}
           <View style={styles.thumbnailContainer}>
             <Image
@@ -241,20 +249,14 @@ const RandomMissionScreen = () => {
                     <View
                       style={[
                         StyleSheet.absoluteFill,
-                        {
-                          backgroundColor: 'rgba(0, 0, 0, 0.25)',
-                          borderRadius: scale(10),
-                        },
+                        styles.cameraShade,
                       ]}
                     />
                     {/* 밝은 블러 효과 시뮬레이션 레이어 */}
                     <View
                       style={[
                         StyleSheet.absoluteFill,
-                        {
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                          borderRadius: scale(10),
-                        },
+                        styles.cameraHighlight,
                       ]}
                     />
                   </>
@@ -291,77 +293,89 @@ const RandomMissionScreen = () => {
   }
 
   // 기본 미션 화면
+  const missionCompleted = randomMissionCompleted || missionData?.isCompleted;
+  const missionTitle = missionData?.title || '건강식 한 끼 먹기';
+  const missionDescription = missionData?.content || '오늘의 한 끼는 건강하게 챙겨보세요!';
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <Header onBack={handleBack} title="랜덤미션" showDivider />
-
-      <View style={styles.content}>
-        <Text variant="header1" color={colors.text.primary} style={styles.mainTitle}>
-          {randomMissionCompleted || missionData?.isCompleted
-            ? '미션을 완료했어요!\n내일 새로운 미션으로 만나요'
-            : '미션에 참여하고\n오늘의 루틴을 완성해요!'}
+      <View style={styles.header}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="뒤로가기"
+          onPress={handleBack}
+          style={styles.backButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <BackIcon width={9} height={18} />
+        </TouchableOpacity>
+        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
+          랜덤미션
         </Text>
-
-        {/* 이미지 + 오버레이 + 텍스트 컨테이너 */}
-        <View style={styles.imageContainer}>
-          {/* 미션 이미지 */}
-          {missionData?.imageUrl ? (
-            <Image
-              source={{ uri: missionData.imageUrl }}
-              style={styles.missionImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.placeholder} />
-          )}
-
-          {/* 그라데이션 오버레이 */}
-          <LinearGradient
-            colors={['rgba(0, 0, 0, 0.16)', 'rgba(0, 0, 0, 0.8)']}
-            style={styles.gradientOverlay}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-          />
-
-          {/* 프레임 오버레이 */}
-          <View style={styles.frameOverlay}>
-            <RandomMissionFrame width="90%" height="90%" preserveAspectRatio="none" />
-          </View>
-
-          {/* 미션 인증 완료 오버레이 */}
-          {(randomMissionCompleted || missionData?.isCompleted) && (
-            <View style={styles.completeOverlay}>
-              <MissionCompleteSvg width="100%" height="100%" preserveAspectRatio="none" />
-            </View>
-          )}
-
-          {/* 텍스트 오버레이 */}
-          <View style={styles.textOverlay}>
-            <Text variant="header1" color={colors.white} style={styles.missionTitle}>
-              {missionData?.title || '로딩 중...'}
-            </Text>
-            <Text variant="smMd" color={colors.white} style={styles.missionDescription}>
-              {missionData?.content || ''}
-            </Text>
-          </View>
-        </View>
-
-        {/* 완료 상태 안내 텍스트 */}
-        {/* {(randomMissionCompleted || missionData?.isCompleted) && (
-          <Text variant="xsReg" color={colors.text.secondary} style={styles.completeMessage}>
-            인증 내용을 확인 후 플로우 스코어 1점을 드릴게요
-          </Text>
-        )} */}
+        <View style={styles.backButton} />
       </View>
 
-      {/* 하단 버튼 */}
+      <View style={styles.content}>
+        <Text variant="header2" color={colors.text.primary} style={styles.mainTitle}>
+          {missionCompleted ? '미션을 완료했어요!' : '오늘의 랜덤미션이 도착했어요!'}
+        </Text>
+
+        <View style={styles.missionCard}>
+          {missionCompleted ? (
+            <>
+              <View style={styles.completedMissionText}>
+                <Text variant="header2" color={colors.text.primary} style={styles.missionTitle}>
+                  {missionTitle}
+                </Text>
+                <Text variant="xsReg" color={colors.text.tertiary} style={styles.missionDescription}>
+                  {missionDescription}
+                </Text>
+              </View>
+              <View style={styles.completeIllustration}>
+                <MissionCompleteIcon width={scale(240)} height={scale(240)} />
+              </View>
+              <View style={styles.completedFooter}>
+                <View style={styles.cardDivider} />
+                <Text variant="smMd" color={colors.text.primary} style={styles.completeMessage}>
+                  내일 새로운 미션으로 다시 만나요
+                </Text>
+                <View style={styles.cardDivider} />
+              </View>
+            </>
+          ) : (
+            <>
+              <MissionArrivedIcon width={scale(152)} height={scale(152)} />
+              <View style={styles.missionText}>
+                <Text variant="header2" color={colors.text.primary} style={styles.missionTitle}>
+                  {missionTitle}
+                </Text>
+                <Text variant="xsReg" color={colors.text.tertiary} style={styles.missionDescription}>
+                  {missionDescription}
+                </Text>
+              </View>
+              <View style={styles.categoryFooter}>
+                <View style={styles.cardDivider} />
+                <View style={styles.categoryIconRow}>
+                  <IconExercise width={24} height={24} />
+                  <IconStudy width={24} height={24} />
+                  <IconHobby width={24} height={24} />
+                  <IconJob width={24} height={24} />
+                  <IconLifestyle width={24} height={24} />
+                </View>
+                <View style={styles.cardDivider} />
+              </View>
+            </>
+          )}
+        </View>
+      </View>
+
       <View style={styles.buttonContainer}>
         <Button
-          variant="primary"
+          variant={missionCompleted ? 'gray' : 'black'}
           onPress={handleCertify}
-          disabled={randomMissionCompleted || missionData?.isCompleted}
+          disabled={missionCompleted}
         >
-          인증하기
+          {missionCompleted ? '완료' : '인증하기'}
         </Button>
       </View>
     </SafeAreaView>
@@ -371,81 +385,102 @@ const RandomMissionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.primary.lightest,
+  },
+  header: {
+    height: verticalScale(72),
+    paddingHorizontal: scale(20),
+    borderBottomWidth: scale(1),
+    borderBottomColor: colors.primary.lighter,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    width: scale(48),
+    height: verticalScale(48),
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
     paddingHorizontal: scale(20),
+    alignItems: 'center',
   },
   mainTitle: {
-    marginTop: verticalScale(28),
-    marginBottom: verticalScale(32),
+    marginTop: verticalScale(30),
+    marginBottom: verticalScale(24),
+    textAlign: 'center',
+    lineHeight: typography.header2.lineHeight,
   },
-  imageContainer: {
+  missionCard: {
     width: '100%',
     height: verticalScale(400),
     borderRadius: scale(20),
-    overflow: 'hidden',
-    position: 'relative',
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    paddingTop: verticalScale(40),
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: scale(10),
+    elevation: 4,
   },
-  placeholder: {
+  missionText: {
+    marginTop: verticalScale(8),
+    alignItems: 'center',
     width: '100%',
-    height: '100%',
-    backgroundColor: colors.line,
+    paddingHorizontal: scale(24),
   },
-  missionImage: {
+  completedMissionText: {
+    alignItems: 'center',
     width: '100%',
-    height: '100%',
-  },
-  gradientOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-  frameOverlay: {
-    paddingLeft: scale(30),
-    paddingTop: verticalScale(32),
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 2,
-  },
-  completeOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 4,
-  },
-  textOverlay: {
-    position: 'absolute',
-    bottom: verticalScale(70),
-    left: scale(10),
-    right: 0,
-    paddingLeft: scale(24),
-    paddingBottom: verticalScale(28),
-    zIndex: 3,
+    paddingHorizontal: scale(24),
   },
   missionTitle: {
+    textAlign: 'center',
     marginBottom: verticalScale(6),
   },
   missionDescription: {
-    lineHeight: verticalScale(22),
+    textAlign: 'center',
+    lineHeight: typography.xsReg.lineHeight,
+  },
+  categoryFooter: {
+    position: 'absolute',
+    bottom: verticalScale(28),
+    alignItems: 'center',
+  },
+  categoryIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: scale(10),
+    marginVertical: verticalScale(10),
+  },
+  cardDivider: {
+    width: scale(290),
+    height: scale(1),
+    backgroundColor: colors.primary.light,
+  },
+  completeIllustration: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  completedFooter: {
+    alignItems: 'center',
+    marginBottom: verticalScale(28),
+  },
+  completeMessage: {
+    textAlign: 'center',
+    marginVertical: verticalScale(12),
   },
   buttonContainer: {
     paddingHorizontal: scale(20),
     paddingBottom: verticalScale(32),
     alignItems: 'center',
-  },
-  completeMessage: {
-    marginTop: verticalScale(24),
-    textAlign: 'center',
   },
   // 인증 화면 스타일
   certificationContainer: {
@@ -459,6 +494,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingBottom: verticalScale(32),
     alignItems: 'center',
+  },
+  cameraClose: {
+    position: 'absolute',
+    top: verticalScale(16),
+    left: scale(20),
+    zIndex: 2,
+    width: scale(40),
+    height: scale(40),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cameraCloseText: {
+    fontSize: scale(30),
+    lineHeight: scale(32),
+    fontFamily: 'Pretendard-Light',
+    fontWeight: '300',
   },
   thumbnailContainer: {
     width: '100%',
@@ -488,6 +539,14 @@ const styles = StyleSheet.create({
   },
   timestampText: {
     color: colors.white,
+  },
+  cameraShade: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    borderRadius: scale(10),
+  },
+  cameraHighlight: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: scale(10),
   },
   certificationButtonContainer: {
     width: '100%',

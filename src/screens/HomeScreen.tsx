@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Button, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { scale, verticalScale } from '../utils/scaling';
 import { useChallengeStore } from '../store/challengeSlice';
 import { useUserStore } from '../store/userSlice';
@@ -18,7 +18,7 @@ import RandomMissionBanner from '../components/home/RandomMissionBanner';
 import RefreshableScrollView from '../components/common/RefreshableScrollView';
 
 const HomeScreen = () => {
-  const { dailyTop, isLoading, error, fetchDailyTop } = useChallengeStore();
+  const { dailyTop, isLoading, fetchDailyTop } = useChallengeStore();
   const {
     userInfo,
     fetchUserInfo,
@@ -79,7 +79,9 @@ const HomeScreen = () => {
             <View style={styles.topSectionContainer}>
               <View style={styles.welcomeContainer}>
                 <Text style={styles.welcomeSubtitle} allowFontScaling={false}>안녕하세요 {nickname} 님!</Text>
-                <Text style={styles.welcomeTitle} allowFontScaling={false}>오늘도 챌린지를 해볼까요?</Text>
+                <Text style={styles.welcomeTitle} allowFontScaling={false}>
+                  {ongoingChallenges.length > 0 ? '오늘도 챌린지를 해볼까요?' : '챌린지를 시작해보세요'}
+                </Text>
               </View>
 
               <ChallengeCarousel challenges={ongoingChallenges} />
@@ -101,7 +103,9 @@ const HomeScreen = () => {
               </View>
 
               <View style={styles.sectionContainer}>
-                <PopularList challenges={dailyTop} />
+                <PopularList
+                  challenges={ongoingChallenges.length > 0 ? dailyTop.slice(0, 3) : []}
+                />
               </View>
 
               <View style={[styles.sectionContainer, styles.lastSection]}>

@@ -18,6 +18,7 @@ const commonOptions: CameraOptions & ImageLibraryOptions = {
   maxHeight: 1024,
   quality: 0.8,
   includeBase64: false,
+  includeExtra: true,
 };
 
 const requestCameraPermission = async () => {
@@ -34,7 +35,7 @@ const requestCameraPermission = async () => {
         },
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
+    } catch {
       return false;
     }
   }
@@ -72,7 +73,7 @@ export const openCamera = async (): Promise<Asset | null> => {
     }
 
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -98,7 +99,7 @@ export const openGallery = async (): Promise<Asset | null> => {
     }
 
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -124,7 +125,7 @@ export const openGalleryMultiple = async (maxCount: number = 10): Promise<Asset[
     }
 
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };

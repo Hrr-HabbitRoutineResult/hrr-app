@@ -1,0 +1,18 @@
+<svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>랜덤 미션 완료</title>
+
+  <path d="M33 66L88 38C90.8 36.6 94 38.4 94.4 41.5L101 87.5C101.5 91 98.2 93.6 95 92.2L39 71.5L33 66Z" fill="#FF9E99"/>
+  <path d="M39 71.5L48.5 101.5C49.4 104.3 52.4 105.8 55.1 104.9L68 100.5L57.5 78.4L39 71.5Z" fill="#FF9E99"/>
+
+  <text x="49" y="72" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="11" font-weight="700" transform="rotate(-16 49 72)">COMPLETE</text>
+
+  <path d="M95 26C99.5 31.5 100 38.5 97.5 44.5" stroke="#FF6B61" stroke-width="7" stroke-linecap="butt"/>
+  <path d="M109 50L121 45L124.5 52.5L112 57L109 50Z" fill="#FF6B61"/>
+  <path d="M111 71L124 75.5L121 83L108.5 78L111 71Z" fill="#FF6B61"/>
+  <path d="M29 43L41 48L37.5 56L25.5 51L29 43Z" fill="#FF6B61"/>
+
+  <path d="M56 29L60.6 36.7L69 38.6L62.7 44.5L63.5 53L56 48.9L48.5 53L49.3 44.5L43 38.6L51.4 36.7L56 29Z" fill="#FFDAD8"/>
+  <path d="M113 90L116 95L121.5 96.3L117.3 100.2L118 105.7L113 103L108 105.7L108.7 100.2L104.5 96.3L110 95L113 90Z" fill="#FFDAD8"/>
+  <circle cx="109" cy="28" r="4.5" fill="#FFDAD8"/>
+  <circle cx="114" cy="65" r="4.5" fill="#FFE7E5"/>
+</svg>
