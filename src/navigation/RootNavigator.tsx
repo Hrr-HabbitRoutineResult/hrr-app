@@ -12,7 +12,8 @@ import ChallengeListScreen from '../screens/ChallengeListScreen';
 import RandomMissionScreen from '../screens/RandomMissionScreen';
 import CategorySearchScreen from '../screens/CategorySearchScreen';
 import SearchScreen from '../screens/SearchScreen';
-import ChatScreen from '../screens/ChatScreen';
+import RankScreen from '../screens/RankScreen';
+import PointHistoryScreen from '../screens/PointHistoryScreen';
 import MyScreen from '../screens/MyScreen';
 import UserScreen from '../screens/UserScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
@@ -101,7 +102,7 @@ const HomeTabs = () => (
   >
     <Tab.Screen name="홈" component={HomeScreen} />
     <Tab.Screen name="검색" component={SearchScreen} />
-    {/* <Tab.Screen name="채팅" component={ChatScreen} /> */}
+    <Tab.Screen name="랭킹" component={RankScreen} />
     <Tab.Screen name="마이" component={MyScreen} />
   </Tab.Navigator>
 );
@@ -164,6 +165,7 @@ const RootNavigator = ({
         <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PointHistory" component={PointHistoryScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeParticipants" component={ChallengeParticipantsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertification" component={ChallengeCertificationScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />

@@ -10,6 +10,7 @@ export type RootStackParamList = {
   ChallengeParticipants: { challengeId: number };
   ChallengeCertification: { challengeId: number };
   ChallengeRanking: { challengeId: number };
+  PointHistory: undefined;
   ChallengeCertificationCamera: { challengeId: number };
   ChallengeCertificationText: { challengeId: number };
   ChallengeCertificationPost: { challengeId: number; imageUri: string };
@@ -42,6 +43,6 @@ export type RootStackParamList = {
 export type HomeTabParamList = {
   홈: undefined;
   검색: undefined;
-  채팅: undefined;
+  랭킹: undefined;
   마이: undefined;
 };

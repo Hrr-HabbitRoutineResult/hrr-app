@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Dimensions, Text, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, Platform } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { colors, typography } from '../../design/tokens';
@@ -11,8 +11,8 @@ import HomeIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_home
 import HomeIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_home.svg';
 import SearchIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_search_color.svg';
 import SearchIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_search.svg';
-import ChatIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_chat_color.svg';
-import ChatIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_chat.svg';
+import RankIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_rank_color.svg';
+import RankIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_rank.svg';
 import MyIconColor from '../../../assets/icons/homescreen/bottomtapbar/ic_my_color.svg';
 import MyIcon from '../../../assets/icons/homescreen/bottomtapbar/ic_my.svg';
 
@@ -35,11 +35,11 @@ const renderTabIcon = (routeName: keyof HomeTabParamList, focused: boolean) => {
       ) : (
         <SearchIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
       );
-    case '채팅':
+    case '랭킹':
       return focused ? (
-        <ChatIconColor width={iconSize} height={iconSize} />
+        <RankIconColor width={iconSize} height={iconSize} />
       ) : (
-        <ChatIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
+        <RankIcon width={iconSize} height={iconSize} color={colors.icon.gray} />
       );
     case '마이':
       return focused ? (
