@@ -15,6 +15,7 @@ import { CommentItem } from '../../components/challenge/CommentItem';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
 import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
+import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { useUserStore } from '../../store/userSlice';
@@ -35,7 +36,6 @@ import {
   reportWeakVerification,
   ReportReason
 } from '../../libs/api/challenge';
-import { format } from '../../libs/format';
 import { getS3ImageUrl } from '../../libs/s3';
 import MoreIcon from '../../../assets/icons/more.svg';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
@@ -48,6 +48,7 @@ import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
 import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg';
 import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
+import PhotoUnselectedIcon from '../../../assets/icons/challenge-create/photo-unselected.svg';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
@@ -57,6 +58,10 @@ type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
 
 // 플랫폼별 키보드 오프셋
 const KEYBOARD_OFFSET_IOS = 0;
+const DELETE_UNAVAILABLE_ERROR_CODES = new Set([
+  'VERIFICATION40020',
+  'VERIFICATION4049',
+]);
 
 export const ChallengeCertificationDetailScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
@@ -75,13 +80,13 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isCommentLocked, setIsCommentLocked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+  const [isDeleteUnavailableVisible, setIsDeleteUnavailableVisible] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Android 시스템 네비게이션 바로 인한 높이 조정
-  const commentInputBottomPadding = Platform.OS === 'android'
-    ? verticalScale(36) - insets.bottom
-    : verticalScale(36);
+  const commentInputBottomPadding = Math.max(insets.bottom, verticalScale(8));
 
   // 댓글 관련 state
   const [comments, setComments] = useState<GetCommentsResponse['result'] | null>(null);
@@ -101,6 +106,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const fetchVerificationDetail = useCallback(async () => {
     try {
@@ -271,38 +277,33 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!verification) return;
 
-    Alert.alert(
-      '삭제',
-      '게시글을 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoading(true);
-              await deleteVerification(verification.verificationId);
+    setIsDeleteConfirmationVisible(true);
+  };
 
-              navigation.goBack();
+  const handleDeleteConfirm = async () => {
+    if (!verification) return;
 
-              // Alert는 비동기적으로 표시
-              setTimeout(() => {
-                Alert.alert('성공', '게시글이 삭제되었습니다.');
-              }, 100);
-            } catch (error: any) {
-              const errorMessage = getErrorMessage(error, '게시글 삭제에 실패했습니다.');
-              Alert.alert('오류', errorMessage);
-            } finally {
-              setIsLoading(false);
-            }
-          }
-        },
-      ]
-    );
+    setIsDeleteConfirmationVisible(false);
+
+    try {
+      setIsLoading(true);
+      await deleteVerification(verification.verificationId);
+      navigation.goBack();
+    } catch (error: any) {
+      const errorCode = error?.response?.data?.code;
+
+      if (DELETE_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
+        setIsDeleteUnavailableVisible(true);
+      } else {
+        const errorMessage = getErrorMessage(error, '게시글 삭제에 실패했습니다.');
+        Alert.alert('오류', errorMessage);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // 부실인증 신고하기
@@ -610,6 +611,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   }
 
   // 액션 시트 아이템 구성
+  const isPhotoVerification = verification.type !== 'TEXT';
   const actionSheetItems: ActionSheetItem[] = verification.isMine
     ? [
       {
@@ -644,8 +646,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <Header
         onBack={handleBack}
-        title="게시글"
+        title={verification.challengeName || '게시글'}
         showDivider={true}
+        horizontalPadding={20}
         rightContent={
           <TouchableOpacity
             activeOpacity={0.7}
@@ -662,6 +665,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.scrollContent,
+          isPhotoVerification && styles.photoScrollContent,
           isKeyboardVisible && {
             paddingBottom: keyboardHeight + verticalScale(80), // 키보드 높이 + 댓글 입력창 높이
           }
@@ -675,24 +679,23 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           onPress={() => handleProfilePress(verification.user.userId)}
           activeOpacity={0.7}
         >
-          <View style={styles.userAvatar}>
+          <View style={[styles.userAvatar, isPhotoVerification && styles.photoUserAvatar]}>
             {getS3ImageUrl(verification.user.profileImageUrl) ? (
               <Image
                 source={{ uri: getS3ImageUrl(verification.user.profileImageUrl)! }}
-                style={styles.profileImage}
+                style={[styles.profileImage, isPhotoVerification && styles.photoProfileImage]}
               />
             ) : (
-              <DefaultProfileIcon width={40} height={40} />
+              <DefaultProfileIcon
+                width={isPhotoVerification ? 32 : 40}
+                height={isPhotoVerification ? 32 : 40}
+              />
             )}
           </View>
           <View style={styles.userInfo}>
             <View style={styles.userNameRow}>
               <Text variant="smMd" color={colors.text.primary}>
                 {verification.user.nickname}
-              </Text>
-              <View style={styles.dot} />
-              <Text variant="smReg" color={colors.text.tertiary}>
-                {format.level(verification.user.level)}
               </Text>
             </View>
             <View style={styles.timeSpacing} />
@@ -715,12 +718,20 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         )}
 
         {/* 제목 */}
-        <Text variant="header4" color={colors.text.primary} style={styles.title}>
+        <Text
+          variant="header4"
+          color={colors.text.primary}
+          style={[styles.title, isPhotoVerification && styles.photoTitle]}
+        >
           {verification.title}
         </Text>
 
         {/* 내용 */}
-        <Text variant="xsReg" color={colors.text.secondary} style={styles.content}>
+        <Text
+          variant="xsReg"
+          color={colors.text.secondary}
+          style={[styles.content, isPhotoVerification && styles.photoContent]}
+        >
           {verification.content}
         </Text>
 
@@ -744,15 +755,26 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     setCurrentImageIndex(index);
                     setIsImageViewerVisible(true);
                   }}
-                  style={styles.imageContainer}
+                  disabled={failedImages.has(imageUrl as string)}
+                  style={[styles.imageContainer, isPhotoVerification && styles.photoImageContainer]}
                 >
-                  <Image
-                    source={{ uri: imageUrl as string }}
-                    style={styles.image}
-                    resizeMode="cover"
-                    onLoad={() => { }}
-                    onError={(error) => { }}
-                  />
+                  {failedImages.has(imageUrl as string) ? (
+                    <View style={styles.imageErrorState}>
+                      <PhotoUnselectedIcon width={28} height={28} />
+                      <Text variant="xsReg" color={colors.text.tertiary} style={styles.imageErrorText}>
+                        이미지를 불러오지 못했어요
+                      </Text>
+                    </View>
+                  ) : (
+                    <Image
+                      source={{ uri: imageUrl as string }}
+                      style={styles.image}
+                      resizeMode="cover"
+                      onError={() => {
+                        setFailedImages(prev => new Set(prev).add(imageUrl as string));
+                      }}
+                    />
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
@@ -781,6 +803,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 좋아요, 댓글, 스크랩 */}
         <View style={[
           styles.engagementSection,
+          isPhotoVerification && styles.photoEngagementSection,
           !(comments && (comments.adoptedParent || comments.comments.length > 0)) && styles.engagementSectionNoComments
         ]}>
           {/* 런칭 시 좋아요 기능 제외 */}
@@ -822,7 +845,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 댓글 목록 */}
         {comments && (comments.adoptedParent || comments.comments.length > 0) && (
           <View
-            style={styles.commentsSection}
+            style={[styles.commentsSection, isPhotoVerification && styles.photoCommentsSection]}
             onLayout={(event) => {
               // commentsSection의 Y 좌표 저장
               commentYPositions.current['_sectionY'] = event.nativeEvent.layout.y;
@@ -993,6 +1016,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   onRightIconPress={handleSubmitComment}
                   containerStyle={styles.textFieldContainer}
                   inputContainerStyle={styles.commentInputField}
+                  reserveMessageSpace={false}
                 />
               </View>
             </KeyboardAvoidingView>
@@ -1048,6 +1072,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                   onRightIconPress={handleSubmitComment}
                   containerStyle={styles.textFieldContainer}
                   inputContainerStyle={styles.commentInputField}
+                  reserveMessageSpace={false}
                 />
               </View>
             </View>
@@ -1060,6 +1085,34 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         visible={isActionSheetVisible}
         onClose={() => setIsActionSheetVisible(false)}
         items={actionSheetItems}
+      />
+
+      <ConfirmationModal
+        visible={isDeleteConfirmationVisible}
+        onClose={() => setIsDeleteConfirmationVisible(false)}
+        title="게시글을 삭제하시겠어요?"
+        buttons={[
+          {
+            text: '네',
+            onPress: handleDeleteConfirm,
+          },
+          {
+            text: '아니요',
+            onPress: () => setIsDeleteConfirmationVisible(false),
+          },
+        ]}
+      />
+
+      <ConfirmationModal
+        visible={isDeleteUnavailableVisible}
+        onClose={() => setIsDeleteUnavailableVisible(false)}
+        title="인증 시간이 지나서 수정/삭제가 불가해요"
+        buttons={[
+          {
+            text: '확인',
+            onPress: () => setIsDeleteUnavailableVisible(false),
+          },
+        ]}
       />
 
       {/* 채택 확인 바텀시트 */}
@@ -1211,6 +1264,10 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(20),
     paddingBottom: verticalScale(100),
   },
+  photoScrollContent: {
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(16),
+  },
   userSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1230,19 +1287,23 @@ const styles = StyleSheet.create({
     height: verticalScale(40),
     borderRadius: scale(20),
   },
+  photoUserAvatar: {
+    width: scale(32),
+    height: verticalScale(32),
+    marginRight: scale(8),
+    borderRadius: scale(16),
+  },
+  photoProfileImage: {
+    width: scale(32),
+    height: verticalScale(32),
+    borderRadius: scale(16),
+  },
   userInfo: {
     flex: 1,
   },
   userNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  dot: {
-    width: scale(2),
-    height: verticalScale(2),
-    borderRadius: scale(1),
-    backgroundColor: colors.text.primary,
-    marginHorizontal: scale(4),
   },
   timeSpacing: {
     height: verticalScale(1),
@@ -1261,8 +1322,16 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: verticalScale(6),
   },
+  photoTitle: {
+    marginTop: verticalScale(2),
+    marginBottom: verticalScale(4),
+  },
   content: {
     marginBottom: verticalScale(16),
+  },
+  photoContent: {
+    lineHeight: moderateScale(19),
+    marginBottom: verticalScale(14),
   },
   linkBox: {
     height: verticalScale(48),
@@ -1285,9 +1354,24 @@ const styles = StyleSheet.create({
     borderRadius: scale(10),
     overflow: 'hidden',
   },
+  photoImageContainer: {
+    marginBottom: verticalScale(4),
+    borderRadius: scale(12),
+    backgroundColor: colors.background,
+  },
   image: {
     width: '100%',
     aspectRatio: 1,
+  },
+  imageErrorState: {
+    width: '100%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+  },
+  imageErrorText: {
+    marginTop: verticalScale(8),
   },
   engagementSection: {
     flexDirection: 'row',
@@ -1296,6 +1380,11 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(8),
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
+  },
+  photoEngagementSection: {
+    gap: scale(4),
+    marginBottom: verticalScale(12),
+    paddingBottom: verticalScale(8),
   },
   engagementSectionNoComments: {
     marginBottom: verticalScale(65),
@@ -1315,6 +1404,9 @@ const styles = StyleSheet.create({
   },
   commentsSection: {
     // paddingTop: verticalScale(1),
+  },
+  photoCommentsSection: {
+    paddingTop: verticalScale(2),
   },
   toggleRepliesButton: {
     flexDirection: 'row',

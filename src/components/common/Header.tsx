@@ -19,6 +19,7 @@ interface HeaderProps {
   rightContent?: React.ReactNode;   // 오른쪽 영역에 표시할 커스텀 컨텐츠 (건너뛰기 버튼, 아이콘 등)
   useSafeArea?: boolean;            // TopAppBar처럼 안전 영역을 직접 처리할지 여부 (기본값: false)
   backIcon?: 'arrow' | 'close';     // 뒤로가기 버튼 아이콘 타입 (기본값: 'arrow')
+  horizontalPadding?: number;       // 화면별 헤더 좌우 여백 (기본값: 24)
 }
 
 // 공통 Header 컴포넌트
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   rightContent,
   useSafeArea = false,
   backIcon = 'arrow',
+  horizontalPadding = 24,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -49,6 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
       styles.header,
       showDivider && styles.headerBorder,
       {
+        paddingHorizontal: scale(horizontalPadding),
         paddingTop: safeAreaTop + verticalPadding,
         paddingBottom: showDivider ? verticalPadding - 1 : verticalPadding, // borderBottomWidth 1px 차감
       }
@@ -96,7 +99,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: scale(24),
     backgroundColor: colors.white,
   },
   headerBorder: {

@@ -25,6 +25,7 @@ interface TextFieldProps extends TextInputProps {
     onRightIconPress?: () => void; // 오른쪽 아이콘 클릭 이벤트
     containerStyle?: ViewStyle;    // 컨테이너 스타일
     inputContainerStyle?: ViewStyle; // 입력 필드 박스 스타일 오버라이드 (높이, 패딩 등 커스터마이징 가능)
+    reserveMessageSpace?: boolean; // 에러/안내 문구가 없을 때도 하단 공간을 유지할지 여부
 }
 
 // 공통 TextField 컴포넌트
@@ -39,6 +40,7 @@ export const TextField = React.forwardRef<TextInput, TextFieldProps>(({
     onRightIconPress,
     containerStyle,
     inputContainerStyle,
+    reserveMessageSpace = true,
     style,
     ...rest
 }, ref) => {
@@ -131,7 +133,8 @@ export const TextField = React.forwardRef<TextInput, TextFieldProps>(({
             </View>
 
             {/* 에러/일반 메시지 영역 (항상 일정 높이만큼 공간 차지) */}
-            <View style={styles.messageContainer}>
+            {(reserveMessageSpace || error || message) && (
+              <View style={styles.messageContainer}>
                 {error && (
                     <Text
                         variant="xsReg"
@@ -151,7 +154,8 @@ export const TextField = React.forwardRef<TextInput, TextFieldProps>(({
                         {message}
                     </Text>
                 )}
-            </View>
+              </View>
+            )}
         </View>
     );
 });
