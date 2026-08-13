@@ -1,16 +1,20 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 import { Text } from '../components/common/Text';
-import { colors, typography, spacing } from '../design/tokens';
+import { colors, radius, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { format } from '../libs/format';
 import { scale, verticalScale } from '../utils/scaling';
 import { getErrorMessage } from '../utils/errorHandler';
-
 import {
   OtherUser,
   VerificationHistoryItem,
@@ -28,11 +32,15 @@ import { ReportReason } from '../libs/api/challenge';
 import { Level, mapLevelStringToEnum } from '../libs/api/user/types';
 import { Header } from '../components/common/Header';
 import ProfileCard from '../components/MyPage/ProfileCard';
-import ParticipatingChallengeSection, { ParticipatingChallengeItem } from '../components/MyPage/ParticipatingChallengeSection';
-import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
-import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
-import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
+import ParticipatingChallengeSection, {
+  ParticipatingChallengeItem,
+} from '../components/MyPage/ParticipatingChallengeSection';
+import CertificationRecordList, {
+  CertificationRecordItem,
+} from '../components/MyPage/CertificationRecordList';
+import ComponentHeader from '../components/common/ComponentHeader';
 import MoreIcon from '../../assets/icons/more.svg';
+import RestrictedProfileGraphic from '../../assets/images/logo-gray.svg';
 import { BlockUserBottomSheet } from '../components/user/BlockUserBottomSheet';
 import { UnblockUserBottomSheet } from '../components/user/UnblockUserBottomSheet';
 import { ToastNotification } from '../components/common/ToastNotification';
@@ -51,58 +59,82 @@ const UserScreen = () => {
   const route = useRoute<UserScreenRouteProp>();
   const { userId } = route.params;
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [ongoingChallenges, setOngoingChallenges] = useState<OngoingChallengeItem[]>([]);
+  const [isChallengesLoading, setIsChallengesLoading] = useState(false);
+  const [challengesError, setChallengesError] = useState<string | null>(null);
   const [verificationHistory, setVerificationHistory] = useState<VerificationHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
 
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [isBlockSheetVisible, setIsBlockSheetVisible] = useState(false);
   const [isUnblockSheetVisible, setIsUnblockSheetVisible] = useState(false);
   const [isReportSheetVisible, setIsReportSheetVisible] = useState(false);
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+  const [toast, setToast] = useState({ visible: false, message: '' });
+
+  const fetchChallenges = useCallback(async () => {
+    setIsChallengesLoading(true);
+    setChallengesError(null);
+    try {
+      const result = await getOngoingChallengesById(userId);
+      setOngoingChallenges(result.content);
+    } catch (error) {
+      setChallengesError(getErrorMessage(error, '참가중인 챌린지를 불러오는데 실패했습니다.'));
+    } finally {
+      setIsChallengesLoading(false);
+    }
+  }, [userId]);
+
+  const fetchHistory = useCallback(async () => {
+    setIsHistoryLoading(true);
+    setHistoryError(null);
+    try {
+      const result = await getVerificationHistoryById(userId);
+      setVerificationHistory(result.verifications?.content ?? []);
+    } catch (error) {
+      setHistoryError(getErrorMessage(error, '인증기록을 불러오는데 실패했습니다.'));
+    } finally {
+      setIsHistoryLoading(false);
+    }
+  }, [userId]);
 
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
+    setIsProfileLoading(true);
+    setProfileError(null);
+
     try {
       const userData = await getUserById(userId);
-      const transformedUser: UserInfo = {
+      setUser({
         ...userData,
         level: mapLevelStringToEnum(userData.level),
-      };
-      setUser(transformedUser);
+      });
       setIsFollowing(userData.isFollowing);
       setIsBlocked(userData.isBlocked);
 
       if (userData.isBlocked) {
         setOngoingChallenges([]);
         setVerificationHistory([]);
-        return;
-      }
-
-      const challengesData = await getOngoingChallengesById(userId);
-      setOngoingChallenges(challengesData.content);
-
-      const historyData = await getVerificationHistoryById(userId);
-      if (historyData.verifications) {
-        setVerificationHistory(historyData.verifications.content);
+        setChallengesError(null);
+        setHistoryError(null);
+      } else {
+        await Promise.all([fetchChallenges(), fetchHistory()]);
       }
     } catch (error: any) {
       if (error?.response?.status === 404) {
-        setToast({ visible: true, message: '오류가 발생했습니다.' });
         navigation.replace('ErrorScreen');
-      } else {
-        const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
-        Alert.alert('오류', errorMessage);
-        navigation.goBack();
+        return;
       }
+      setProfileError(getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.'));
     } finally {
-      setIsLoading(false);
+      setIsProfileLoading(false);
     }
-  }, [userId, navigation, setToast]);
+  }, [fetchChallenges, fetchHistory, navigation, userId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -111,29 +143,29 @@ const UserScreen = () => {
   );
 
   const handleFollowToggle = async () => {
-    if (!user || isBlocked) return;
+    if (!user || isBlocked || isFollowLoading) return;
+
+    setIsFollowLoading(true);
     try {
       if (isFollowing) {
         await unfollowUser(user.userId);
         setIsFollowing(false);
-        setUser((prevUser) =>
-          prevUser ? { ...prevUser, followerCount: prevUser.followerCount - 1 } : null
-        );
+        setUser((current) => current
+          ? { ...current, followerCount: Math.max(0, current.followerCount - 1) }
+          : null);
       } else {
         await followUser(user.userId);
         setIsFollowing(true);
-        setUser((prevUser) =>
-          prevUser ? { ...prevUser, followerCount: prevUser.followerCount + 1 } : null
-        );
+        setUser((current) => current
+          ? { ...current, followerCount: current.followerCount + 1 }
+          : null);
       }
     } catch (error) {
-      const errorMessage = getErrorMessage(error, '팔로우 처리에 실패했습니다.');
-      Alert.alert('오류', errorMessage);
+      const message = getErrorMessage(error, '팔로우 처리에 실패했습니다.');
+      setToast({ visible: true, message });
+    } finally {
+      setIsFollowLoading(false);
     }
-  };
-
-  const handleBlock = () => {
-    setIsBlockSheetVisible(true);
   };
 
   const handleConfirmBlock = async () => {
@@ -144,13 +176,8 @@ const UserScreen = () => {
       await fetchData();
       setToast({ visible: true, message: '차단이 완료되었어요' });
     } catch (error) {
-      const errorMessage = getErrorMessage(error, '사용자 차단에 실패했습니다.');
-      Alert.alert('오류', errorMessage);
+      Alert.alert('오류', getErrorMessage(error, '사용자 차단에 실패했습니다.'));
     }
-  };
-
-  const handleUnblockPress = () => {
-    setIsUnblockSheetVisible(true);
   };
 
   const handleConfirmUnblock = async () => {
@@ -158,16 +185,11 @@ const UserScreen = () => {
     setIsUnblockSheetVisible(false);
     try {
       await unblockUserById(user.userId);
-      setToast({ visible: true, message: '차단 해제가 완료되었어요' });
       await fetchData();
+      setToast({ visible: true, message: '차단 해제가 완료되었어요' });
     } catch (error) {
-      const errorMessage = getErrorMessage(error, '사용자 차단 해제에 실패했습니다.');
-      Alert.alert('오류', errorMessage);
+      Alert.alert('오류', getErrorMessage(error, '사용자 차단 해제에 실패했습니다.'));
     }
-  };
-
-  const handleReport = () => {
-    setIsReportSheetVisible(true);
   };
 
   const handleReportSubmit = async (reason: ReportReason, description: string) => {
@@ -176,175 +198,188 @@ const UserScreen = () => {
       await reportUserById({
         targetId: user.userId,
         reason: reason as any,
-        description: description,
+        description,
       });
       setIsReportSheetVisible(false);
       Alert.alert('신고 완료', '신고가 접수되었습니다.');
     } catch (error) {
-      const errorMessage = getErrorMessage(error, '신고 접수에 실패했습니다.');
-      Alert.alert('오류', errorMessage);
+      Alert.alert('오류', getErrorMessage(error, '신고 접수에 실패했습니다.'));
     }
   };
 
-  const userProfile = useMemo(() => {
-    if (!user) {
-      return { nickname: '...', avatarUrl: '', followerCount: 0, followingCount: 0, level: Level.BRONZE };
-    }
-    return {
-      nickname: user.nickname,
-      avatarUrl: user.profileImage,
-      followerCount: user.followerCount,
-      followingCount: user.followingCount,
-      level: user.level,
-    };
-  }, [user]);
+  const userProfile = useMemo(() => ({
+    nickname: user?.nickname ?? '...',
+    avatarUrl: user?.profileImage,
+    followerCount: user?.followerCount ?? 0,
+    followingCount: user?.followingCount ?? 0,
+    level: user?.level ?? Level.BRONZE,
+  }), [user]);
 
-  const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => {
-    return (ongoingChallenges || []).map((item) => ({
+  const participatingChallenges: ParticipatingChallengeItem[] = useMemo(() => (
+    ongoingChallenges.slice(0, 2).map((item) => ({
       id: String(item.challengeId),
       title: item.title,
       subtitle: item.description,
       imageUrl: item.image,
-      roundText: item.isStarted
-        ? `${item.currentRound}R째 진행 중`
-        : `D-${item.dday}`,
-    }));
-  }, [ongoingChallenges]);
+      roundText: item.isStarted ? `${item.currentRound}R째 진행 중` : `D-${item.dday}`,
+    }))
+  ), [ongoingChallenges]);
 
-  const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (verificationHistory || []).map((item) => {
-      const thumbnailUrl = item.photoUrl ||
-        (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
-          ? item.textImages[0]
-          : null);
+  const certificationItems: CertificationRecordItem[] = useMemo(() => (
+    verificationHistory.slice(0, 3).map((item) => ({
+      id: item.verificationId,
+      title: item.title,
+      challengeTitle: item.challengeTitle,
+      date: format.date(item.verifiedAt),
+      type: item.type,
+      thumbnailUrl: item.photoUrl ||
+        (item.type === 'TEXT' && item.textImages?.length ? item.textImages[0] : null),
+    }))
+  ), [verificationHistory]);
 
-      return {
-        id: item.verificationId,
-        title: item.title,
-        description: item.content || '',
-        date: format.date(item.verifiedAt),
-        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
-      };
-    });
-  }, [verificationHistory]);
-
-  const renderTabContent = () => {
-    if (isBlocked) {
-      return (
-        <View style={styles.emptyCertificationContainer}>
+  const renderCertificationSection = () => (
+    <View style={styles.certificationWrapper}>
+      <ComponentHeader
+        title="인증기록"
+        onPress={() => navigation.navigate('CertificationHistory', { userId })}
+      />
+      {isHistoryLoading && verificationHistory.length === 0 ? (
+        <View style={styles.certificationStateCard}>
+          <ActivityIndicator color={colors.primary.main} />
         </View>
-      );
-    }
-
-    return (
-      <>
-        <View style={styles.participatingChallengeWrapper}>
-          <ParticipatingChallengeSection
-            items={participatingChallenges}
-            onPressHeader={() => navigation.navigate('ParticipatingChallenge', { userId: userId })}
-            onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
-          />
+      ) : historyError ? (
+        <TouchableOpacity style={styles.certificationStateCard} onPress={fetchHistory} activeOpacity={0.8}>
+          <Text variant="xsReg" color={colors.text.tertiary}>
+            인증기록을 불러오지 못했어요
+          </Text>
+          <Text variant="xxs" color={colors.primary.main}>다시 시도</Text>
+        </TouchableOpacity>
+      ) : certificationItems.length === 0 ? (
+        <View style={styles.certificationStateCard}>
+          <Text variant="xsReg" color={colors.text.tertiary}>
+            인증기록이 아직 없어요
+          </Text>
+          <Text variant="xxs" color={colors.text.tertiary} style={styles.emptyDescription}>
+            챌린지에서 글을 올려보세요
+          </Text>
         </View>
+      ) : (
+        <CertificationRecordList
+          items={certificationItems}
+          onItemPress={(item) => navigation.navigate('ChallengeCertificationDetail', {
+            verificationId: item.id,
+          })}
+        />
+      )}
+    </View>
+  );
 
-        <View style={styles.tabContentListWrapper}>
-          <ViewModeHeader
-            title="인증 기록"
-            initialMode={certificationViewMode}
-            onViewModeChange={(mode) => setCertificationViewMode(mode)}
-            onPressTitle={() => navigation.navigate('CertificationHistory', { userId: userId })}
-          />
-          {certificationItems.length === 0 ? (
-            <View style={styles.emptyCertificationContainer}>
-              <Text variant="xsReg" color={colors.text.tertiary}>아직 인증 기록이 없습니다</Text>
-            </View>
-          ) : certificationViewMode === 'grid' ? (
-            <View style={styles.photoGridContainer}>
-              <PhotoCertificationGrid
-                items={certificationItems}
-                showOverlay={false}
-                containerPadding={0}
-                onItemPress={(item) =>
-                  navigation.navigate('ChallengeCertificationDetail', {
-                    verificationId: item.id,
-                  })
-                }
-              />
-            </View>
-          ) : (
-            <TextCertificationList
-              items={certificationItems}
-              containerPadding={0}
-              onItemPress={(item) =>
-                navigation.navigate('ChallengeCertificationDetail', {
-                  verificationId: item.id,
-                })
-              }
-            />
-          )}
-        </View>
-      </>
-    );
-  };
+  const actionSheetItems: ActionSheetItem[] = [
+    {
+      label: isBlocked ? '차단 해제하기' : '차단하기',
+      onPress: () => isBlocked
+        ? setIsUnblockSheetVisible(true)
+        : setIsBlockSheetVisible(true),
+      destructive: !isBlocked,
+    },
+    {
+      label: '신고하기',
+      onPress: () => setIsReportSheetVisible(true),
+      destructive: true,
+    },
+  ];
 
-  if (isLoading) {
+  const renderHeader = (showMenu = false) => (
+    <Header
+      onBack={() => navigation.goBack()}
+      title="프로필"
+      showDivider
+      horizontalPadding={20}
+      rightContent={showMenu ? (
+        <TouchableOpacity
+          style={styles.moreButton}
+          onPress={() => setActionSheetVisible(true)}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <MoreIcon width={scale(20)} height={scale(20)} />
+        </TouchableOpacity>
+      ) : undefined}
+      useSafeArea
+    />
+  );
+
+  if (isProfileLoading && !user) {
     return (
       <View style={styles.container}>
-        <Header onBack={() => navigation.goBack()} title="프로필" showDivider useSafeArea />
-        <View style={[styles.container, { justifyContent: 'center' }]}>
-          <ActivityIndicator />
+        {renderHeader()}
+        <View style={styles.centeredState}>
+          <ActivityIndicator color={colors.primary.main} />
         </View>
       </View>
     );
   }
 
-  const actionSheetItems: ActionSheetItem[] = [
-    {
-      label: '차단하기',
-      onPress: handleBlock,
-      destructive: true,
-    },
-    {
-      label: '신고하기',
-      onPress: handleReport,
-      destructive: true,
-    },
-  ];
+  if (profileError && !user) {
+    return (
+      <View style={styles.container}>
+        {renderHeader()}
+        <TouchableOpacity style={styles.centeredState} onPress={fetchData} activeOpacity={0.8}>
+          <Text variant="xsReg" color={colors.text.tertiary}>
+            사용자 정보를 불러오지 못했어요
+          </Text>
+          <Text variant="xxs" color={colors.primary.main} style={styles.retryText}>다시 시도</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Header
-        onBack={() => navigation.goBack()}
-        title="프로필"
-        showDivider
-        rightContent={
-          <TouchableOpacity
-            onPress={() => setActionSheetVisible(true)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <MoreIcon />
-          </TouchableOpacity>
-        }
-        useSafeArea
-      />
+      {renderHeader(true)}
       <RefreshableScrollView
         style={styles.container}
         onRefresh={fetchData}
-        contentContainerStyle={{
-          paddingHorizontal: scale(20),
-          paddingBottom: verticalScale(40),
-        }}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isBlocked && styles.restrictedScrollContent,
+        ]}
       >
         <ProfileCard
           user={userProfile}
-          variant='other'
+          variant="other"
           isFollowing={isFollowing}
           isBlocked={isBlocked}
+          isFollowLoading={isFollowLoading}
           onPressFollow={handleFollowToggle}
-          onPressBlock={handleUnblockPress}
-          onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower', userId: userId })}
-          onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId: userId })}
+          onPressBlock={() => setIsUnblockSheetVisible(true)}
+          onPressFollowers={() => navigation.navigate('FollowerList', { initialTab: 'follower', userId })}
+          onPressFollowing={() => navigation.navigate('FollowerList', { initialTab: 'following', userId })}
         />
-        {renderTabContent()}
+
+        {isBlocked ? (
+          <View style={styles.restrictedState}>
+            <RestrictedProfileGraphic width={scale(128)} height={scale(128)} />
+            <Text variant="xsReg" color={colors.icon.gray} style={styles.restrictedText}>
+              비공개된 사용자예요
+            </Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.participatingChallengeWrapper}>
+              <ParticipatingChallengeSection
+                items={participatingChallenges}
+                onPressHeader={() => navigation.navigate('ParticipatingChallenge', { userId })}
+                onPressItem={(item) => navigation.navigate('ChallengeProfile', {
+                  challengeId: Number(item.id),
+                })}
+                isLoading={isChallengesLoading && ongoingChallenges.length === 0}
+                error={challengesError}
+                onRetry={fetchChallenges}
+              />
+            </View>
+            {renderCertificationSection()}
+          </>
+        )}
       </RefreshableScrollView>
 
       <ActionSheet
@@ -373,39 +408,65 @@ const UserScreen = () => {
       <ToastNotification
         visible={toast.visible}
         message={toast.message}
-        onHide={() => setToast((prev) => ({ ...prev, visible: false }))}
+        onHide={() => setToast((current) => ({ ...current, visible: false }))}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.white,
-  },
   container: {
     flex: 1,
     backgroundColor: colors.white,
   },
-  participatingChallengeWrapper: {
-    paddingTop: verticalScale(8),
+  scrollContent: {
+    paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(40),
   },
-  tabContentListWrapper: {
-    backgroundColor: colors.white,
-    marginTop: verticalScale(32),
+  restrictedScrollContent: {
+    flexGrow: 1,
   },
-  tabContentText: {
-    ...typography.md,
-    color: colors.text.secondary,
-  },
-  emptyCertificationContainer: {
-    paddingVertical: verticalScale(60),
+  moreButton: {
+    width: scale(24),
+    height: scale(24),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  photoGridContainer: {
-    marginHorizontal: -scale(20),
+  participatingChallengeWrapper: {
+    paddingTop: verticalScale(8),
+  },
+  certificationWrapper: {
+    marginTop: verticalScale(24),
+    backgroundColor: colors.white,
+  },
+  certificationStateCard: {
+    height: verticalScale(148),
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
+  emptyDescription: {
+    marginTop: verticalScale(2),
+  },
+  restrictedState: {
+    flex: 1,
+    minHeight: verticalScale(360),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: verticalScale(48),
+  },
+  restrictedText: {
+    marginTop: verticalScale(16),
+  },
+  centeredState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryText: {
+    marginTop: verticalScale(8),
   },
 });
 

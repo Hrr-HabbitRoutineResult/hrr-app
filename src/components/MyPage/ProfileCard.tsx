@@ -1,17 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Modal, Pressable, TouchableOpacity, findNodeHandle } from 'react-native';
-import { colors, radius, spacing } from '../../design/tokens';
+import { ActivityIndicator, View, StyleSheet, Modal, Pressable, TouchableOpacity, findNodeHandle } from 'react-native';
+import { colors, spacing } from '../../design/tokens';
 import { Button } from '../common/Button';
-import CommentIcon from '../../../assets/icons/comment-color.svg';
 import { Text } from '../common/Text';
 import { ProfileHeader } from './ProfileHeader';
-import { BadgeRow } from './BadgeRow';
 import { Level, levelToDisplayString } from '../../libs/api/user/types';
 import { scale, verticalScale } from '../../utils/scaling';
 
 interface UserProfile {
   nickname: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   followerCount: number;
   followingCount: number;
   level?: Level;
@@ -22,6 +20,7 @@ interface ProfileCardProps {
   variant?: 'me' | 'other';
   isFollowing?: boolean;
   isBlocked?: boolean;
+  isFollowLoading?: boolean;
   onPressFollowers?: () => void;
   onPressFollowing?: () => void;
   onPressProfileEdit?: () => void;
@@ -34,6 +33,7 @@ const ProfileCard = ({
   variant = 'me',
   isFollowing = false,
   isBlocked = false,
+  isFollowLoading = false,
   onPressFollowers,
   onPressFollowing,
   onPressProfileEdit,
@@ -104,10 +104,15 @@ const ProfileCard = ({
             activeOpacity={0.9}
             style={[styles.singleButton, styles.followingButton]}
             onPress={handleFollowingPress}
+            disabled={isFollowLoading}
           >
-            <Text variant="xsMd" color={colors.primary.main}>
-              팔로잉
-            </Text>
+            {isFollowLoading ? (
+              <ActivityIndicator size="small" color={colors.primary.main} />
+            ) : (
+              <Text variant="xsMd" color={colors.primary.main}>
+                팔로잉
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       );
@@ -115,10 +120,20 @@ const ProfileCard = ({
 
     return (
       <View style={styles.buttonRow}>
-        <Button variant="primary" size="small" style={styles.followButton} onPress={onPressFollow || (() => { })}>
-          <Text variant="xsMd" color={colors.white}>
-            팔로우
-          </Text>
+        <Button
+          variant="primary"
+          size="small"
+          style={styles.followButton}
+          onPress={onPressFollow || (() => { })}
+          disabled={isFollowLoading}
+        >
+          {isFollowLoading ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <Text variant="xsMd" color={colors.white}>
+              팔로우
+            </Text>
+          )}
         </Button>
       </View>
     );
@@ -133,6 +148,7 @@ const ProfileCard = ({
           followerCount={followerCount}
           followingCount={followingCount}
           profileTypeText={levelToDisplayString[level]}
+          showProfileType={!isOther}
           onPressFollowers={onPressFollowers}
           onPressFollowing={onPressFollowing}
         />
@@ -146,7 +162,7 @@ const ProfileCard = ({
             style={[
               styles.popover,
               {
-                top: buttonLayout.y + verticalScale(13),
+                top: buttonLayout.y + buttonLayout.height + verticalScale(8),
                 right: scale(20),
               },
             ]}

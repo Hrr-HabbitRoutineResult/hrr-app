@@ -1,25 +1,25 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { colors, typography, spacing } from '../design/tokens';
+import { colors, radius, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import { useUserStore } from '../store/userSlice';
 import { format } from '../libs/format';
-import { getVerificationHistory, VerificationHistoryItem } from '../libs/api/user';
 import { scale, verticalScale } from '../utils/scaling';
 import { Text } from '../components/common/Text';
 
 import SectionHeader from '../components/common/SectionHeader';
+import ComponentHeader from '../components/common/ComponentHeader';
 import ProfileCard from '../components/MyPage/ProfileCard';
 import { Level } from '../libs/api/user/types';
 import ParticipatingChallengeSection, {
   ParticipatingChallengeItem,
 } from '../components/MyPage/ParticipatingChallengeSection';
-import ViewModeHeader, { ViewMode } from '../components/MyPage/ViewModeHeader';
-import { TextCertificationList, TextCertificationItem } from '../components/common/TextCertificationList';
-import { PhotoCertificationGrid } from '../components/common/PhotoCertificationGrid';
+import CertificationRecordList, {
+  CertificationRecordItem,
+} from '../components/MyPage/CertificationRecordList';
 import SettingIcon from '../../assets/icons/mypage/ic_setting.svg';
 import RefreshableScrollView from '../components/common/RefreshableScrollView';
 
@@ -31,29 +31,24 @@ const MyScreen = () => {
   const {
     userInfo,
     fetchUserInfo,
+    isLoadingUserInfo,
     myOngoingChallenges,
     fetchMyOngoingChallenges,
+    isLoadingMyOngoingChallenges,
+    errorMyOngoingChallenges,
+    myVerificationHistory,
+    fetchMyVerificationHistory,
+    isLoadingMyVerificationHistory,
+    errorMyVerificationHistory,
   } = useUserStore();
 
-  const [certificationViewMode, setCertificationViewMode] = useState<ViewMode>('grid');
-  const [myVerificationHistory, setMyVerificationHistory] = useState<VerificationHistoryItem[]>([]);
-  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
-
   const fetchData = useCallback(async () => {
-    setIsHistoryLoading(true);
-    try {
-      await Promise.all([
-        fetchUserInfo(),
-        fetchMyOngoingChallenges(),
-        getVerificationHistory().then(setMyVerificationHistory),
-      ]);
-    } catch (error) {
-      console.error("Failed to fetch MyScreen data:", error);
-      setMyVerificationHistory([]);
-    } finally {
-      setIsHistoryLoading(false);
-    }
-  }, [fetchUserInfo, fetchMyOngoingChallenges]);
+    await Promise.all([
+      fetchUserInfo(),
+      fetchMyOngoingChallenges(),
+      fetchMyVerificationHistory(),
+    ]);
+  }, [fetchUserInfo, fetchMyOngoingChallenges, fetchMyVerificationHistory]);
 
   useFocusEffect(
     useCallback(() => {
@@ -86,8 +81,8 @@ const MyScreen = () => {
     }));
   }, [myOngoingChallenges]);
 
-  const certificationItems: TextCertificationItem[] = useMemo(() => {
-    return (myVerificationHistory || []).map((item) => {
+  const certificationItems: CertificationRecordItem[] = useMemo(() => {
+    return (myVerificationHistory || []).slice(0, 3).map((item) => {
       const thumbnailUrl = item.photoUrl ||
         (item.type === 'TEXT' && item.textImages && item.textImages.length > 0
           ? item.textImages[0]
@@ -96,9 +91,10 @@ const MyScreen = () => {
       return {
         id: item.verificationId,
         title: item.title,
-        description: item.content || '',
+        challengeTitle: item.challengeTitle,
         date: format.date(item.verifiedAt),
-        thumbnail: thumbnailUrl ? { uri: thumbnailUrl } : null,
+        type: item.type,
+        thumbnailUrl,
       };
     });
   }, [myVerificationHistory]);
@@ -127,7 +123,7 @@ const MyScreen = () => {
           paddingBottom: tabBarHeight + insets.bottom
         }}
       >
-        {isHistoryLoading && !userInfo ? (
+        {isLoadingUserInfo && !userInfo ? (
           <ActivityIndicator style={styles.loadingIndicator} />
         ) : (
           <>
@@ -141,43 +137,50 @@ const MyScreen = () => {
 
             <View style={styles.participatingChallengeWrapper}>
               <ParticipatingChallengeSection
-                items={participatingChallenges}
+                items={participatingChallenges.slice(0, 2)}
                 onPressHeader={() => navigation.navigate('ParticipatingChallenge', {})}
                 onPressItem={(item) => navigation.navigate('ChallengeProfile', { challengeId: Number(item.id) })}
                 onPressEmpty={() => navigation.navigate('ChallengeList', {})}
+                isLoading={isLoadingMyOngoingChallenges && myOngoingChallenges.length === 0}
+                error={errorMyOngoingChallenges}
+                onRetry={fetchMyOngoingChallenges}
               />
             </View>
 
-            <View style={styles.tabContentListWrapper}>
-              <ViewModeHeader
-                title="인증 기록"
-                initialMode={certificationViewMode}
-                onViewModeChange={(mode) => setCertificationViewMode(mode)}
-                onPressTitle={() => navigation.navigate('CertificationHistory', {})}
+            <View style={styles.certificationWrapper}>
+              <ComponentHeader
+                title="인증기록"
+                onPress={() => navigation.navigate('CertificationHistory', {})}
               />
-              {isHistoryLoading ? (
-                <ActivityIndicator style={styles.loadingIndicator} />
+              {isLoadingMyVerificationHistory && myVerificationHistory.length === 0 ? (
+                <View style={styles.certificationStateCard}>
+                  <ActivityIndicator color={colors.primary.main} />
+                </View>
+              ) : errorMyVerificationHistory ? (
+                <TouchableOpacity
+                  style={styles.certificationStateCard}
+                  activeOpacity={0.8}
+                  onPress={fetchMyVerificationHistory}
+                >
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    인증기록을 불러오지 못했어요
+                  </Text>
+                  <Text variant="xxs" color={colors.primary.main}>
+                    다시 시도
+                  </Text>
+                </TouchableOpacity>
               ) : certificationItems.length === 0 ? (
                 <View style={styles.emptyCertificationContainer}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>아직 인증 기록이 없습니다</Text>
-                </View>
-              ) : certificationViewMode === 'grid' ? (
-                <View style={styles.photoGridContainer}>
-                  <PhotoCertificationGrid
-                    items={certificationItems}
-                    showOverlay={false}
-                    containerPadding={0}
-                    onItemPress={(item) =>
-                      navigation.navigate('ChallengeCertificationDetail', {
-                        verificationId: item.id,
-                      })
-                    }
-                  />
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    인증기록이 아직 없어요
+                  </Text>
+                  <Text variant="xxs" color={colors.text.tertiary} style={styles.emptyDescription}>
+                    챌린지에서 글을 올려보세요
+                  </Text>
                 </View>
               ) : (
-                <TextCertificationList
+                <CertificationRecordList
                   items={certificationItems}
-                  containerPadding={0}
                   onItemPress={(item) =>
                     navigation.navigate('ChallengeCertificationDetail', {
                       verificationId: item.id,
@@ -213,19 +216,29 @@ const styles = StyleSheet.create({
   participatingChallengeWrapper: {
     paddingTop: verticalScale(8),
   },
-  tabContentListWrapper: {
+  certificationWrapper: {
     backgroundColor: colors.white,
-    marginTop: verticalScale(32),
+    marginTop: verticalScale(24),
   },
   emptyCertificationContainer: {
-    paddingVertical: verticalScale(60),
+    height: verticalScale(148),
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyDescription: {
+    marginTop: verticalScale(2),
+  },
+  certificationStateCard: {
+    height: verticalScale(148),
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
   loadingIndicator: {
     marginTop: spacing.xl,
-  },
-  photoGridContainer: {
-    marginHorizontal: -scale(20),
   },
 });

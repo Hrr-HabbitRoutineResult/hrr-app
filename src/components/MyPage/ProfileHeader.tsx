@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, radius, spacing } from '../../design/tokens';
+import { colors, radius } from '../../design/tokens';
 import { Avatar } from './Avatar';
 import { Text } from '../common/Text';
 import { scale, verticalScale } from '../../utils/scaling';
 
 interface ProfileHeaderProps {
   nickname: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   followerCount: number;
   followingCount: number;
   profileTypeText?: string;
+  showProfileType?: boolean;
   onPressFollowers?: () => void;
   onPressFollowing?: () => void;
 }
@@ -21,6 +22,7 @@ export const ProfileHeader = ({
   followerCount,
   followingCount,
   profileTypeText = '챌린저',
+  showProfileType = true,
   onPressFollowers,
   onPressFollowing,
 }: ProfileHeaderProps) => {
@@ -33,10 +35,14 @@ export const ProfileHeader = ({
           <Text variant="header2" color={colors.text.primary} style={styles.nickname}>
             {nickname}
           </Text>
-          <View style={styles.dot} />
-          <Text variant="smReg" color={colors.text.tertiary} style={styles.profileType}>
-            {profileTypeText}
-          </Text>
+          {showProfileType && (
+            <>
+              <View style={styles.dot} />
+              <Text variant="smReg" color={colors.text.tertiary} style={styles.profileType}>
+                {profileTypeText}
+              </Text>
+            </>
+          )}
         </View>
 
         <View style={styles.followRow}>

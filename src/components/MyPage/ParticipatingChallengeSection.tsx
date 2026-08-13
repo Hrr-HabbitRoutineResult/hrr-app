@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItemInfo,
+  ActivityIndicator,
 } from 'react-native';
 import { colors, radius, spacing } from '../../design/tokens';
 import { Text } from '../common/Text';
@@ -15,12 +16,17 @@ import { scale, verticalScale } from '../../utils/scaling';
 
 export type ParticipatingChallengeItem = ChallengeCardItem;
 
+const ChallengeSeparator = () => <View style={{ width: spacing.xs }} />;
+
 type Props = {
   title?: string;
   items: ParticipatingChallengeItem[];
   onPressHeader?: () => void;
   onPressItem?: (item: ParticipatingChallengeItem) => void;
   onPressEmpty?: () => void;
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 };
 
 const ParticipatingChallengeSection = ({
@@ -29,6 +35,9 @@ const ParticipatingChallengeSection = ({
   onPressHeader,
   onPressItem,
   onPressEmpty,
+  isLoading = false,
+  error,
+  onRetry,
 }: Props) => {
   const renderItem = ({ item }: ListRenderItemInfo<ParticipatingChallengeItem>) => {
     return <ChallengeCard item={item} onPress={onPressItem} />;
@@ -61,14 +70,34 @@ const ParticipatingChallengeSection = ({
     <View>
       <ComponentHeader title={title} onPress={onPressHeader} />
 
-      {items.length > 0 ? (
+      {isLoading ? (
+        <View style={styles.stateCard}>
+          <ActivityIndicator color={colors.primary.main} />
+        </View>
+      ) : error ? (
+        <TouchableOpacity
+          style={styles.stateCard}
+          activeOpacity={onRetry ? 0.8 : 1}
+          onPress={onRetry}
+          disabled={!onRetry}
+        >
+          <Text variant="xsReg" color={colors.text.tertiary}>
+            참가중인 챌린지를 불러오지 못했어요
+          </Text>
+          {onRetry && (
+            <Text variant="xxs" color={colors.primary.main}>
+              다시 시도
+            </Text>
+          )}
+        </TouchableOpacity>
+      ) : items.length > 0 ? (
         <FlatList
           data={items}
           renderItem={renderItem}
           keyExtractor={(it) => it.id}
           horizontal
           showsHorizontalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ width: spacing.xs }} />}
+          ItemSeparatorComponent={ChallengeSeparator}
         />
       ) : (
         renderEmptyState()
@@ -94,5 +123,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
+  stateCard: {
+    width: '100%',
+    height: CARD_H,
+    borderRadius: radius.lg,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+  },
 });
-

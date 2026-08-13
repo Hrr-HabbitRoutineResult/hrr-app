@@ -147,26 +147,37 @@ export interface VerificationHistoryResponse {
   };
 }
 
+export type VerificationHistoryPage = VerificationHistoryResponse['result'];
+
+/**
+ * 내 챌린지 인증 기록 페이지 조회
+ *
+ * 전체 기록 화면에서 기존 API의 페이지 메타데이터를 유지하기 위한 함수입니다.
+ */
+export const getVerificationHistoryPage = async (
+  page: number = 1,
+  size: number = 20
+): Promise<VerificationHistoryPage> => {
+  const response = await apiClient.get<VerificationHistoryResponse>(
+    '/api/v1/user/me/verifications/history',
+    {
+      params: { page, size },
+    }
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(response.data.message || '인증 기록을 불러오는데 실패했습니다.');
+};
+
 /**
  * 내 챌린지 인증 기록 조회
  */
 export const getVerificationHistory = async (page: number = 1, size: number = 20): Promise<VerificationHistoryItem[]> => {
-  try {
-    const response = await apiClient.get<VerificationHistoryResponse>(
-      '/api/v1/user/me/verifications/history',
-      {
-        params: { page, size },
-      }
-    );
-
-    if (response.data.isSuccess && response.data.result) {
-      return response.data.result.content || response.data.result;
-    }
-
-    throw new Error(response.data.message || '인증 기록을 불러오는데 실패했습니다.');
-  } catch (error: any) {
-    throw error;
-  }
+  const result = await getVerificationHistoryPage(page, size);
+  return result.content;
 };
 
 /**
@@ -347,7 +358,7 @@ export const updateUserProfile = async (data: UpdateUserProfileRequest): Promise
 export interface OtherUser {
   userId: number;
   nickname: string;
-  profileImage: string;
+  profileImage: string | null;
   level: string;
   followerCount: number;
   followingCount: number;
@@ -707,4 +718,3 @@ export const getCompletedChallenges = async (page: number = 1, size: number = 10
     throw error;
   }
 };
-
