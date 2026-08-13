@@ -181,6 +181,46 @@ export const getVerificationHistory = async (page: number = 1, size: number = 20
 };
 
 /**
+ * 스크랩한 인증 게시글 목록 응답
+ *
+ * 사용자 인증 기록 API와 같은 페이지 구조를 사용합니다. 백엔드 응답이
+ * 사용자별 인증 기록처럼 verifications로 한 번 감싸진 경우도 함께 처리합니다.
+ */
+export interface ScrappedVerificationsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: VerificationHistoryPage | {
+    verifications: VerificationHistoryPage;
+  };
+}
+
+/**
+ * 스크랩한 인증 게시글 목록 조회
+ */
+export const getScrappedVerifications = async (
+  userId: number,
+  page: number = 1,
+  size: number = 20
+): Promise<VerificationHistoryPage> => {
+  const response = await apiClient.get<ScrappedVerificationsResponse>(
+    `/api/v1/user/${userId}/verifications/scrap`,
+    {
+      params: { page, size },
+    }
+  );
+
+  if (!response.data.isSuccess || !response.data.result) {
+    throw new Error(response.data.message || '스크랩한 인증 글을 불러오는데 실패했습니다.');
+  }
+
+  return 'verifications' in response.data.result
+    ? response.data.result.verifications
+    : response.data.result;
+};
+
+/**
  * 팔로워/팔로잉 아이템
  */
 export interface FollowItem {

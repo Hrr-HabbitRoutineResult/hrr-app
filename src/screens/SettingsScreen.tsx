@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/types';
 import { Header } from '../components/common/Header';
-import { colors, spacing } from '../design/tokens';
+import { colors } from '../design/tokens';
 import SettingSection from '../components/MyPage/SettingSection';
 import SettingItem from '../components/MyPage/SettingItem';
 
@@ -15,6 +15,7 @@ import IcCheckIcon from '../../assets/icons/settingpage/ic_check.svg';
 import IcLockIcon from '../../assets/icons/settingpage/ic_lock.svg';
 import IcBlockIcon from '../../assets/icons/settingpage/ic_block.svg';
 import IcAlarmIcon from '../../assets/icons/settingpage/ic_alarm.svg';
+import ScrapIcon from '../../assets/icons/scrap.svg';
 
 const SettingsScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -56,12 +57,23 @@ const SettingsScreen = () => {
       ],
     },
     {
+      title: '게시글',
+      items: [
+        {
+          label: '스크랩',
+          icon: <ScrapIcon width={16} height={19} />,
+          onPress: () => navigation.navigate('Scrap'),
+        },
+      ],
+    },
+    {
       title: '내 활동',
       items: [
-        // {
-        //   label: '계정 공개 범위',
-        //   icon: <IcLockIcon width={24} height={24} />,
-        // },
+        {
+          label: '계정 공개 범위',
+          icon: <IcLockIcon width={24} height={24} />,
+          onPress: () => navigation.navigate('AccountPrivacy'),
+        },
         {
           label: '차단한 사용자',
           icon: <IcBlockIcon width={24} height={24} />,

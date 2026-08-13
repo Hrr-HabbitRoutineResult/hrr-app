@@ -18,6 +18,8 @@ interface TabBarProps {
   tabHeight?: number;
   tabGap?: number;
   horizontalPadding?: number;
+  topPadding?: number;
+  bottomPadding?: number;
 }
 
 // 공통 TabBar 컴포넌트
@@ -32,6 +34,8 @@ export const TabBar: React.FC<TabBarProps> = ({
   tabHeight = verticalScale(48),
   tabGap = scale(4),
   horizontalPadding = scale(20),
+  topPadding = verticalScale(16),
+  bottomPadding = verticalScale(12),
 }) => {
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -105,11 +109,11 @@ export const TabBar: React.FC<TabBarProps> = ({
   // scrollable=false 일 때 사용
   return (
     <>
-      <View style={styles.tabContainer}>
+      <View style={[styles.tabContainer, { paddingTop: topPadding }]}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
-            style={styles.tab}
+            style={[styles.tab, { paddingBottom: bottomPadding }]}
             onPress={() => onTabChange(tab.key)}
             activeOpacity={0.7}
           >
@@ -131,13 +135,11 @@ export const TabBar: React.FC<TabBarProps> = ({
 const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
-    paddingTop: verticalScale(16),
     paddingBottom: 0,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingBottom: verticalScale(12),
     position: 'relative',
   },
   scrollableTabContainer: {
@@ -169,4 +171,3 @@ const styles = StyleSheet.create({
     marginHorizontal: 0,
   },
 });
-

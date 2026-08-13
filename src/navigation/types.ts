@@ -26,9 +26,11 @@ export type RootStackParamList = {
   Onboarding: undefined;
   ParticipatingChallenge: { userId?: number };
   CertificationHistory: { userId?: number };
+  Scrap: undefined;
   FollowerList: { initialTab: 'follower' | 'following', userId?: number };
   Settings: undefined;
   AccountSettings: undefined;
+  AccountPrivacy: undefined;
   ProfileEdit: undefined;
   User: { userId: number };
   LikedChallenge: undefined;

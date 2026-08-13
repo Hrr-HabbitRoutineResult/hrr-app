@@ -20,6 +20,7 @@ interface HeaderProps {
   useSafeArea?: boolean;            // TopAppBar처럼 안전 영역을 직접 처리할지 여부 (기본값: false)
   backIcon?: 'arrow' | 'close';     // 뒤로가기 버튼 아이콘 타입 (기본값: 'arrow')
   horizontalPadding?: number;       // 화면별 헤더 좌우 여백 (기본값: 24)
+  verticalPadding?: number;         // 화면별 헤더 상하 여백 (기본값: iOS 16, Android 24)
 }
 
 // 공통 Header 컴포넌트
@@ -31,13 +32,16 @@ export const Header: React.FC<HeaderProps> = ({
   useSafeArea = false,
   backIcon = 'arrow',
   horizontalPadding = 24,
+  verticalPadding: verticalPaddingProp,
 }) => {
   const insets = useSafeAreaInsets();
 
   // 플랫폼별 기본 상단 패딩
   // Android: 펀치홀/상태바 간섭을 피하기 위해 더 넉넉한 패딩 (24)
   // iOS: 기존 디자인 스펙 유지 (16)
-  const verticalPadding = Platform.OS === 'android' ? verticalScale(24) : verticalScale(16);
+  const verticalPadding = verticalScale(
+    verticalPaddingProp ?? (Platform.OS === 'android' ? 24 : 16)
+  );
 
   // 상단 safeAreaTop 적용 여부
   // useSafeArea가 true인 경우에만 안전 영역 높이를 계산하여 더해줌

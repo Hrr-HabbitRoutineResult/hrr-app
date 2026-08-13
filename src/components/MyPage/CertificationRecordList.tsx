@@ -6,6 +6,7 @@ import { Text } from '../common/Text';
 import ThumbnailDefaultIcon from '../../../assets/icons/challenge-profile/thumbnail_default.svg';
 import PhotoTypeIcon from '../../../assets/icons/challenge-create/photo-unselected.svg';
 import TextTypeIcon from '../../../assets/icons/challenge-create/text-unselected.svg';
+import LinkIcon from '../../../assets/icons/challenge-profile/link.svg';
 
 export interface CertificationRecordItem {
   id: number;
@@ -14,19 +15,27 @@ export interface CertificationRecordItem {
   date: string;
   type: 'CAMERA' | 'TEXT';
   thumbnailUrl: string | null;
+  description?: string;
+  metaIcon?: 'type' | 'link';
+  hasLink?: boolean;
 }
 
 interface CertificationRecordListProps {
   items: CertificationRecordItem[];
   onItemPress?: (item: CertificationRecordItem) => void;
+  variant?: 'default' | 'scrap';
 }
 
-const CertificationRecordList = ({ items, onItemPress }: CertificationRecordListProps) => (
+const CertificationRecordList = ({
+  items,
+  onItemPress,
+  variant = 'default',
+}: CertificationRecordListProps) => (
   <View>
     {items.map((item) => (
       <TouchableOpacity
         key={item.id}
-        style={styles.row}
+        style={[styles.row, variant === 'scrap' && styles.scrapRow]}
         activeOpacity={0.8}
         onPress={() => onItemPress?.(item)}
       >
@@ -40,13 +49,15 @@ const CertificationRecordList = ({ items, onItemPress }: CertificationRecordList
             style={styles.challengeTitle}
             numberOfLines={1}
           >
-            {item.challengeTitle}
+            {item.description ?? item.challengeTitle}
           </Text>
           <View style={styles.metaRow}>
             <Text variant="caption" color={colors.icon.gray}>
               {item.date}
             </Text>
-            {item.type === 'CAMERA' ? (
+            {item.metaIcon === 'link' ? (
+              item.hasLink ? <LinkIcon width={scale(10)} height={verticalScale(10)} /> : null
+            ) : item.type === 'CAMERA' ? (
               <PhotoTypeIcon width={scale(11)} height={verticalScale(10)} />
             ) : (
               <TextTypeIcon width={scale(11)} height={verticalScale(9)} />
@@ -54,7 +65,7 @@ const CertificationRecordList = ({ items, onItemPress }: CertificationRecordList
           </View>
         </View>
 
-        <View style={styles.thumbnail}>
+        <View style={[styles.thumbnail, variant === 'scrap' && styles.scrapThumbnail]}>
           {item.thumbnailUrl ? (
             <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnailImage} />
           ) : (
@@ -76,6 +87,9 @@ const styles = StyleSheet.create({
     gap: scale(12),
     paddingVertical: verticalScale(12),
   },
+  scrapRow: {
+    minHeight: verticalScale(100),
+  },
   copy: {
     flex: 1,
     minWidth: 0,
@@ -95,6 +109,10 @@ const styles = StyleSheet.create({
     borderRadius: scale(10),
     overflow: 'hidden',
     backgroundColor: colors.background,
+  },
+  scrapThumbnail: {
+    width: scale(76),
+    height: verticalScale(76),
   },
   thumbnailImage: {
     width: '100%',

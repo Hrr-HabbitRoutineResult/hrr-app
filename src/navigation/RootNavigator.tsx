@@ -34,9 +34,11 @@ import { CreateChallengeProvider } from '../contexts/CreateChallengeContext';
 import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
 import ParticipatingChallengeScreen from '../screens/ParticipatingChallengeScreen';
 import CertificationHistoryScreen from '../screens/CertificationHistoryScreen';
+import ScrapScreen from '../screens/ScrapScreen';
 import FollowerListScreen from '../screens/FollowerListScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
+import AccountPrivacyScreen from '../screens/AccountPrivacyScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import LikedChallengeScreen from '../screens/LikedChallengeScreen';
 import CompletedChallengeScreen from '../screens/CompletedChallengeScreen';
@@ -183,9 +185,11 @@ const RootNavigator = ({
         <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
         <Stack.Screen name="ParticipatingChallenge" component={ParticipatingChallengeScreen} options={{ headerShown: false }} />
         <Stack.Screen name="CertificationHistory" component={CertificationHistoryScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Scrap" component={ScrapScreen} options={{ headerShown: false }} />
         <Stack.Screen name="FollowerList" component={FollowerListScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="AccountPrivacy" component={AccountPrivacyScreen} options={{ headerShown: false }} />
         <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ headerShown: false }} />
         <Stack.Screen name="User" component={UserScreen} options={{ headerShown: false }} />
         <Stack.Screen name="LikedChallenge" component={LikedChallengeScreen} options={{ headerShown: false }} />
