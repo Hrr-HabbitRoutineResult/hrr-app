@@ -347,7 +347,6 @@ export interface UpdateUserProfileRequest {
   isNicknameChanged?: boolean;
   profileImageKey?: string;
   isProfileImageChanged?: boolean;
-  isPublic?: boolean;
 }
 
 /**

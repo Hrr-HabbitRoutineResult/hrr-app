@@ -30,7 +30,6 @@ export type RootStackParamList = {
   FollowerList: { initialTab: 'follower' | 'following', userId?: number };
   Settings: undefined;
   AccountSettings: undefined;
-  AccountPrivacy: undefined;
   ProfileEdit: undefined;
   User: { userId: number };
   LikedChallenge: undefined;

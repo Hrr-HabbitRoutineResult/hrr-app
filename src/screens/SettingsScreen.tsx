@@ -12,7 +12,6 @@ import SettingItem from '../components/MyPage/SettingItem';
 import IcMyIcon from '../../assets/icons/settingpage/ic_my.svg';
 import IcHeartDefaultIcon from '../../assets/icons/settingpage/ic_heart default.svg';
 import IcCheckIcon from '../../assets/icons/settingpage/ic_check.svg';
-import IcLockIcon from '../../assets/icons/settingpage/ic_lock.svg';
 import IcBlockIcon from '../../assets/icons/settingpage/ic_block.svg';
 import IcAlarmIcon from '../../assets/icons/settingpage/ic_alarm.svg';
 import ScrapIcon from '../../assets/icons/scrap.svg';
@@ -69,11 +68,6 @@ const SettingsScreen = () => {
     {
       title: '내 활동',
       items: [
-        {
-          label: '계정 공개 범위',
-          icon: <IcLockIcon width={24} height={24} />,
-          onPress: () => navigation.navigate('AccountPrivacy'),
-        },
         {
           label: '차단한 사용자',
           icon: <IcBlockIcon width={24} height={24} />,

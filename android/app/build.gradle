@@ -89,8 +89,8 @@ android {
         applicationId "com.hrrapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "1.11.0"
+        versionCode 19
+        versionName "0.4.0"
         
         // react-native-config 환경 변수 추가
         resValue "string", "API_BASE_URL", project.env.get("API_BASE_URL")

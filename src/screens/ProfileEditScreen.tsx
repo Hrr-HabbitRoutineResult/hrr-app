@@ -11,7 +11,6 @@ import {
   Animated,
   Easing,
   Platform,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -24,7 +23,7 @@ import { UserMe, getUserMe, UpdateUserProfileRequest } from '../libs/api/user';
 import { checkNickname } from '../libs/api/auth';
 import { getPresignedUrl } from '../libs/api/challenge';
 import { getS3ImageUrl } from '../libs/s3';
-import { colors as Color, spacing, typography } from '../design/tokens';
+import { colors as Color, typography } from '../design/tokens';
 import { scale, verticalScale } from '../utils/scaling';
 import { getErrorMessage } from '../utils/errorHandler';
 import ProfileImageWithEdit from '../components/common/ProfileImageWithEdit';
@@ -47,7 +46,6 @@ const ProfileEditScreen: React.FC = () => {
   const [originalUser, setOriginalUser] = useState<UserMe | null>(null);
   const [nickname, setNickname] = useState<string>('');
   const [profileImage, setProfileImage] = useState<string | undefined>(undefined);
-  const [isPublic, setIsPublic] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [nicknameStatus, setNicknameStatus] = useState<NicknameStatus>('idle');
   const [toast, setToast] = useState<{
@@ -98,7 +96,6 @@ const ProfileEditScreen: React.FC = () => {
           setOriginalUser(user);
           setNickname(user.nickname);
           setProfileImage(user.profileImage || undefined);
-          setIsPublic(user.isPublic);
         } catch (error) {
           console.error('프로필 데이터 불러오기 실패:', error);
           const errorMessage = getErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.');
@@ -163,10 +160,9 @@ const ProfileEditScreen: React.FC = () => {
     const isNicknameChanged = nickname !== originalUser.nickname;
     const isProfileImageChanged =
       String(profileImage || '') !== String(originalUser.profileImage || '');
-    const isPublicChanged = isPublic !== originalUser.isPublic;
 
-    return isNicknameChanged || isProfileImageChanged || isPublicChanged;
-  }, [nickname, profileImage, isPublic, originalUser]);
+    return isNicknameChanged || isProfileImageChanged;
+  }, [nickname, profileImage, originalUser]);
 
   const isNicknameValid =
     nicknameStatus === 'available' ||
@@ -192,9 +188,7 @@ const ProfileEditScreen: React.FC = () => {
       const isProfileImageChanged =
         String(profileImage || '') !== String(originalUser?.profileImage || '');
 
-      const updatePayload: UpdateUserProfileRequest = {
-        isPublic: isPublic,
-      };
+      const updatePayload: UpdateUserProfileRequest = {};
 
       if (isNicknameChanged) {
         updatePayload.nickname = nickname;
@@ -403,17 +397,6 @@ const ProfileEditScreen: React.FC = () => {
         )}
       </View>
 
-      {/* <View style={styles.publicToggleSection}>
-        <Text style={styles.publicToggleLabel}>프로필 공개</Text>
-        <Switch
-          trackColor={{ false: Color.button, true: Color.primary.main }}
-          thumbColor={Color.white}
-          ios_backgroundColor={Color.button}
-          onValueChange={setIsPublic}
-          value={isPublic}
-        />
-      </View> */}
-
       <Modal
         transparent
         visible={sheetVisible}
@@ -520,19 +503,6 @@ const styles = StyleSheet.create({
     marginTop: scale(10),
     marginLeft: scale(16),
   },
-  publicToggleSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: scale(16),
-    marginTop: spacing.sm,
-  },
-  publicToggleLabel: {
-    fontSize: typography.md.fontSize,
-    fontFamily: typography.md.fontFamily,
-    color: Color.text.primary,
-  },
-
   // ✅ 시트 스타일
   sheetRoot: {
     flex: 1,
