@@ -1,4 +1,7 @@
-import { VerificationDetail, VerificationDetailResponse } from '../libs/api/challenge';
+import {
+  VerificationDetail,
+  VerificationDetailResponse,
+} from '../libs/api/challenge';
 import { AuthOnboardingStep } from '../screens/Auth/AuthOnboardingScreen';
 
 export type RootStackParamList = {
@@ -7,6 +10,7 @@ export type RootStackParamList = {
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
   ChallengeProfile: { challengeId: number };
+  ChallengeEdit: { challengeId: number };
   ChallengeParticipants: { challengeId: number };
   ChallengeCertification: { challengeId: number };
   ChallengeRanking: { challengeId: number };
@@ -14,9 +18,16 @@ export type RootStackParamList = {
   ChallengeCertificationCamera: { challengeId: number };
   ChallengeCertificationText: { challengeId: number };
   ChallengeCertificationPost: { challengeId: number; imageUri: string };
-  ChallengeCertificationDetail: { verification?: VerificationDetail; verificationId?: number };
-  ChallengeCertificationEdit: { verification: VerificationDetailResponse['result'] };
-  ChallengeCertificationTextEdit: { verification: VerificationDetailResponse['result'] };
+  ChallengeCertificationDetail: {
+    verification?: VerificationDetail;
+    verificationId?: number;
+  };
+  ChallengeCertificationEdit: {
+    verification: VerificationDetailResponse['result'];
+  };
+  ChallengeCertificationTextEdit: {
+    verification: VerificationDetailResponse['result'];
+  };
   PopularChallenge: undefined;
   Search: undefined;
   CreateChallengeQ1: undefined;
@@ -27,7 +38,7 @@ export type RootStackParamList = {
   ParticipatingChallenge: { userId?: number };
   CertificationHistory: { userId?: number };
   Scrap: undefined;
-  FollowerList: { initialTab: 'follower' | 'following', userId?: number };
+  FollowerList: { initialTab: 'follower' | 'following'; userId?: number };
   Settings: undefined;
   AccountSettings: undefined;
   ProfileEdit: undefined;

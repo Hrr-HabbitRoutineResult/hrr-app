@@ -17,6 +17,7 @@ import PointHistoryScreen from '../screens/PointHistoryScreen';
 import MyScreen from '../screens/MyScreen';
 import UserScreen from '../screens/UserScreen';
 import { ChallengeProfileScreen } from '../screens/ChallengeProfile/ChallengeProfileScreen';
+import { ChallengeEditScreen } from '../screens/ChallengeProfile/ChallengeEditScreen';
 import { ChallengeParticipantsScreen } from '../screens/ChallengeProfile/ChallengeParticipantsScreen';
 import { ChallengeCertificationScreen } from '../screens/ChallengeProfile/ChallengeCertificationScreen';
 import { ChallengeCertificationCameraScreen } from '../screens/ChallengeProfile/ChallengeCertificationCameraScreen';
@@ -55,14 +56,12 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 // Deep Link 설정
 const linking = {
-  prefixes: [
-    'hrr://',
-    'https://hrr.onelink.me',
-  ],
+  prefixes: ['hrr://', 'https://hrr.onelink.me'],
   config: {
     screens: {
       HomeTabs: 'home',
       ChallengeProfile: 'challenge/:challengeId',
+      ChallengeEdit: 'challenge/:challengeId/edit',
       User: 'user/:userId',
       ChallengeCertificationDetail: 'verification/:verificationId',
       Notifications: 'notifications',
@@ -108,13 +107,21 @@ const HomeTabs = () => (
   </Tab.Navigator>
 );
 
-const AuthOnboardingScreenWrapper = ({ route }: { route: { params?: { initialStep?: import('../screens/Auth/AuthOnboardingScreen').AuthOnboardingStep } } }) => {
+const AuthOnboardingScreenWrapper = ({
+  route,
+}: {
+  route: {
+    params?: {
+      initialStep?: import('../screens/Auth/AuthOnboardingScreen').AuthOnboardingStep;
+    };
+  };
+}) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   return (
     <AuthOnboardingScreen
       initialStep={route.params?.initialStep}
-      onOnboardingComplete={(showRecommendation) => {
+      onOnboardingComplete={showRecommendation => {
         if (showRecommendation) {
           navigation.replace('HomeTabs');
           // 추천 온보딩이 필요하면 표시
@@ -156,57 +163,205 @@ const RootNavigator = ({
       {/* 로그인 여부에 따라 첫 화면 설정 */}
       <Stack.Navigator
         initialRouteName={
-          !isAuthenticated ? 'AuthOnboarding' :
-            showRecommendation ? 'Onboarding' :
-              'HomeTabs'
+          !isAuthenticated
+            ? 'AuthOnboarding'
+            : showRecommendation
+            ? 'Onboarding'
+            : 'HomeTabs'
         }
       >
-        <Stack.Screen name="HomeTabs" component={HomeTabs} options={{ headerShown: false }} />
-        <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeList" component={ChallengeListScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="RandomMission" component={RandomMissionScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeProfile" component={ChallengeProfileScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="PointHistory" component={PointHistoryScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeParticipants" component={ChallengeParticipantsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertification" component={ChallengeCertificationScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationCamera" component={ChallengeCertificationCameraScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationText" component={ChallengeCertificationTextScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationPost" component={ChallengeCertificationPostScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationDetail" component={ChallengeCertificationDetailScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationEdit" component={ChallengeCertificationEditScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ChallengeCertificationTextEdit" component={ChallengeCertificationTextEditScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="PopularChallenge" component={PopularChallengeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Search" component={CategorySearchScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="CreateChallengeQ1" component={CreateChallengeQ1} options={{ headerShown: false }} />
-        <Stack.Screen name="CreateChallengeQ2" component={CreateChallengeQ2} options={{ headerShown: false }} />
-        <Stack.Screen name="CreateChallengeQ3" component={CreateChallengeQ3} options={{ headerShown: false }} />
-        <Stack.Screen name="CreateChallengeQ4" component={CreateChallengeQ4} options={{ headerShown: false }} />
-        <Stack.Screen name="Onboarding" component={OnboardingScreenWrapper} options={{ headerShown: false }} />
-        <Stack.Screen name="ParticipatingChallenge" component={ParticipatingChallengeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="CertificationHistory" component={CertificationHistoryScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Scrap" component={ScrapScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="FollowerList" component={FollowerListScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="AccountSettings" component={AccountSettingsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="User" component={UserScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="LikedChallenge" component={LikedChallengeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="CompletedChallenge" component={CompletedChallengeScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="BlockedUserScreen" component={BlockedUserScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="ErrorScreen" component={ErrorScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="TermsWebView" component={TermsWebViewScreen} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="HomeTabs"
+          component={HomeTabs}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeList"
+          component={ChallengeListScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RandomMission"
+          component={RandomMissionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeProfile"
+          component={ChallengeProfileScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeEdit"
+          component={ChallengeEditScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PointHistory"
+          component={PointHistoryScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeParticipants"
+          component={ChallengeParticipantsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertification"
+          component={ChallengeCertificationScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationCamera"
+          component={ChallengeCertificationCameraScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationText"
+          component={ChallengeCertificationTextScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationPost"
+          component={ChallengeCertificationPostScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationDetail"
+          component={ChallengeCertificationDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationEdit"
+          component={ChallengeCertificationEditScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ChallengeCertificationTextEdit"
+          component={ChallengeCertificationTextEditScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PopularChallenge"
+          component={PopularChallengeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Search"
+          component={CategorySearchScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateChallengeQ1"
+          component={CreateChallengeQ1}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateChallengeQ2"
+          component={CreateChallengeQ2}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateChallengeQ3"
+          component={CreateChallengeQ3}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CreateChallengeQ4"
+          component={CreateChallengeQ4}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Onboarding"
+          component={OnboardingScreenWrapper}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ParticipatingChallenge"
+          component={ParticipatingChallengeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CertificationHistory"
+          component={CertificationHistoryScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Scrap"
+          component={ScrapScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FollowerList"
+          component={FollowerListScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AccountSettings"
+          component={AccountSettingsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProfileEdit"
+          component={ProfileEditScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="User"
+          component={UserScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LikedChallenge"
+          component={LikedChallengeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CompletedChallenge"
+          component={CompletedChallengeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="BlockedUserScreen"
+          component={BlockedUserScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="NotificationSettings"
+          component={NotificationSettingsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ErrorScreen"
+          component={ErrorScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="TermsWebView"
+          component={TermsWebViewScreen}
+          options={{ headerShown: false }}
+        />
         {/* 로그아웃, 토큰 만료 등으로 강제 로그아웃 시 로그인 화면으로 바로 진입 */}
         <Stack.Screen
           name="AuthOnboarding"
           component={AuthOnboardingScreenWrapper}
-          initialParams={{ initialStep: hasSeenOnboarding ? 'login' : 'onboarding' }}
+          initialParams={{
+            initialStep: hasSeenOnboarding ? 'login' : 'onboarding',
+          }}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   </CreateChallengeProvider>
 );
-
 
 export default RootNavigator;

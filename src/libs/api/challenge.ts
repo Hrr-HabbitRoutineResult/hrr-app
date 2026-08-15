@@ -69,7 +69,19 @@ export interface ChallengeDetail {
   isObserverMode: boolean;
   isParticipant: boolean;
   isLiked: boolean;
-  actionButtonStatus: 'AVAILABLE' | 'DONE' | 'UPCOMING' | 'NOT_DAY' | 'NOT_TIME' | 'JOIN' | 'WAITLIST' | 'WAITLISTED' | 'FINISHED' | 'MAX_LIMIT_EXCEEDED' | 'WITHDRAW' | 'REJECT';
+  actionButtonStatus:
+    | 'AVAILABLE'
+    | 'DONE'
+    | 'UPCOMING'
+    | 'NOT_DAY'
+    | 'NOT_TIME'
+    | 'JOIN'
+    | 'WAITLIST'
+    | 'WAITLISTED'
+    | 'FINISHED'
+    | 'MAX_LIMIT_EXCEEDED'
+    | 'WITHDRAW'
+    | 'REJECT';
   owner: {
     id: number;
     nickname: string;
@@ -115,20 +127,24 @@ export interface ChallengeProfileResponse {
 /**
  * 오늘의 인기 챌린지 목록 조회
  */
-export const getDailyTopChallenges = async (number: number = 3): Promise<DailyTopChallengeItem[]> => {
+export const getDailyTopChallenges = async (
+  number: number = 3,
+): Promise<DailyTopChallengeItem[]> => {
   try {
     const response = await apiClient.get<DailyTopChallengesResponse>(
       '/api/v1/challenges/daily-top',
       {
         params: { number },
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '오늘의 인기 챌린지를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '오늘의 인기 챌린지를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -137,17 +153,21 @@ export const getDailyTopChallenges = async (number: number = 3): Promise<DailyTo
 /**
  * 챌린지 상세 정보 조회
  */
-export const getChallengeDetail = async (challengeId: number): Promise<ChallengeDetail> => {
+export const getChallengeDetail = async (
+  challengeId: number,
+): Promise<ChallengeDetail> => {
   try {
     const response = await apiClient.get<ChallengeDetailResponse>(
-      `/api/v1/challenges/${challengeId}/info`
+      `/api/v1/challenges/${challengeId}/info`,
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '챌린지 정보를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '챌린지 정보를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -171,17 +191,21 @@ export interface ChallengeLikeResponse {
 /**
  * 챌린지 프로필 정보 조회 (규칙, 요일, 인증 시간 등)
  */
-export const getChallengeProfile = async (challengeId: number): Promise<ChallengeProfile> => {
+export const getChallengeProfile = async (
+  challengeId: number,
+): Promise<ChallengeProfile> => {
   try {
     const response = await apiClient.get<ChallengeProfileResponse>(
-      `/api/v1/challenges/${challengeId}/profile`
+      `/api/v1/challenges/${challengeId}/profile`,
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '챌린지 프로필 정보를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '챌린지 프로필 정보를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -220,7 +244,10 @@ export interface ChallengeParticipantsResponse {
   };
 }
 
-type ChallengeParticipantsResult = Omit<ChallengeParticipantsResponse['result'], 'content'> & {
+type ChallengeParticipantsResult = Omit<
+  ChallengeParticipantsResponse['result'],
+  'content'
+> & {
   content: ChallengeParticipant[];
 };
 
@@ -231,11 +258,11 @@ type ChallengeParticipantsResult = Omit<ChallengeParticipantsResponse['result'],
 export const getChallengeParticipants = async (
   challengeId: number,
   page: number = 1,
-  size: number = 20
+  size: number = 20,
 ): Promise<ChallengeParticipantsResult> => {
   const response = await apiClient.get<ChallengeParticipantsResponse>(
     `/api/v1/challenges/${challengeId}/participants`,
-    { params: { page, size } }
+    { params: { page, size } },
   );
 
   if (response.data.isSuccess && response.data.result) {
@@ -258,10 +285,12 @@ export const getChallengeParticipants = async (
 /**
  * 챌린지 찜하기
  */
-export const likeChallenge = async (challengeId: number): Promise<ChallengeLikeResponse['result']> => {
+export const likeChallenge = async (
+  challengeId: number,
+): Promise<ChallengeLikeResponse['result']> => {
   try {
     const response = await apiClient.post<ChallengeLikeResponse>(
-      `/api/v1/challenges/${challengeId}/likes`
+      `/api/v1/challenges/${challengeId}/likes`,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -277,10 +306,12 @@ export const likeChallenge = async (challengeId: number): Promise<ChallengeLikeR
 /**
  * 챌린지 찜하기 취소
  */
-export const unlikeChallenge = async (challengeId: number): Promise<ChallengeLikeResponse['result']> => {
+export const unlikeChallenge = async (
+  challengeId: number,
+): Promise<ChallengeLikeResponse['result']> => {
   try {
     const response = await apiClient.delete<ChallengeLikeResponse>(
-      `/api/v1/challenges/${challengeId}/likes`
+      `/api/v1/challenges/${challengeId}/likes`,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -309,16 +340,20 @@ export interface ChallengeJoinResponse {
 /**
  * 챌린지 참가하기
  */
-export const joinChallenge = async (challengeId: number, password?: string): Promise<void> => {
+export const joinChallenge = async (
+  challengeId: number,
+  password?: string,
+): Promise<void> => {
   try {
     // Request Body 구성
-    const requestBody = password === undefined
-      ? { password: null }  // Public: password를 null로 전송
-      : { password };
+    const requestBody =
+      password === undefined
+        ? { password: null } // Public: password를 null로 전송
+        : { password };
 
     const response = await apiClient.post<ChallengeJoinResponse>(
       `/api/v1/challenges/${challengeId}/join`,
-      requestBody
+      requestBody,
     );
 
     if (response.data.isSuccess) {
@@ -357,10 +392,10 @@ export interface ChallengeLeaveResponse {
  * - 방장이 아닌 참가자만 시작일 이전에 요청할 수 있다.
  */
 export const leaveChallenge = async (
-  challengeId: number
+  challengeId: number,
 ): Promise<ChallengeLeaveResponse['result']> => {
   const response = await apiClient.post<ChallengeLeaveResponse>(
-    `/api/v1/challenges/${challengeId}/leave`
+    `/api/v1/challenges/${challengeId}/leave`,
   );
 
   if (response.data.isSuccess && response.data.result) {
@@ -373,7 +408,9 @@ export const leaveChallenge = async (
 /**
  * 챌린지 클릭 처리 (인기 챌린지 집계용)
  */
-export const trackChallengeClick = async (challengeId: number): Promise<void> => {
+export const trackChallengeClick = async (
+  challengeId: number,
+): Promise<void> => {
   try {
     await apiClient.post(`/api/v1/challenges/${challengeId}/click`);
   } catch (error: any) {
@@ -415,20 +452,24 @@ export interface GetChallengesResponse {
 /**
  * 챌린지 목록 조회
  */
-export const getChallenges = async (params?: GetChallengesParams): Promise<GetChallengesResponse['result']> => {
+export const getChallenges = async (
+  params?: GetChallengesParams,
+): Promise<GetChallengesResponse['result']> => {
   try {
     const response = await apiClient.get<GetChallengesResponse>(
       '/api/v1/challenges',
       {
         params: params || {},
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '챌린지 목록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '챌린지 목록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -451,18 +492,22 @@ export interface PresignedUrlResponse {
 /**
  * S3 Presigned URL 요청
  */
-export const getPresignedUrl = async (fileName: string): Promise<PresignedUrlResponse['result']> => {
+export const getPresignedUrl = async (
+  fileName: string,
+): Promise<PresignedUrlResponse['result']> => {
   try {
     const response = await apiClient.post<PresignedUrlResponse>(
       '/api/s3/presigned-url',
-      { fileName }
+      { fileName },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || 'Presigned URL을 받는데 실패했습니다.');
+    throw new Error(
+      response.data.message || 'Presigned URL을 받는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -511,14 +556,119 @@ export interface CreateChallengeErrorResponse {
   message: string;
 }
 
+export type ChallengeCategory =
+  | 'ALL'
+  | 'HEALTH'
+  | 'STUDY'
+  | 'HOBBY'
+  | 'CAREER'
+  | 'HABIT';
+
+export type ChallengeVerificationType = 'PHOTO' | 'TEXT';
+
+export interface ChallengeEditInfo {
+  title: string;
+  description: string;
+  isPublic: boolean;
+  hasPassword: boolean;
+  category: ChallengeCategory;
+  verificationType: ChallengeVerificationType;
+  startDate: string;
+  maxParticipants: number;
+  isViewerMode: boolean;
+  rule: string;
+  verifyStartTime:
+    | string
+    | { hour: number; minute: number; second?: number; nano?: number };
+  verifyEndTime:
+    | string
+    | { hour: number; minute: number; second?: number; nano?: number };
+  daysOfWeek: string[];
+  imageKey: string;
+  imageUrl: string;
+}
+
+export interface UpdateChallengeRequest {
+  title: string;
+  description: string;
+  isPublic: boolean;
+  password?: string;
+  category: ChallengeCategory;
+  verificationType: ChallengeVerificationType;
+  startDate: string;
+  maxParticipants: number;
+  isViewerMode: boolean;
+  rule?: string;
+  verifyStartTime: string;
+  verifyEndTime: string;
+  daysOfWeek: string[];
+  imageKey: string;
+}
+
+interface ChallengeEditInfoResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: ChallengeEditInfo;
+}
+
+interface UpdateChallengeResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: UpdateChallengeRequest;
+}
+
+/**
+ * 챌린지 수정 화면 초기값 조회
+ */
+export const getChallengeEditInfo = async (
+  challengeId: number,
+): Promise<ChallengeEditInfo> => {
+  const response = await apiClient.get<ChallengeEditInfoResponse>(
+    `/api/v1/challenges/${challengeId}/edit-info`,
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(
+    response.data.message || '챌린지 수정 정보를 불러오는데 실패했습니다.',
+  );
+};
+
+/**
+ * 챌린지 수정
+ */
+export const updateChallenge = async (
+  challengeId: number,
+  data: UpdateChallengeRequest,
+): Promise<UpdateChallengeResponse['result']> => {
+  const response = await apiClient.put<UpdateChallengeResponse>(
+    `/api/v1/challenges/${challengeId}`,
+    data,
+  );
+
+  if (response.data.isSuccess && response.data.result) {
+    return response.data.result;
+  }
+
+  throw new Error(response.data.message || '챌린지 수정에 실패했습니다.');
+};
+
 /**
  * 챌린지 생성
  */
-export const createChallenge = async (data: CreateChallengeRequest): Promise<CreateChallengeResponse['result']> => {
+export const createChallenge = async (
+  data: CreateChallengeRequest,
+): Promise<CreateChallengeResponse['result']> => {
   try {
     const response = await apiClient.post<CreateChallengeResponse>(
       '/api/v1/challenges',
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -526,7 +676,9 @@ export const createChallenge = async (data: CreateChallengeRequest): Promise<Cre
     }
 
     // 에러 응답 생성
-    const error: any = new Error(response.data.message || '챌린지 생성에 실패했습니다.');
+    const error: any = new Error(
+      response.data.message || '챌린지 생성에 실패했습니다.',
+    );
     error.response = {
       data: {
         isSuccess: response.data.isSuccess,
@@ -565,14 +717,16 @@ export interface DailyMissionCompletedResponse {
 export const getDailyMissionCompleted = async (): Promise<boolean> => {
   try {
     const response = await apiClient.get<DailyMissionCompletedResponse>(
-      '/api/v1/users/mission/daily/completed'
+      '/api/v1/users/mission/daily/completed',
     );
 
     if (response.data.isSuccess) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '랜덤 미션 완료 여부를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '랜덤 미션 완료 여부를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -606,14 +760,16 @@ export interface DailyMissionResponse {
 export const getDailyMission = async (): Promise<DailyMissionInfo> => {
   try {
     const response = await apiClient.get<DailyMissionResponse>(
-      '/api/v1/users/mission/daily'
+      '/api/v1/users/mission/daily',
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '랜덤 미션을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '랜덤 미션을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -642,12 +798,12 @@ export interface VerifyDailyMissionResponse {
  * 오늘의 랜덤 미션 인증
  */
 export const verifyDailyMission = async (
-  data: VerifyDailyMissionRequest
+  data: VerifyDailyMissionRequest,
 ): Promise<string> => {
   try {
     const response = await apiClient.post<VerifyDailyMissionResponse>(
       '/api/v1/users/mission/daily/verify',
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -673,10 +829,31 @@ export interface ChallengeRecommendationRequest {
   userId: number;
   gender: 'MALE' | 'FEMALE';
   ageGroup: 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
-  job: 'STUDENT_MIDDLE_HIGH' | 'STUDENT_UNIVERSITY' | 'JOB_SEEKER' | 'EMPLOYEE' | 'HOMEMAKER' | 'ETC';
-  availableTime: ('EARLY_MORNING' | 'MORNING' | 'LUNCH' | 'AFTERNOON' | 'EVENING' | 'NIGHT' | 'LATE_NIGHT')[];
+  job:
+    | 'STUDENT_MIDDLE_HIGH'
+    | 'STUDENT_UNIVERSITY'
+    | 'JOB_SEEKER'
+    | 'EMPLOYEE'
+    | 'HOMEMAKER'
+    | 'ETC';
+  availableTime: (
+    | 'EARLY_MORNING'
+    | 'MORNING'
+    | 'LUNCH'
+    | 'AFTERNOON'
+    | 'EVENING'
+    | 'NIGHT'
+    | 'LATE_NIGHT'
+  )[];
   category: ('HEALTH' | 'STUDY' | 'HOBBY' | 'CAREER' | 'HABIT')[];
-  goal: 'BUILD_EXERCISE_HABIT' | 'HEALTHY_DAY' | 'EXAM_CAREER_PREP' | 'FIND_NEW_HOBBY' | 'ENJOY_HOBBY_TOGETHER' | 'FOCUS_ON_MYSELF' | 'KEEP_GOING';
+  goal:
+    | 'BUILD_EXERCISE_HABIT'
+    | 'HEALTHY_DAY'
+    | 'EXAM_CAREER_PREP'
+    | 'FIND_NEW_HOBBY'
+    | 'ENJOY_HOBBY_TOGETHER'
+    | 'FOCUS_ON_MYSELF'
+    | 'KEEP_GOING';
 }
 
 /**
@@ -715,19 +892,21 @@ export interface ChallengeRecommendationResponse {
  * 챌린지 추천 받기
  */
 export const getChallengeRecommendations = async (
-  request: ChallengeRecommendationRequest
+  request: ChallengeRecommendationRequest,
 ): Promise<RecommendedChallenge[]> => {
   try {
     const response = await apiClient.post<ChallengeRecommendationResponse>(
       '/api/v1/challenges/recommendations',
-      request
+      request,
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result.recommendations;
     }
 
-    throw new Error(response.data.message || '챌린지 추천을 받는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '챌린지 추천을 받는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -786,12 +965,12 @@ export interface CreatePhotoVerificationResponse {
  */
 export const createPhotoVerification = async (
   challengeId: number,
-  data: CreatePhotoVerificationRequest
+  data: CreatePhotoVerificationRequest,
 ): Promise<VerificationDetail> => {
   try {
     const response = await apiClient.post<CreatePhotoVerificationResponse>(
       `/api/v1/verifications/${challengeId}/photo`,
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -820,12 +999,12 @@ export interface CreateTextVerificationRequest {
  */
 export const createTextVerification = async (
   challengeId: number,
-  data: CreateTextVerificationRequest
+  data: CreateTextVerificationRequest,
 ): Promise<VerificationDetail> => {
   try {
     const response = await apiClient.post<CreatePhotoVerificationResponse>(
       `/api/v1/verifications/${challengeId}/text`,
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -944,7 +1123,7 @@ export interface VerificationDetailResponse {
  */
 export const getVerificationDetail = async (
   verificationId: number,
-  params?: GetVerificationDetailParams
+  params?: GetVerificationDetailParams,
 ): Promise<VerificationDetailResponse['result']> => {
   try {
     const response = await apiClient.get<VerificationDetailResponse>(
@@ -954,14 +1133,16 @@ export const getVerificationDetail = async (
           page: params?.page || 1,
           size: params?.size || 10,
         },
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '게시글을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '게시글을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -996,17 +1177,21 @@ export interface RoundsResponse {
 /**
  * 챌린지 라운드 목록 조회
  */
-export const getChallengeRounds = async (challengeId: number): Promise<RoundItem[]> => {
+export const getChallengeRounds = async (
+  challengeId: number,
+): Promise<RoundItem[]> => {
   try {
     const response = await apiClient.get<RoundsResponse>(
-      `/api/v1/challenges/${challengeId}/rounds`
+      `/api/v1/challenges/${challengeId}/rounds`,
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '라운드 정보를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '라운드 정보를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -1040,16 +1225,18 @@ export interface RoundDecisionResponse {
  */
 export const submitRoundDecision = async (
   challengeId: number,
-  intent: RoundDecisionIntent
+  intent: RoundDecisionIntent,
 ): Promise<void> => {
   try {
     const response = await apiClient.post<RoundDecisionResponse>(
       `/api/v1/challenges/${challengeId}/rounds/decision`,
-      { intent }
+      { intent },
     );
 
     if (!response.data.isSuccess) {
-      throw new Error(response.data.message || '챌린지 연장 여부 제출에 실패했습니다.');
+      throw new Error(
+        response.data.message || '챌린지 연장 여부 제출에 실패했습니다.',
+      );
     }
   } catch (error: any) {
     throw error;
@@ -1079,17 +1266,21 @@ export interface VerificationStatResponse {
 /**
  * 챌린지 인증 통계 조회
  */
-export const getVerificationStat = async (challengeId: number): Promise<VerificationStat> => {
+export const getVerificationStat = async (
+  challengeId: number,
+): Promise<VerificationStat> => {
   try {
     const response = await apiClient.get<VerificationStatResponse>(
-      `/api/v1/verifications/${challengeId}/stat`
+      `/api/v1/verifications/${challengeId}/stat`,
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '인증 통계를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '인증 통계를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -1145,7 +1336,7 @@ export interface VerificationFeedResponse {
  */
 export const getVerificationFeed = async (
   challengeId: number,
-  params: GetVerificationFeedParams
+  params: GetVerificationFeedParams,
 ): Promise<VerificationFeedResponse['result']> => {
   try {
     const response = await apiClient.get<VerificationFeedResponse>(
@@ -1156,14 +1347,16 @@ export const getVerificationFeed = async (
           page: params.page || 1,
           size: params.size || 10,
         },
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '인증 피드를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '인증 피드를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -1211,7 +1404,7 @@ export interface MyVerificationResponse {
  */
 export const getMyVerifications = async (
   challengeId: number,
-  params?: GetMyVerificationsParams
+  params?: GetMyVerificationsParams,
 ): Promise<MyVerificationInfo> => {
   try {
     const response = await apiClient.get<MyVerificationResponse>(
@@ -1221,14 +1414,16 @@ export const getMyVerifications = async (
           page: params?.page || 1,
           size: params?.size || 10,
         },
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '내 인증 현황을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '내 인증 현황을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -1278,12 +1473,12 @@ export interface DeleteVerificationResponse {
  */
 export const updateVerification = async (
   verificationId: number,
-  data: UpdateVerificationRequest
+  data: UpdateVerificationRequest,
 ): Promise<UpdateVerificationResponse['result']> => {
   try {
     const response = await apiClient.patch<UpdateVerificationResponse>(
       `/api/v1/verifications/${verificationId}`,
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -1300,11 +1495,11 @@ export const updateVerification = async (
  * 인증 삭제
  */
 export const deleteVerification = async (
-  verificationId: number
+  verificationId: number,
 ): Promise<void> => {
   try {
     const response = await apiClient.delete<DeleteVerificationResponse>(
-      `/api/v1/verifications/${verificationId}`
+      `/api/v1/verifications/${verificationId}`,
     );
 
     if (!response.data.isSuccess) {
@@ -1375,7 +1570,7 @@ export interface GetCommentsResponse {
  */
 export const getComments = async (
   verificationId: number,
-  params?: GetCommentsParams
+  params?: GetCommentsParams,
 ): Promise<GetCommentsResponse['result']> => {
   try {
     const response = await apiClient.get<GetCommentsResponse>(
@@ -1385,7 +1580,7 @@ export const getComments = async (
           page: params?.page || 1,
           size: params?.size || 10,
         },
-      }
+      },
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -1423,12 +1618,12 @@ export interface CreateCommentResponse {
  */
 export const createComment = async (
   verificationId: number,
-  data: CreateCommentRequest
+  data: CreateCommentRequest,
 ): Promise<CommentItem> => {
   try {
     const response = await apiClient.post<CreateCommentResponse>(
       `/api/v1/comments/${verificationId}`,
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -1464,12 +1659,12 @@ export interface UpdateCommentResponse {
  */
 export const updateComment = async (
   commentId: number,
-  data: UpdateCommentRequest
+  data: UpdateCommentRequest,
 ): Promise<CommentItem> => {
   try {
     const response = await apiClient.patch<UpdateCommentResponse>(
       `/api/v1/comments/${commentId}`,
-      data
+      data,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -1499,7 +1694,7 @@ export interface DeleteCommentResponse {
 export const deleteComment = async (commentId: number): Promise<void> => {
   try {
     const response = await apiClient.delete<DeleteCommentResponse>(
-      `/api/v1/comments/${commentId}`
+      `/api/v1/comments/${commentId}`,
     );
 
     if (!response.data.isSuccess) {
@@ -1526,7 +1721,7 @@ export interface AdoptCommentResponse {
  */
 export const adoptComment = async (
   verificationId: number,
-  commentId: number
+  commentId: number,
 ): Promise<void> => {
   const url = `/api/v1/verifications/${verificationId}/comments/${commentId}/adopt`;
 
@@ -1582,12 +1777,12 @@ export interface ReportResponse {
  * 게시글 신고
  */
 export const reportVerificationPost = async (
-  data: ReportRequest
+  data: ReportRequest,
 ): Promise<void> => {
   try {
     const response = await apiClient.post<ReportResponse>(
       '/api/v1/report/verification/post',
-      data
+      data,
     );
 
     if (!response.data.isSuccess) {
@@ -1601,13 +1796,11 @@ export const reportVerificationPost = async (
 /**
  * 사용자 신고
  */
-export const reportUser = async (
-  data: ReportRequest
-): Promise<void> => {
+export const reportUser = async (data: ReportRequest): Promise<void> => {
   try {
     const response = await apiClient.post<ReportResponse>(
       '/api/v1/report/user',
-      data
+      data,
     );
 
     if (!response.data.isSuccess) {
@@ -1622,11 +1815,11 @@ export const reportUser = async (
  * 부실인증 신고
  */
 export const reportWeakVerification = async (
-  verificationId: number
+  verificationId: number,
 ): Promise<void> => {
   try {
     const response = await apiClient.post<ReportResponse>(
-      `/api/v1/report/verification/weak?targetId=${verificationId}`
+      `/api/v1/report/verification/weak?targetId=${verificationId}`,
     );
 
     if (!response.data.isSuccess) {
@@ -1654,11 +1847,13 @@ export interface BlockCommentResponse {
 export const blockComment = async (commentId: number): Promise<void> => {
   try {
     const response = await apiClient.post<BlockCommentResponse>(
-      `/api/v1/comments/${commentId}/block`
+      `/api/v1/comments/${commentId}/block`,
     );
 
     if (!response.data.isSuccess) {
-      throw new Error(response.data.message || '댓글 작성자 차단에 실패했습니다.');
+      throw new Error(
+        response.data.message || '댓글 작성자 차단에 실패했습니다.',
+      );
     }
   } catch (error: any) {
     throw error;

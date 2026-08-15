@@ -1,10 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { ActivityIndicator, View, StyleSheet, Modal, Pressable, TouchableOpacity, findNodeHandle } from 'react-native';
+import {
+  ActivityIndicator,
+  View,
+  StyleSheet,
+  Modal,
+  Pressable,
+  TouchableOpacity,
+  findNodeHandle,
+} from 'react-native';
 import { colors, spacing } from '../../design/tokens';
 import { Button } from '../common/Button';
 import { Text } from '../common/Text';
 import { ProfileHeader } from './ProfileHeader';
-import { Level, levelToDisplayString } from '../../libs/api/user/types';
 import { scale, verticalScale } from '../../utils/scaling';
 
 interface UserProfile {
@@ -12,7 +19,6 @@ interface UserProfile {
   avatarUrl?: string | null;
   followerCount: number;
   followingCount: number;
-  level?: Level;
 }
 
 interface ProfileCardProps {
@@ -40,9 +46,14 @@ const ProfileCard = ({
   onPressFollow,
   onPressBlock,
 }: ProfileCardProps) => {
-  const { nickname, avatarUrl, followerCount, followingCount, level = Level.CHALLENGER } = user;
+  const { nickname, avatarUrl, followerCount, followingCount } = user;
   const [popoverVisible, setPopoverVisible] = useState(false);
-  const [buttonLayout, setButtonLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [buttonLayout, setButtonLayout] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
   const buttonRef = useRef<View>(null);
 
   const isOther = variant === 'other';
@@ -51,10 +62,19 @@ const ProfileCard = ({
     if (buttonRef.current) {
       const nodeHandle = findNodeHandle(buttonRef.current);
       if (nodeHandle) {
-        (buttonRef.current as any).measure((_fx: number, _fy: number, width: number, height: number, px: number, py: number) => {
-          setButtonLayout({ x: px, y: py, width, height });
-          setPopoverVisible(true);
-        });
+        (buttonRef.current as any).measure(
+          (
+            _fx: number,
+            _fy: number,
+            width: number,
+            height: number,
+            px: number,
+            py: number,
+          ) => {
+            setButtonLayout({ x: px, y: py, width, height });
+            setPopoverVisible(true);
+          },
+        );
       }
     }
   };
@@ -70,7 +90,12 @@ const ProfileCard = ({
     if (!isOther) {
       return (
         <View style={styles.buttonRow}>
-          <Button variant="gray" size="small" style={styles.singleButton} onPress={onPressProfileEdit || (() => { })}>
+          <Button
+            variant="gray"
+            size="small"
+            style={styles.singleButton}
+            onPress={onPressProfileEdit || (() => {})}
+          >
             <Text variant="xsMd" color={colors.text.tertiary}>
               프로필 수정
             </Text>
@@ -86,7 +111,7 @@ const ProfileCard = ({
             variant="outlinePrimary"
             size="small"
             style={styles.singleButton}
-            onPress={onPressBlock || (() => { })}
+            onPress={onPressBlock || (() => {})}
           >
             <Text variant="smMd" color={colors.primary.main}>
               차단됨
@@ -124,7 +149,7 @@ const ProfileCard = ({
           variant="primary"
           size="small"
           style={styles.followButton}
-          onPress={onPressFollow || (() => { })}
+          onPress={onPressFollow || (() => {})}
           disabled={isFollowLoading}
         >
           {isFollowLoading ? (
@@ -147,8 +172,6 @@ const ProfileCard = ({
           avatarUrl={avatarUrl}
           followerCount={followerCount}
           followingCount={followingCount}
-          profileTypeText={levelToDisplayString[level]}
-          showProfileType={!isOther}
           onPressFollowers={onPressFollowers}
           onPressFollowing={onPressFollowing}
         />
@@ -156,8 +179,15 @@ const ProfileCard = ({
         {renderButtons()}
       </View>
 
-      <Modal visible={popoverVisible} transparent onRequestClose={() => setPopoverVisible(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setPopoverVisible(false)}>
+      <Modal
+        visible={popoverVisible}
+        transparent
+        onRequestClose={() => setPopoverVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setPopoverVisible(false)}
+        >
           <View
             style={[
               styles.popover,
@@ -167,7 +197,10 @@ const ProfileCard = ({
               },
             ]}
           >
-            <TouchableOpacity onPress={handleUnfollowConfirm} style={styles.popoverButton}>
+            <TouchableOpacity
+              onPress={handleUnfollowConfirm}
+              style={styles.popoverButton}
+            >
               <Text variant="smReg" color={colors.text.primary}>
                 언팔로우하기
               </Text>

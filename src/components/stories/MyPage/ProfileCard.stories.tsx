@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import ProfileCard, { Level } from '../../MyPage/ProfileCard';
+import ProfileCard from '../../MyPage/ProfileCard';
 
 const meta: Meta<typeof ProfileCard> = {
   title: 'Components/MyPage/ProfileCard',
@@ -13,10 +12,6 @@ const meta: Meta<typeof ProfileCard> = {
     'user.avatarUrl': { control: 'text', description: '아바타 이미지 URL' },
     'user.followerCount': { control: 'number', description: '팔로워 수' },
     'user.followingCount': { control: 'number', description: '팔로잉 수' },
-    'user.level': {
-      control: { type: 'select', options: Object.values(Level).filter(value => typeof value === 'number') },
-      description: '유저 레벨',
-    },
     variant: {
       control: 'inline-radio',
       options: ['me', 'other'],
@@ -43,7 +38,6 @@ const mockUserMe = {
   nickname: '해빗',
   followerCount: 150,
   followingCount: 88,
-  level: Level.CHALLENGER,
   avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
 };
 
@@ -51,7 +45,6 @@ const mockUserOther = {
   nickname: '다른유저',
   followerCount: 30,
   followingCount: 37,
-  level: Level.BRONZE,
   avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704e',
 };
 

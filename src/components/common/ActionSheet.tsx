@@ -6,8 +6,9 @@ import { scale, verticalScale } from '../../utils/scaling';
 
 export interface ActionSheetItem {
   label: string;
-  onPress: () => void;
+  onPress?: () => void;
   destructive?: boolean;
+  disabled?: boolean;
 }
 
 interface ActionSheetProps {
@@ -22,6 +23,8 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
   items,
 }) => {
   const handleItemPress = (item: ActionSheetItem) => {
+    if (item.disabled || !item.onPress) return;
+
     item.onPress();
     onClose();
   };
@@ -52,9 +55,20 @@ export const ActionSheet: React.FC<ActionSheetProps> = ({
                 <TouchableOpacity
                   style={styles.actionButton}
                   activeOpacity={0.9}
+                  disabled={item.disabled}
                   onPress={() => handleItemPress(item)}
+                  accessibilityState={{ disabled: item.disabled }}
                 >
-                  <Text variant="md" color={item.destructive ? colors.primary.sub : colors.text.primary}>
+                  <Text
+                    variant="md"
+                    color={
+                      item.disabled
+                        ? colors.text.tertiary
+                        : item.destructive
+                          ? colors.primary.sub
+                          : colors.text.primary
+                    }
+                  >
                     {item.label}
                   </Text>
                 </TouchableOpacity>
