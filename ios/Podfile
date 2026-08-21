@@ -42,6 +42,7 @@ target 'HrrApp' do
       if target.name == 'fmt'
         target.build_configurations.each do |config|
           config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -DFMT_USE_CONSTEVAL=0'
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
         end
       end
     end

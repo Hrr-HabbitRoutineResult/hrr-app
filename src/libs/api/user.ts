@@ -49,7 +49,9 @@ export const getUserMe = async (): Promise<UserMe> => {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '사용자 정보를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '사용자 정보를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -88,14 +90,14 @@ export interface OngoingChallengesResponse {
 /**
  * 참여 중인 챌린지 목록 조회
  */
-export const getOngoingChallenges = async (page: number = 1, size: number = 10): Promise<OngoingChallengeItem[]> => {
+export const getOngoingChallenges = async (
+  page: number = 1,
+  size: number = 10,
+): Promise<OngoingChallengeItem[]> => {
   try {
-    const response = await apiClient.get(
-      '/api/v1/user/me/challenge/ongoing',
-      {
-        params: { page, size },
-      }
-    );
+    const response = await apiClient.get('/api/v1/user/me/challenge/ongoing', {
+      params: { page, size },
+    });
 
     // 먼저 다른 API와 동일한 형식 확인 (isSuccess)
     if (response.data.isSuccess && response.data.result) {
@@ -156,26 +158,31 @@ export type VerificationHistoryPage = VerificationHistoryResponse['result'];
  */
 export const getVerificationHistoryPage = async (
   page: number = 1,
-  size: number = 20
+  size: number = 20,
 ): Promise<VerificationHistoryPage> => {
   const response = await apiClient.get<VerificationHistoryResponse>(
     '/api/v1/user/me/verifications/history',
     {
       params: { page, size },
-    }
+    },
   );
 
   if (response.data.isSuccess && response.data.result) {
     return response.data.result;
   }
 
-  throw new Error(response.data.message || '인증 기록을 불러오는데 실패했습니다.');
+  throw new Error(
+    response.data.message || '인증 기록을 불러오는데 실패했습니다.',
+  );
 };
 
 /**
  * 내 챌린지 인증 기록 조회
  */
-export const getVerificationHistory = async (page: number = 1, size: number = 20): Promise<VerificationHistoryItem[]> => {
+export const getVerificationHistory = async (
+  page: number = 1,
+  size: number = 20,
+): Promise<VerificationHistoryItem[]> => {
   const result = await getVerificationHistoryPage(page, size);
   return result.content;
 };
@@ -191,9 +198,11 @@ export interface ScrappedVerificationsResponse {
   status: string;
   code: string;
   message: string;
-  result: VerificationHistoryPage | {
-    verifications: VerificationHistoryPage;
-  };
+  result:
+    | VerificationHistoryPage
+    | {
+        verifications: VerificationHistoryPage;
+      };
 }
 
 /**
@@ -202,17 +211,19 @@ export interface ScrappedVerificationsResponse {
 export const getScrappedVerifications = async (
   userId: number,
   page: number = 1,
-  size: number = 20
+  size: number = 20,
 ): Promise<VerificationHistoryPage> => {
   const response = await apiClient.get<ScrappedVerificationsResponse>(
     `/api/v1/user/${userId}/verifications/scrap`,
     {
       params: { page, size },
-    }
+    },
   );
 
   if (!response.data.isSuccess || !response.data.result) {
-    throw new Error(response.data.message || '스크랩한 인증 글을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '스크랩한 인증 글을 불러오는데 실패했습니다.',
+    );
   }
 
   return 'verifications' in response.data.result
@@ -253,15 +264,22 @@ export interface FollowListResponse {
 /**
  * 내 팔로워 목록 조회
  */
-export const getFollowers = async (page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowers = async (
+  page: number = 1,
+  size: number = 20,
+): Promise<FollowItem[]> => {
   try {
-    const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followers', { params: { page, size } });
+    const response = await apiClient.get<FollowListResponse>(
+      '/api/v1/follow/me/followers',
+      { params: { page, size } },
+    );
     if (response.data.isSuccess) {
       return response.data.result.content;
     }
-    throw new Error(response.data.message || '팔로워 목록을 불러오는데 실패했습니다.');
-  }
-  catch (error: any) {
+    throw new Error(
+      response.data.message || '팔로워 목록을 불러오는데 실패했습니다.',
+    );
+  } catch (error: any) {
     throw error;
   }
 };
@@ -269,15 +287,22 @@ export const getFollowers = async (page: number = 1, size: number = 20): Promise
 /**
  * 내 팔로잉 목록 조회
  */
-export const getFollowings = async (page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowings = async (
+  page: number = 1,
+  size: number = 20,
+): Promise<FollowItem[]> => {
   try {
-    const response = await apiClient.get<FollowListResponse>('/api/v1/follow/me/followings', { params: { page, size } });
+    const response = await apiClient.get<FollowListResponse>(
+      '/api/v1/follow/me/followings',
+      { params: { page, size } },
+    );
     if (response.data.isSuccess) {
       return response.data.result.content;
     }
-    throw new Error(response.data.message || '팔로잉 목록을 불러오는데 실패했습니다.');
-  }
-  catch (error: any) {
+    throw new Error(
+      response.data.message || '팔로잉 목록을 불러오는데 실패했습니다.',
+    );
+  } catch (error: any) {
     throw error;
   }
 };
@@ -288,8 +313,7 @@ export const getFollowings = async (page: number = 1, size: number = 20): Promis
 export const followUser = async (followedUserId: number): Promise<void> => {
   try {
     await apiClient.post(`/api/v1/follow/${followedUserId}`);
-  }
-  catch (error: any) {
+  } catch (error: any) {
     throw error;
   }
 };
@@ -300,8 +324,100 @@ export const followUser = async (followedUserId: number): Promise<void> => {
 export const unfollowUser = async (unfollowedUserId: number): Promise<void> => {
   try {
     await apiClient.delete(`/api/v1/follow/${unfollowedUserId}`);
+  } catch (error: any) {
+    throw error;
   }
-  catch (error: any) {
+};
+
+/**
+ * 받은 팔로우 요청 아이템
+ */
+export interface FollowRequest {
+  requesterId: number;
+  requesterNickname: string;
+  requesterProfileUrl: string;
+  requesterLevel: string;
+}
+
+/**
+ * 받은 팔로우 요청 목록 응답
+ */
+export interface FollowRequestsResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    content: FollowRequest[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
+}
+
+/**
+ * 받은 팔로우 요청 목록 조회
+ */
+export const getFollowRequests = async (
+  page: number = 1,
+  size: number = 20,
+): Promise<FollowRequest[]> => {
+  try {
+    const response = await apiClient.get<FollowRequestsResponse>(
+      '/api/v1/follow/me/requests',
+      { params: { page, size } },
+    );
+    if (response.data.isSuccess) {
+      return response.data.result.content;
+    }
+    throw new Error(
+      response.data.message || '팔로우 요청 목록을 불러오는데 실패했습니다.',
+    );
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 팔로우 요청 승인
+ */
+export const approveFollowRequest = async (
+  requesterId: number,
+): Promise<void> => {
+  try {
+    const response = await apiClient.post<{
+      isSuccess: boolean;
+      message: string;
+    }>(`/api/v1/follow/requests/${requesterId}/approve`);
+    if (!response.data.isSuccess) {
+      throw new Error(
+        response.data.message || '팔로우 요청 승인에 실패했습니다.',
+      );
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 팔로우 요청 거절
+ */
+export const rejectFollowRequest = async (
+  requesterId: number,
+): Promise<void> => {
+  try {
+    const response = await apiClient.delete<{
+      isSuccess: boolean;
+      message: string;
+    }>(`/api/v1/follow/requests/${requesterId}/reject`);
+    if (!response.data.isSuccess) {
+      throw new Error(
+        response.data.message || '팔로우 요청 거절에 실패했습니다.',
+      );
+    }
+  } catch (error: any) {
     throw error;
   }
 };
@@ -309,15 +425,24 @@ export const unfollowUser = async (unfollowedUserId: number): Promise<void> => {
 /**
  * 특정 사용자의 팔로워 목록 조회
  */
-export const getFollowersByUserId = async (userId: number, page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowersByUserId = async (
+  userId: number,
+  page: number = 1,
+  size: number = 20,
+): Promise<FollowItem[]> => {
   try {
-    const response = await apiClient.get<FollowListResponse>(`/api/v1/follow/${userId}/followers`, { params: { page, size } });
+    const response = await apiClient.get<FollowListResponse>(
+      `/api/v1/follow/${userId}/followers`,
+      { params: { page, size } },
+    );
     if (response.data.isSuccess) {
       return response.data.result.content;
     }
-    throw new Error(response.data.message || '특정 사용자의 팔로워 목록을 불러오는데 실패했습니다.');
-  }
-  catch (error: any) {
+    throw new Error(
+      response.data.message ||
+        '특정 사용자의 팔로워 목록을 불러오는데 실패했습니다.',
+    );
+  } catch (error: any) {
     throw error;
   }
 };
@@ -325,19 +450,27 @@ export const getFollowersByUserId = async (userId: number, page: number = 1, siz
 /**
  * 특정 사용자의 팔로잉 목록 조회
  */
-export const getFollowingsByUserId = async (userId: number, page: number = 1, size: number = 20): Promise<FollowItem[]> => {
+export const getFollowingsByUserId = async (
+  userId: number,
+  page: number = 1,
+  size: number = 20,
+): Promise<FollowItem[]> => {
   try {
-    const response = await apiClient.get<FollowListResponse>(`/api/v1/follow/${userId}/followings`, { params: { page, size } });
+    const response = await apiClient.get<FollowListResponse>(
+      `/api/v1/follow/${userId}/followings`,
+      { params: { page, size } },
+    );
     if (response.data.isSuccess) {
       return response.data.result.content;
     }
-    throw new Error(response.data.message || '특정 사용자의 팔로잉 목록을 불러오는데 실패했습니다.');
-  }
-  catch (error: any) {
+    throw new Error(
+      response.data.message ||
+        '특정 사용자의 팔로잉 목록을 불러오는데 실패했습니다.',
+    );
+  } catch (error: any) {
     throw error;
   }
 };
-
 
 /**
  * 사용자 프로필 업데이트 요청 타입
@@ -373,9 +506,14 @@ export interface UpdateUserProfileResponse {
 /**
  * 사용자 프로필 업데이트
  */
-export const updateUserProfile = async (data: UpdateUserProfileRequest): Promise<UpdateUserProfileResult> => {
+export const updateUserProfile = async (
+  data: UpdateUserProfileRequest,
+): Promise<UpdateUserProfileResult> => {
   try {
-    const response = await apiClient.patch<UpdateUserProfileResponse>('/api/v1/user/me', data);
+    const response = await apiClient.patch<UpdateUserProfileResponse>(
+      '/api/v1/user/me',
+      data,
+    );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
@@ -461,11 +599,15 @@ export interface OtherUserOngoingChallengesResponse {
  */
 export const getUserById = async (userId: number): Promise<OtherUser> => {
   try {
-    const response = await apiClient.get<OtherUserResponse>(`/api/v1/user/${userId}`);
+    const response = await apiClient.get<OtherUserResponse>(
+      `/api/v1/user/${userId}`,
+    );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '타인 사용자 정보를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '타인 사용자 정보를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -477,19 +619,22 @@ export const getUserById = async (userId: number): Promise<OtherUser> => {
 export const getVerificationHistoryById = async (
   userId: number,
   page: number = 1,
-  size: number = 20
+  size: number = 20,
 ): Promise<OtherUserVerificationHistoryResponse['result']> => {
   try {
     const response = await apiClient.get<OtherUserVerificationHistoryResponse>(
       `/api/v1/user/${userId}/verifications/history`,
       {
         params: { page, size },
-      }
+      },
     );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '타인 사용자 인증 기록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message ||
+        '타인 사용자 인증 기록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -501,19 +646,22 @@ export const getVerificationHistoryById = async (
 export const getOngoingChallengesById = async (
   userId: number,
   page: number = 1,
-  size: number = 10
+  size: number = 10,
 ): Promise<OtherUserOngoingChallengesResponse['result']> => {
   try {
     const response = await apiClient.get<OtherUserOngoingChallengesResponse>(
       `/api/v1/user/${userId}/challenge/ongoing`,
       {
         params: { page, size },
-      }
+      },
     );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '타인 사용자의 참가중인 챌린지를 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message ||
+        '타인 사용자의 참가중인 챌린지를 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -539,9 +687,13 @@ export interface BlockUserResponse {
 /**
  * 사용자 차단
  */
-export const blockUserById = async (blockedId: number): Promise<BlockUserResponse['result']> => {
+export const blockUserById = async (
+  blockedId: number,
+): Promise<BlockUserResponse['result']> => {
   try {
-    const response = await apiClient.post<BlockUserResponse>(`/api/v1/blocks/${blockedId}`);
+    const response = await apiClient.post<BlockUserResponse>(
+      `/api/v1/blocks/${blockedId}`,
+    );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
@@ -565,13 +717,19 @@ export interface UnblockUserResponse {
 /**
  * 사용자 차단 해제
  */
-export const unblockUserById = async (blockedId: number): Promise<UnblockUserResponse['result']> => {
+export const unblockUserById = async (
+  blockedId: number,
+): Promise<UnblockUserResponse['result']> => {
   try {
-    const response = await apiClient.delete<UnblockUserResponse>(`/api/v1/blocks/${blockedId}`);
+    const response = await apiClient.delete<UnblockUserResponse>(
+      `/api/v1/blocks/${blockedId}`,
+    );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '사용자 차단 해제에 실패했습니다.');
+    throw new Error(
+      response.data.message || '사용자 차단 해제에 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -609,23 +767,27 @@ export interface GetBlockedUsersResponse {
 /**
  * 내 차단 목록 조회
  */
-export const getBlockedUsers = async (page: number = 1, size: number = 20): Promise<BlockedUser[]> => {
+export const getBlockedUsers = async (
+  page: number = 1,
+  size: number = 20,
+): Promise<BlockedUser[]> => {
   try {
     const response = await apiClient.get<GetBlockedUsersResponse>(
       '/api/v1/blocks/me',
       {
         params: { page, size },
-      }
+      },
     );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result.content;
     }
-    throw new Error(response.data.message || '차단 목록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '차단 목록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
 };
-
 
 /**
  * ============================================
@@ -637,12 +799,12 @@ export const getBlockedUsers = async (page: number = 1, size: number = 20): Prom
  * 신고 사유 타입
  */
 export type ReportReason =
-  | 'ABUSIVE_LANGUAGE'         // 욕설/비속어 사용
-  | 'SEXUAL_OR_OBSCENE'        // 성희롱/음란 발언
-  | 'SPAM_OR_SCAM'             // 스팸/도배
-  | 'PERSONAL_INFO_REQUEST'    // 개인정보 노출 요구
-  | 'ILLEGAL_CONTENT_SHARE'    // 불법/유해 콘텐츠 공유
-  | 'OTHER';                     // 기타(직접 입력)
+  | 'ABUSIVE_LANGUAGE' // 욕설/비속어 사용
+  | 'SEXUAL_OR_OBSCENE' // 성희롱/음란 발언
+  | 'SPAM_OR_SCAM' // 스팸/도배
+  | 'PERSONAL_INFO_REQUEST' // 개인정보 노출 요구
+  | 'ILLEGAL_CONTENT_SHARE' // 불법/유해 콘텐츠 공유
+  | 'OTHER'; // 기타(직접 입력)
 
 /**
  * 신고 요청
@@ -671,7 +833,7 @@ export const reportUserById = async (data: ReportRequest): Promise<void> => {
   try {
     const response = await apiClient.post<ReportResponse>(
       '/api/v1/report/user',
-      data
+      data,
     );
 
     if (!response.data.isSuccess) {
@@ -721,18 +883,23 @@ export interface ChallengeListResponse {
 /**
  * 찜한 챌린지 목록 조회
  */
-export const getLikedChallenges = async (page: number = 1, size: number = 10): Promise<ChallengeListResponse['result']> => {
+export const getLikedChallenges = async (
+  page: number = 1,
+  size: number = 10,
+): Promise<ChallengeListResponse['result']> => {
   try {
     const response = await apiClient.get<ChallengeListResponse>(
       '/api/v1/user/challenges/liked',
       {
         params: { page, size },
-      }
+      },
     );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '찜한 챌린지 목록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '찜한 챌린지 목록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -741,18 +908,23 @@ export const getLikedChallenges = async (page: number = 1, size: number = 10): P
 /**
  * 종료된 챌린지 목록 조회
  */
-export const getCompletedChallenges = async (page: number = 1, size: number = 10): Promise<ChallengeListResponse['result']> => {
+export const getCompletedChallenges = async (
+  page: number = 1,
+  size: number = 10,
+): Promise<ChallengeListResponse['result']> => {
   try {
     const response = await apiClient.get<ChallengeListResponse>(
       '/api/v1/user/challenges/completed',
       {
         params: { page, size },
-      }
+      },
     );
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
-    throw new Error(response.data.message || '종료된 챌린지 목록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '종료된 챌린지 목록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }

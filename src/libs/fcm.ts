@@ -22,21 +22,54 @@ const requestAndroidNotificationPermission = async (): Promise<boolean> => {
  */
 export const getFcmToken = async (): Promise<string | null> => {
   if (Platform.OS === 'ios') {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-    if (!enabled) return null;
-    await messaging().registerDeviceForRemoteMessages();
+    try {
+      const authStatus = await messaging().requestPermission();
+      console.log('[FCM] iOS 권한 요청 결과:', authStatus);
+
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (!enabled) {
+        console.warn('[FCM] ❌ 권한 거부됨. 상태:', authStatus);
+        return null;
+      }
+
+      console.log(
+        '[FCM] ✅ 권한 승인. registerDeviceForRemoteMessages() 호출...',
+      );
+      await messaging().registerDeviceForRemoteMessages();
+      console.log('[FCM] ✅ registerDeviceForRemoteMessages() 완료');
+    } catch (error) {
+      console.error('[FCM] ❌ iOS 권한 요청 실패:', error);
+      return null;
+    }
   }
 
   if (Platform.OS === 'android') {
     const granted = await requestAndroidNotificationPermission();
-    if (!granted) return null;
+    if (!granted) {
+      console.warn('[FCM] ❌ Android 권한 거부됨');
+      return null;
+    }
+    console.log('[FCM] ✅ Android 권한 승인');
   }
 
-  const token = await messaging().getToken();
-  return token || null;
+  try {
+    const token = await messaging().getToken();
+    console.log('[FCM] ✅ FCM 토큰 획득:', token?.substring(0, 20) + '...');
+
+    // iOS: APNs 토큰 확인
+    if (Platform.OS === 'ios') {
+      const apnsToken = await messaging().getAPNSToken();
+      console.log('[FCM] iOS APNs 토큰:', apnsToken ? '✅ 등록됨' : '❌ 없음');
+    }
+
+    return token || null;
+  } catch (error) {
+    console.error('[FCM] ❌ getToken() 실패:', error);
+    return null;
+  }
 };
 
 /**
@@ -44,14 +77,25 @@ export const getFcmToken = async (): Promise<string | null> => {
  */
 export const registerFcmTokenSilently = async (): Promise<void> => {
   try {
+    console.log('[FCM] FCM 토큰 등록 시작...');
     const [token, storedUserId] = await Promise.all([
       getFcmToken(),
       AsyncStorage.getItem('userId'),
     ]);
-    if (!token || !storedUserId) return;
+
+    console.log('[FCM] 토큰:', token ? '✅ 있음' : '❌ 없음');
+    console.log('[FCM] userId:', storedUserId ? '✅ 있음' : '❌ 없음');
+
+    if (!token || !storedUserId) {
+      console.warn('[FCM] ⚠️ 토큰 또는 userId 없음, 등록 스킵');
+      return;
+    }
+
+    console.log('[FCM] 서버에 토큰 등록 중... (userId:', storedUserId, ')');
     await registerFcmToken(Number(storedUserId), token);
-  } catch {
-    // 토큰 등록 실패는 무시
+    console.log('[FCM] ✅ 서버 등록 성공');
+  } catch (error) {
+    console.error('[FCM] ❌ 토큰 등록 실패:', error);
   }
 };
 

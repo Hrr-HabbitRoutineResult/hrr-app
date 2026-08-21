@@ -1112,6 +1112,10 @@ export interface VerificationDetailResponse {
     adoptedCommentId: number;
     showResolvedBadge: boolean;
     commentCount: number;
+    isLiked: boolean;
+    likeCount: number;
+    isScrapped: boolean;
+    scrapCount: number;
     user: VerificationUser;
     roundInfo: RoundInfo;
     comments: CommentsData;
@@ -1302,6 +1306,10 @@ export interface VerificationFeedItem {
   writerProfileUrl: string;
   writerId: number;
   createdDate: string;
+  isLiked: boolean;
+  likeCount: number;
+  isScrapped: boolean;
+  scrapCount: number;
 }
 
 /**
@@ -1505,6 +1513,120 @@ export const deleteVerification = async (
     if (!response.data.isSuccess) {
       throw new Error(response.data.message || '게시글 삭제에 실패했습니다.');
     }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증글 좋아요 응답
+ */
+export interface VerificationLikeResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    verificationId: number;
+    isLiked: boolean;
+    likeCount: number;
+  };
+}
+
+/**
+ * 인증글 좋아요 등록
+ */
+export const likeVerification = async (
+  verificationId: number,
+): Promise<VerificationLikeResponse['result']> => {
+  try {
+    const response = await apiClient.put<VerificationLikeResponse>(
+      `/api/v1/verifications/${verificationId}/likes`,
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '좋아요 처리에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증글 좋아요 취소
+ */
+export const unlikeVerification = async (
+  verificationId: number,
+): Promise<VerificationLikeResponse['result']> => {
+  try {
+    const response = await apiClient.delete<VerificationLikeResponse>(
+      `/api/v1/verifications/${verificationId}/likes`,
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '좋아요 취소에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증글 스크랩 응답
+ */
+export interface VerificationScrapResponse {
+  isSuccess: boolean;
+  status: string;
+  code: string;
+  message: string;
+  result: {
+    verificationId: number;
+    isScrapped: boolean;
+    scrapCount: number;
+  };
+}
+
+/**
+ * 인증글 스크랩 등록
+ */
+export const scrapVerification = async (
+  verificationId: number,
+): Promise<VerificationScrapResponse['result']> => {
+  try {
+    const response = await apiClient.put<VerificationScrapResponse>(
+      `/api/v1/verifications/${verificationId}/scrap`,
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '스크랩 처리에 실패했습니다.');
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 인증글 스크랩 취소
+ */
+export const unscrapVerification = async (
+  verificationId: number,
+): Promise<VerificationScrapResponse['result']> => {
+  try {
+    const response = await apiClient.delete<VerificationScrapResponse>(
+      `/api/v1/verifications/${verificationId}/scrap`,
+    );
+
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
+
+    throw new Error(response.data.message || '스크랩 취소에 실패했습니다.');
   } catch (error: any) {
     throw error;
   }
@@ -1805,6 +1927,24 @@ export const reportUser = async (data: ReportRequest): Promise<void> => {
 
     if (!response.data.isSuccess) {
       throw new Error(response.data.message || '사용자 신고에 실패했습니다.');
+    }
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+/**
+ * 챌린지 신고
+ */
+export const reportChallenge = async (data: ReportRequest): Promise<void> => {
+  try {
+    const response = await apiClient.post<ReportResponse>(
+      '/api/v1/report/challenge',
+      data,
+    );
+
+    if (!response.data.isSuccess) {
+      throw new Error(response.data.message || '챌린지 신고에 실패했습니다.');
     }
   } catch (error: any) {
     throw error;

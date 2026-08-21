@@ -93,6 +93,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     return false
   }
+
+  // APNs 등록 실패 핸들러 (진단용 로깅)
+  func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    print("[AppDelegate] ❌ APNs 등록 실패: \(error.localizedDescription)")
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {

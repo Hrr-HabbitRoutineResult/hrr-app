@@ -1,9 +1,33 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { getErrorMessage, getErrorInfo } from '../../utils/errorHandler';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Modal, Pressable, KeyboardAvoidingView, Platform, Keyboard, TextInput, Dimensions, Linking } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TextInput,
+  Dimensions,
+  Linking,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import {
+  useNavigation,
+  useRoute,
+  RouteProp,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import LinearGradient from 'react-native-linear-gradient';
@@ -14,7 +38,10 @@ import { TextField } from '../../components/common/TextField';
 import { CommentItem } from '../../components/challenge/CommentItem';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
-import { ActionSheet, ActionSheetItem } from '../../components/common/ActionSheet';
+import {
+  ActionSheet,
+  ActionSheetItem,
+} from '../../components/common/ActionSheet';
 import { ConfirmationModal } from '../../components/common/ConfirmationModal';
 import { colors, typography } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
@@ -34,7 +61,11 @@ import {
   reportVerificationPost,
   reportUser,
   reportWeakVerification,
-  ReportReason
+  ReportReason,
+  likeVerification,
+  unlikeVerification,
+  scrapVerification,
+  unscrapVerification,
 } from '../../libs/api/challenge';
 import { getS3ImageUrl } from '../../libs/s3';
 import MoreIcon from '../../../assets/icons/more.svg';
@@ -50,7 +81,10 @@ import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg
 import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
 import PhotoUnselectedIcon from '../../../assets/icons/challenge-create/photo-unselected.svg';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
-type ChallengeCertificationDetailScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationDetail'>;
+type ChallengeCertificationDetailScreenRouteProp = RouteProp<
+  RootStackParamList,
+  'ChallengeCertificationDetail'
+>;
 type ChallengeCertificationDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   'ChallengeCertificationDetail'
@@ -64,7 +98,8 @@ const DELETE_UNAVAILABLE_ERROR_CODES = new Set([
 ]);
 
 export const ChallengeCertificationDetailScreen: React.FC = () => {
-  const navigation = useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
+  const navigation =
+    useNavigation<ChallengeCertificationDetailScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationDetailScreenRouteProp>();
   const { verification: initialVerification } = route.params;
   const insets = useSafeAreaInsets();
@@ -73,15 +108,26 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const commentInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
   const commentYPositions = useRef<Record<string | number, number>>({});
+  const isLikeRequestInFlight = useRef(false);
+  const isScrapRequestInFlight = useRef(false);
 
-  const [verification, setVerification] = useState<VerificationDetailResponse['result'] | null>(null);
+  const [verification, setVerification] = useState<
+    VerificationDetailResponse['result'] | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [commentPage, setCommentPage] = useState(1);
   const [isCommentLocked, setIsCommentLocked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [isLikePending, setIsLikePending] = useState(false);
+  const [isScrapped, setIsScrapped] = useState(false);
+  const [scrapCount, setScrapCount] = useState(0);
+  const [isScrapPending, setIsScrapPending] = useState(false);
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
-  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
-  const [isDeleteUnavailableVisible, setIsDeleteUnavailableVisible] = useState(false);
+  const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] =
+    useState(false);
+  const [isDeleteUnavailableVisible, setIsDeleteUnavailableVisible] =
+    useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -89,18 +135,31 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const commentInputBottomPadding = Math.max(insets.bottom, verticalScale(8));
 
   // 댓글 관련 state
-  const [comments, setComments] = useState<GetCommentsResponse['result'] | null>(null);
+  const [comments, setComments] = useState<
+    GetCommentsResponse['result'] | null
+  >(null);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [replyToComment, setReplyToComment] = useState<CommentItemType | null>(null);
-  const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set());
-  const [openMenuCommentId, setOpenMenuCommentId] = useState<number | null>(null);
-  const [isAdoptBottomSheetVisible, setIsAdoptBottomSheetVisible] = useState(false);
-  const [selectedCommentForAdopt, setSelectedCommentForAdopt] = useState<number | null>(null);
+  const [replyToComment, setReplyToComment] = useState<CommentItemType | null>(
+    null,
+  );
+  const [expandedComments, setExpandedComments] = useState<Set<number>>(
+    new Set(),
+  );
+  const [openMenuCommentId, setOpenMenuCommentId] = useState<number | null>(
+    null,
+  );
+  const [isAdoptBottomSheetVisible, setIsAdoptBottomSheetVisible] =
+    useState(false);
+  const [selectedCommentForAdopt, setSelectedCommentForAdopt] = useState<
+    number | null
+  >(null);
 
   // 신고 관련 state
-  const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] = useState(false);
-  const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] = useState(false);
+  const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] =
+    useState(false);
+  const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] =
+    useState(false);
 
   // 이미지 뷰어 관련 state
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
@@ -111,7 +170,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const fetchVerificationDetail = useCallback(async () => {
     try {
       setIsLoading(true);
-      const verificationId = initialVerification?.verificationId || route.params.verificationId;
+      const verificationId =
+        initialVerification?.verificationId || route.params.verificationId;
 
       if (!verificationId) {
         Alert.alert('오류', '게시글 정보를 불러올 수 없습니다.');
@@ -127,11 +187,17 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       // textImages 배열 끝 슬래시 제거
       if (result.textImages && Array.isArray(result.textImages)) {
         result.textImages = result.textImages.map(url =>
-          url.endsWith('/') ? url.slice(0, -1) : url
+          url.endsWith('/') ? url.slice(0, -1) : url,
         );
       }
 
       setVerification(result);
+
+      // 좋아요/스크랩 상태 초기화
+      setIsLiked(result.isLiked);
+      setLikeCount(result.likeCount);
+      setIsScrapped(result.isScrapped);
+      setScrapCount(result.scrapCount);
 
       // 댓글 조회 (모든 페이지)
       let allComments: CommentItemType[] = [];
@@ -159,9 +225,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
 
         // adoptedChildren 수집 (중복 제거)
-        if (pageResult.adoptedChildren && pageResult.adoptedChildren.length > 0) {
+        if (
+          pageResult.adoptedChildren &&
+          pageResult.adoptedChildren.length > 0
+        ) {
           pageResult.adoptedChildren.forEach(child => {
-            if (!allAdoptedChildren.find(c => c.commentId === child.commentId)) {
+            if (
+              !allAdoptedChildren.find(c => c.commentId === child.commentId)
+            ) {
               allAdoptedChildren.push(child);
             }
           });
@@ -196,7 +267,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       const childComments = allCommentsForExpanded.filter(c => c.depth > 0);
 
       parentComments.forEach(parent => {
-        const children = childComments.filter(child => child.parentId === parent.commentId);
+        const children = childComments.filter(
+          child => child.parentId === parent.commentId,
+        );
         // 부모가 채택되었거나 자식 중에 채택된 댓글이 있으면 펼침
         if (parent.adopted || children.some(child => child.adopted)) {
           setExpandedComments(prev => {
@@ -207,36 +280,44 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }
       });
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '게시글을 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '게시글을 불러오는데 실패했습니다.',
+      );
       Alert.alert('오류', errorMessage);
       navigation.goBack();
     } finally {
       setIsLoading(false);
     }
-  }, [commentPage, initialVerification, route.params.verificationId, navigation]);
+  }, [
+    commentPage,
+    initialVerification,
+    route.params.verificationId,
+    navigation,
+  ]);
 
   // 화면이 포커스될 때마다 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
       fetchVerificationDetail();
-    }, [fetchVerificationDetail])
+    }, [fetchVerificationDetail]),
   );
 
   // 키보드 이벤트 리스너
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      (e) => {
+      e => {
         setIsKeyboardVisible(true);
         setKeyboardHeight(e.endCoordinates.height);
-      }
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
         setIsKeyboardVisible(false);
         setKeyboardHeight(0);
-      }
+      },
     );
 
     return () => {
@@ -268,11 +349,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     // 타입에 따라 다른 수정 화면으로 이동
     if (verification.type === 'TEXT') {
       navigation.navigate('ChallengeCertificationTextEdit', {
-        verification: verification
+        verification: verification,
       });
     } else {
       navigation.navigate('ChallengeCertificationEdit', {
-        verification: verification
+        verification: verification,
       });
     }
   };
@@ -298,7 +379,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       if (DELETE_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
         setIsDeleteUnavailableVisible(true);
       } else {
-        const errorMessage = getErrorMessage(error, '게시글 삭제에 실패했습니다.');
+        const errorMessage = getErrorMessage(
+          error,
+          '게시글 삭제에 실패했습니다.',
+        );
         Alert.alert('오류', errorMessage);
       }
     } finally {
@@ -323,12 +407,15 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               await reportWeakVerification(verification.verificationId);
               Alert.alert('신고 완료', '신고가 접수되었습니다.');
             } catch (error: any) {
-              const { title, message } = getErrorInfo(error, '신고에 실패했습니다.');
+              const { title, message } = getErrorInfo(
+                error,
+                '신고에 실패했습니다.',
+              );
               Alert.alert(title, message);
             }
-          }
+          },
         },
-      ]
+      ],
     );
   };
 
@@ -343,14 +430,17 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   // 게시글 신고 제출
-  const handleSubmitReportPost = async (reason: ReportReason, description: string) => {
+  const handleSubmitReportPost = async (
+    reason: ReportReason,
+    description: string,
+  ) => {
     if (!verification) return;
 
     try {
       await reportVerificationPost({
         targetId: verification.verificationId,
         reason: reason,
-        description: description
+        description: description,
       });
 
       setIsReportPostBottomSheetVisible(false);
@@ -362,14 +452,17 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   // 사용자 신고 제출
-  const handleSubmitReportUser = async (reason: ReportReason, description: string) => {
+  const handleSubmitReportUser = async (
+    reason: ReportReason,
+    description: string,
+  ) => {
     if (!verification) return;
 
     try {
       await reportUser({
         targetId: verification.user.userId,
         reason: reason,
-        description: description
+        description: description,
       });
 
       setIsReportUserBottomSheetVisible(false);
@@ -428,6 +521,72 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   // 답글 작성 시작
+  const handleToggleLike = async () => {
+    const verificationId =
+      verification?.verificationId ||
+      initialVerification?.verificationId ||
+      route.params.verificationId;
+
+    // 연속 탭으로 PUT/DELETE가 중복 발사되지 않도록 ref로 즉시 차단
+    if (!verificationId || isLikeRequestInFlight.current) {
+      return;
+    }
+
+    isLikeRequestInFlight.current = true;
+    setIsLikePending(true);
+
+    try {
+      const result = isLiked
+        ? await unlikeVerification(verificationId)
+        : await likeVerification(verificationId);
+
+      setIsLiked(result.isLiked);
+      setLikeCount(result.likeCount);
+    } catch (error: any) {
+      const errorMessage = getErrorMessage(
+        error,
+        '좋아요 처리에 실패했습니다.',
+      );
+      Alert.alert('오류', errorMessage);
+    } finally {
+      isLikeRequestInFlight.current = false;
+      setIsLikePending(false);
+    }
+  };
+
+  const handleToggleScrap = async () => {
+    const verificationId =
+      verification?.verificationId ||
+      initialVerification?.verificationId ||
+      route.params.verificationId;
+
+    // 연속 탭으로 PUT/DELETE가 중복 발사되지 않도록 ref로 즉시 차단
+    if (!verificationId || isScrapRequestInFlight.current) {
+      return;
+    }
+
+    isScrapRequestInFlight.current = true;
+    setIsScrapPending(true);
+
+    try {
+      const result = isScrapped
+        ? await unscrapVerification(verificationId)
+        : await scrapVerification(verificationId);
+
+      setIsScrapped(result.isScrapped);
+      setScrapCount(result.scrapCount);
+    } catch (error: any) {
+      const errorMessage = getErrorMessage(
+        error,
+        '스크랩 처리에 실패했습니다.',
+      );
+      Alert.alert('오류', errorMessage);
+    } finally {
+      isScrapRequestInFlight.current = false;
+      setIsScrapPending(false);
+    }
+  };
+
   const handleReplyToComment = (comment: CommentItemType) => {
     setReplyToComment(comment);
 
@@ -473,7 +632,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setExpandedComments(prev => {
         const newSet = new Set(prev);
         parentComments.forEach(parent => {
-          const children = childComments.filter(child => child.parentId === parent.commentId);
+          const children = childComments.filter(
+            child => child.parentId === parent.commentId,
+          );
           if (children.length === 0 && newSet.has(parent.commentId)) {
             newSet.delete(parent.commentId);
           }
@@ -536,7 +697,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         setComments(commentsResult);
       }
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '사용자 차단에 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '사용자 차단에 실패했습니다.',
+      );
       Alert.alert('오류', errorMessage);
     }
   };
@@ -556,7 +720,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
   // 댓글 메뉴 토글
   const handleMenuToggle = (commentId: number) => {
-    setOpenMenuCommentId(prev => prev === commentId ? null : commentId);
+    setOpenMenuCommentId(prev => (prev === commentId ? null : commentId));
   };
 
   // 댓글 목록을 부모-자식 구조로 정리
@@ -574,14 +738,19 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     const childComments = allComments.filter(c => c.depth > 0);
 
     // 부모 댓글을 시간순으로 정렬
-    const sortedParents = parentComments.sort((a, b) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    const sortedParents = parentComments.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 
     return sortedParents.map(parent => ({
       parent,
-      children: childComments.filter(child => child.parentId === parent.commentId)
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
+      children: childComments
+        .filter(child => child.parentId === parent.commentId)
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        ),
     }));
   };
 
@@ -598,11 +767,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   if (isLoading || !verification) {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <Header
-          onBack={handleBack}
-          title="게시글"
-          showDivider={true}
-        />
+        <Header onBack={handleBack} title="게시글" showDivider={true} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary.main} />
         </View>
@@ -614,33 +779,33 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const isPhotoVerification = verification.type !== 'TEXT';
   const actionSheetItems: ActionSheetItem[] = verification.isMine
     ? [
-      {
-        label: '수정',
-        onPress: handleEdit,
-      },
-      {
-        label: '삭제',
-        onPress: handleDelete,
-        destructive: true,
-      },
-    ]
+        {
+          label: '수정',
+          onPress: handleEdit,
+        },
+        {
+          label: '삭제',
+          onPress: handleDelete,
+          destructive: true,
+        },
+      ]
     : [
-      {
-        label: '부실인증 신고하기',
-        onPress: handleReportPoorVerification,
-        destructive: true,
-      },
-      {
-        label: '게시글 신고하기',
-        onPress: handleReportPost,
-        destructive: true,
-      },
-      {
-        label: '사용자 신고하기',
-        onPress: handleReportUser,
-        destructive: true,
-      },
-    ];
+        {
+          label: '부실인증 신고하기',
+          onPress: handleReportPoorVerification,
+          destructive: true,
+        },
+        {
+          label: '게시글 신고하기',
+          onPress: handleReportPost,
+          destructive: true,
+        },
+        {
+          label: '사용자 신고하기',
+          onPress: handleReportUser,
+          destructive: true,
+        },
+      ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -668,7 +833,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           isPhotoVerification && styles.photoScrollContent,
           isKeyboardVisible && {
             paddingBottom: keyboardHeight + verticalScale(80), // 키보드 높이 + 댓글 입력창 높이
-          }
+          },
         ]}
         showsVerticalScrollIndicator={false}
         onRefresh={fetchVerificationDetail}
@@ -679,11 +844,21 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           onPress={() => handleProfilePress(verification.user.userId)}
           activeOpacity={0.7}
         >
-          <View style={[styles.userAvatar, isPhotoVerification && styles.photoUserAvatar]}>
+          <View
+            style={[
+              styles.userAvatar,
+              isPhotoVerification && styles.photoUserAvatar,
+            ]}
+          >
             {getS3ImageUrl(verification.user.profileImageUrl) ? (
               <Image
-                source={{ uri: getS3ImageUrl(verification.user.profileImageUrl)! }}
-                style={[styles.profileImage, isPhotoVerification && styles.photoProfileImage]}
+                source={{
+                  uri: getS3ImageUrl(verification.user.profileImageUrl)!,
+                }}
+                style={[
+                  styles.profileImage,
+                  isPhotoVerification && styles.photoProfileImage,
+                ]}
               />
             ) : (
               <DefaultProfileIcon
@@ -707,10 +882,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
         {/* 질문 태그 */}
         {verification.isQuestion && (
-          <View style={[
-            styles.questionTag,
-            verification.isResolved && styles.resolvedTag
-          ]}>
+          <View
+            style={[
+              styles.questionTag,
+              verification.isResolved && styles.resolvedTag,
+            ]}
+          >
             <Text variant="xsMd" color={colors.white}>
               {verification.isResolved ? '채택' : '질문'}
             </Text>
@@ -738,9 +915,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {/* 이미지 */}
         {(() => {
           // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
-          const images = verification.type === 'TEXT'
-            ? (verification.textImages || [])
-            : (verification.photoUrl ? [verification.photoUrl] : []);
+          const images =
+            verification.type === 'TEXT'
+              ? verification.textImages || []
+              : verification.photoUrl
+              ? [verification.photoUrl]
+              : [];
 
           if (images.length === 0) return null;
 
@@ -756,12 +936,19 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                     setIsImageViewerVisible(true);
                   }}
                   disabled={failedImages.has(imageUrl as string)}
-                  style={[styles.imageContainer, isPhotoVerification && styles.photoImageContainer]}
+                  style={[
+                    styles.imageContainer,
+                    isPhotoVerification && styles.photoImageContainer,
+                  ]}
                 >
                   {failedImages.has(imageUrl as string) ? (
                     <View style={styles.imageErrorState}>
                       <PhotoUnselectedIcon width={28} height={28} />
-                      <Text variant="xsReg" color={colors.text.tertiary} style={styles.imageErrorText}>
+                      <Text
+                        variant="xsReg"
+                        color={colors.text.tertiary}
+                        style={styles.imageErrorText}
+                      >
                         이미지를 불러오지 못했어요
                       </Text>
                     </View>
@@ -771,7 +958,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                       style={styles.image}
                       resizeMode="cover"
                       onError={() => {
-                        setFailedImages(prev => new Set(prev).add(imageUrl as string));
+                        setFailedImages(prev =>
+                          new Set(prev).add(imageUrl as string),
+                        );
                       }}
                     />
                   )}
@@ -794,24 +983,40 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
             }}
             activeOpacity={0.7}
           >
-            <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
+            <Text
+              variant="smReg"
+              color={colors.text.secondary}
+              numberOfLines={1}
+              style={styles.linkText}
+            >
               {verification.textUrl}
             </Text>
           </TouchableOpacity>
         )}
 
         {/* 좋아요, 댓글, 스크랩 */}
-        <View style={[
-          styles.engagementSection,
-          isPhotoVerification && styles.photoEngagementSection,
-          !(comments && (comments.adoptedParent || comments.comments.length > 0)) && styles.engagementSectionNoComments
-        ]}>
-          {/* 런칭 시 좋아요 기능 제외 */}
-          {/* <View style={styles.engagementItem}>
+        <View
+          style={[
+            styles.engagementSection,
+            isPhotoVerification && styles.photoEngagementSection,
+            !(
+              comments &&
+              (comments.adoptedParent || comments.comments.length > 0)
+            ) && styles.engagementSectionNoComments,
+          ]}
+        >
+          <View style={styles.engagementItem}>
             <TouchableOpacity
               style={styles.iconContainer}
               activeOpacity={0.7}
-              onPress={() => setIsLiked(!isLiked)}
+              disabled={isLikePending}
+              onPress={handleToggleLike}
+              accessibilityRole="button"
+              accessibilityLabel={isLiked ? '좋아요 취소' : '좋아요'}
+              accessibilityState={{
+                selected: isLiked,
+                disabled: isLikePending,
+              }}
             >
               {isLiked ? (
                 <LikeSelectedIcon width={20} height={18} />
@@ -819,145 +1024,198 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 <LikeUnselectedIcon width={20} height={18} />
               )}
             </TouchableOpacity>
-            <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
-              0
+            <Text
+              variant="xxs"
+              color={colors.text.primary}
+              style={styles.engagementCount}
+            >
+              {likeCount}
             </Text>
-          </View> */}
+          </View>
           <View style={styles.engagementItem}>
             <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
               <CommentIcon width={18} height={18} />
             </TouchableOpacity>
-            <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
+            <Text
+              variant="xxs"
+              color={colors.text.primary}
+              style={styles.engagementCount}
+            >
               {comments?.totalCount || 0}
             </Text>
           </View>
-          {/* 런칭 시 스크랩 기능 제외 */}
-          {/* <View style={styles.engagementItem}>
-            <TouchableOpacity style={styles.iconContainer} activeOpacity={0.7}>
+          <View style={styles.engagementItem}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              activeOpacity={0.7}
+              disabled={isScrapPending}
+              onPress={handleToggleScrap}
+              accessibilityRole="button"
+              accessibilityLabel={isScrapped ? '스크랩 취소' : '스크랩'}
+              accessibilityState={{
+                selected: isScrapped,
+                disabled: isScrapPending,
+              }}
+            >
               <ScrapIcon width={14} height={18} />
             </TouchableOpacity>
-            <Text variant="xxs" color={colors.text.primary} style={styles.engagementCount}>
-              0
+            <Text
+              variant="xxs"
+              color={colors.text.primary}
+              style={styles.engagementCount}
+            >
+              {scrapCount}
             </Text>
-          </View> */}
+          </View>
         </View>
 
         {/* 댓글 목록 */}
-        {comments && (comments.adoptedParent || comments.comments.length > 0) && (
-          <View
-            style={[styles.commentsSection, isPhotoVerification && styles.photoCommentsSection]}
-            onLayout={(event) => {
-              // commentsSection의 Y 좌표 저장
-              commentYPositions.current['_sectionY'] = event.nativeEvent.layout.y;
-            }}
-          >
-            {getCommentTree().map(({ parent, children }, index) => {
-              return (
-                <View
-                  key={parent.commentId}
-                  onLayout={(event) => {
-                    // 각 댓글 그룹의 Y 좌표 저장 (commentSection 기준)
-                    commentYPositions.current[`_group_${parent.commentId}`] = event.nativeEvent.layout.y;
-                  }}
-                >
-                  {/* 부모 댓글 */}
-                  <CommentItem
-                    comment={parent}
-                    isMine={parent.myComment}
-                    currentUserNickname={verification?.user.nickname}
-                    isMenuOpen={openMenuCommentId === parent.commentId}
-                    onMenuToggle={handleMenuToggle}
-                    onLayout={(commentId, y) => {
-                      // 부모 댓글의 절대 Y값 계산
-                      const groupY = commentYPositions.current[`_group_${parent.commentId}`] || 0;
-                      const sectionY = commentYPositions.current['_sectionY'] || 0;
-                      commentYPositions.current[commentId] = sectionY + groupY + y;
+        {comments &&
+          (comments.adoptedParent || comments.comments.length > 0) && (
+            <View
+              style={[
+                styles.commentsSection,
+                isPhotoVerification && styles.photoCommentsSection,
+              ]}
+              onLayout={event => {
+                // commentsSection의 Y 좌표 저장
+                commentYPositions.current['_sectionY'] =
+                  event.nativeEvent.layout.y;
+              }}
+            >
+              {getCommentTree().map(({ parent, children }, index) => {
+                return (
+                  <View
+                    key={parent.commentId}
+                    onLayout={event => {
+                      // 각 댓글 그룹의 Y 좌표 저장 (commentSection 기준)
+                      commentYPositions.current[`_group_${parent.commentId}`] =
+                        event.nativeEvent.layout.y;
                     }}
-                    onLike={(commentId) => {
-                      // TODO: 댓글 좋아요 처리
-                    }}
-                    onReply={() => handleReplyToComment(parent)}
-                    onDelete={handleDeleteComment}
-                    onBlock={handleBlockUser}
-                    onAdopt={handleAdoptComment}
-                    onProfilePress={handleProfilePress}
-                    isQuestion={verification?.isQuestion}
-                    isResolved={verification?.isResolved}
-                    canSelectComment={verification?.canSelectComment}
-                    replyCount={children.length}
-                  />
+                  >
+                    {/* 부모 댓글 */}
+                    <CommentItem
+                      comment={parent}
+                      isMine={parent.myComment}
+                      currentUserNickname={verification?.user.nickname}
+                      isMenuOpen={openMenuCommentId === parent.commentId}
+                      onMenuToggle={handleMenuToggle}
+                      onLayout={(commentId, y) => {
+                        // 부모 댓글의 절대 Y값 계산
+                        const groupY =
+                          commentYPositions.current[
+                            `_group_${parent.commentId}`
+                          ] || 0;
+                        const sectionY =
+                          commentYPositions.current['_sectionY'] || 0;
+                        commentYPositions.current[commentId] =
+                          sectionY + groupY + y;
+                      }}
+                      onLike={commentId => {
+                        // TODO: 댓글 좋아요 처리
+                      }}
+                      onReply={() => handleReplyToComment(parent)}
+                      onDelete={handleDeleteComment}
+                      onBlock={handleBlockUser}
+                      onAdopt={handleAdoptComment}
+                      onProfilePress={handleProfilePress}
+                      isQuestion={verification?.isQuestion}
+                      isResolved={verification?.isResolved}
+                      canSelectComment={verification?.canSelectComment}
+                      replyCount={children.length}
+                    />
 
-                  {/* 답글 보기 버튼 (접힌 상태) */}
-                  {children.length > 0 && !expandedComments.has(parent.commentId) && (
-                    <TouchableOpacity
-                      style={styles.toggleRepliesButton}
-                      activeOpacity={0.7}
-                      onPress={() => toggleRepliesExpand(parent.commentId)}
-                    >
-                      <View style={styles.chevronContainer}>
-                        <ChevronDownIcon width={9} height={5} />
-                      </View>
-                      <Text variant="xsReg" color={colors.text.tertiary}>
-                        답글 보기
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                    {/* 답글 보기 버튼 (접힌 상태) */}
+                    {children.length > 0 &&
+                      !expandedComments.has(parent.commentId) && (
+                        <TouchableOpacity
+                          style={styles.toggleRepliesButton}
+                          activeOpacity={0.7}
+                          onPress={() => toggleRepliesExpand(parent.commentId)}
+                        >
+                          <View style={styles.chevronContainer}>
+                            <ChevronDownIcon width={9} height={5} />
+                          </View>
+                          <Text variant="xsReg" color={colors.text.tertiary}>
+                            답글 보기
+                          </Text>
+                        </TouchableOpacity>
+                      )}
 
-                  {/* 자식 댓글 (대댓글) -> 자식이 실제로 있을 때만 표시 */}
-                  {expandedComments.has(parent.commentId) && children.length > 0 && (
-                    <>
-                      {children.map((child) => {
-                        return (
-                          <CommentItem
-                            key={child.commentId}
-                            comment={child}
-                            isMine={child.myComment}
-                            currentUserNickname={verification?.user.nickname}
-                            isMenuOpen={openMenuCommentId === child.commentId}
-                            onMenuToggle={handleMenuToggle}
-                            onLayout={(commentId, y) => {
-                              // 대댓글의 절대 Y값 계산
-                              const groupY = commentYPositions.current[`_group_${parent.commentId}`] || 0;
-                              const sectionY = commentYPositions.current['_sectionY'] || 0;
-                              commentYPositions.current[commentId] = sectionY + groupY + y;
-                            }}
-                            onLike={(commentId) => {
-                              // TODO: 댓글 좋아요 처리
-                            }}
-                            onDelete={handleDeleteComment}
-                            onBlock={handleBlockUser}
-                            onAdopt={handleAdoptComment}
-                            onProfilePress={handleProfilePress}
-                            isQuestion={verification?.isQuestion}
-                            isResolved={verification?.isResolved}
-                            canSelectComment={verification?.canSelectComment}
-                          />
-                        );
-                      })}
+                    {/* 자식 댓글 (대댓글) -> 자식이 실제로 있을 때만 표시 */}
+                    {expandedComments.has(parent.commentId) &&
+                      children.length > 0 && (
+                        <>
+                          {children.map(child => {
+                            return (
+                              <CommentItem
+                                key={child.commentId}
+                                comment={child}
+                                isMine={child.myComment}
+                                currentUserNickname={
+                                  verification?.user.nickname
+                                }
+                                isMenuOpen={
+                                  openMenuCommentId === child.commentId
+                                }
+                                onMenuToggle={handleMenuToggle}
+                                onLayout={(commentId, y) => {
+                                  // 대댓글의 절대 Y값 계산
+                                  const groupY =
+                                    commentYPositions.current[
+                                      `_group_${parent.commentId}`
+                                    ] || 0;
+                                  const sectionY =
+                                    commentYPositions.current['_sectionY'] || 0;
+                                  commentYPositions.current[commentId] =
+                                    sectionY + groupY + y;
+                                }}
+                                onLike={commentId => {
+                                  // TODO: 댓글 좋아요 처리
+                                }}
+                                onDelete={handleDeleteComment}
+                                onBlock={handleBlockUser}
+                                onAdopt={handleAdoptComment}
+                                onProfilePress={handleProfilePress}
+                                isQuestion={verification?.isQuestion}
+                                isResolved={verification?.isResolved}
+                                canSelectComment={
+                                  verification?.canSelectComment
+                                }
+                              />
+                            );
+                          })}
 
-                      {/* 답글 숨기기 버튼 */}
-                      <TouchableOpacity
-                        style={[
-                          styles.toggleRepliesButton,
-                          styles.toggleRepliesButtonHide
-                        ]}
-                        activeOpacity={0.7}
-                        onPress={() => toggleRepliesExpand(parent.commentId)}
-                      >
-                        <View style={[styles.chevronContainer, { transform: [{ rotate: '180deg' }] }]}>
-                          <ChevronDownIcon width={9} height={5} />
-                        </View>
-                        <Text variant="xsReg" color={colors.text.tertiary}>
-                          답글 숨기기
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        )}
+                          {/* 답글 숨기기 버튼 */}
+                          <TouchableOpacity
+                            style={[
+                              styles.toggleRepliesButton,
+                              styles.toggleRepliesButtonHide,
+                            ]}
+                            activeOpacity={0.7}
+                            onPress={() =>
+                              toggleRepliesExpand(parent.commentId)
+                            }
+                          >
+                            <View
+                              style={[
+                                styles.chevronContainer,
+                                { transform: [{ rotate: '180deg' }] },
+                              ]}
+                            >
+                              <ChevronDownIcon width={9} height={5} />
+                            </View>
+                            <Text variant="xsReg" color={colors.text.tertiary}>
+                              답글 숨기기
+                            </Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                  </View>
+                );
+              })}
+            </View>
+          )}
       </RefreshableScrollView>
 
       {/* 댓글 입력 필드 */}
@@ -969,11 +1227,13 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               keyboardVerticalOffset={KEYBOARD_OFFSET_IOS}
               style={styles.keyboardAvoidingView}
             >
-              <View style={[
-                styles.commentInputContainer,
-                { paddingBottom: commentInputBottomPadding },
-                isKeyboardVisible && styles.commentInputContainerKeyboard,
-              ]}>
+              <View
+                style={[
+                  styles.commentInputContainer,
+                  { paddingBottom: commentInputBottomPadding },
+                  isKeyboardVisible && styles.commentInputContainerKeyboard,
+                ]}
+              >
                 <TextField
                   ref={commentInputRef}
                   variant="default"
@@ -1006,7 +1266,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                         disabled={isSubmittingComment}
                       >
                         {isSubmittingComment ? (
-                          <ActivityIndicator size="small" color={colors.primary.main} />
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary.main}
+                          />
                         ) : (
                           <SendIcon width={30} height={30} />
                         )}
@@ -1021,15 +1284,19 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               </View>
             </KeyboardAvoidingView>
           ) : (
-            <View style={[
-              styles.keyboardAvoidingView,
-              isKeyboardVisible && { bottom: keyboardHeight }
-            ]}>
-              <View style={[
-                styles.commentInputContainer,
-                { paddingBottom: commentInputBottomPadding },
-                isKeyboardVisible && styles.commentInputContainerKeyboard,
-              ]}>
+            <View
+              style={[
+                styles.keyboardAvoidingView,
+                isKeyboardVisible && { bottom: keyboardHeight },
+              ]}
+            >
+              <View
+                style={[
+                  styles.commentInputContainer,
+                  { paddingBottom: commentInputBottomPadding },
+                  isKeyboardVisible && styles.commentInputContainerKeyboard,
+                ]}
+              >
                 <TextField
                   ref={commentInputRef}
                   variant="default"
@@ -1062,7 +1329,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                         disabled={isSubmittingComment}
                       >
                         {isSubmittingComment ? (
-                          <ActivityIndicator size="small" color={colors.primary.main} />
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary.main}
+                          />
                         ) : (
                           <SendIcon width={30} height={30} />
                         )}
@@ -1126,21 +1396,37 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         }}
       >
         <View style={styles.adoptBottomSheetContent}>
-          <Text variant="header4" color={colors.text.tertiary} style={styles.adoptBottomSheetTitle}>
+          <Text
+            variant="header4"
+            color={colors.text.tertiary}
+            style={styles.adoptBottomSheetTitle}
+          >
             채택하기
           </Text>
           <View style={styles.adoptBottomSheetDivider} />
 
           <View style={styles.adoptBottomSheetBody}>
-            <Text variant="header3" color={colors.text.primary} style={styles.adoptBottomSheetQuestion}>
+            <Text
+              variant="header3"
+              color={colors.text.primary}
+              style={styles.adoptBottomSheetQuestion}
+            >
               해당 댓글을 채택하시겠어요?
             </Text>
 
-            <Text variant="smReg" color={colors.text.tertiary} style={styles.adoptBottomSheetDescription}>
+            <Text
+              variant="smReg"
+              color={colors.text.tertiary}
+              style={styles.adoptBottomSheetDescription}
+            >
               댓글 채택 시 상단의 질문 표시는 채택으로 변경됩니다
             </Text>
 
-            <Text variant="smReg" color={colors.text.tertiary} style={styles.adoptBottomSheetDescription}>
+            <Text
+              variant="smReg"
+              color={colors.text.tertiary}
+              style={styles.adoptBottomSheetDescription}
+            >
               댓글 채택이 완료되면 취소가 불가능합니다
             </Text>
           </View>
@@ -1148,10 +1434,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           <View style={styles.adoptBottomSheetDivider} />
 
           <View style={styles.adoptBottomSheetFooter}>
-            <Button
-              variant="black"
-              onPress={confirmAdoptComment}
-            >
+            <Button variant="black" onPress={confirmAdoptComment}>
               채택하기
             </Button>
           </View>
@@ -1183,9 +1466,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         <ImageViewer
           imageUrls={(() => {
             // 사진 인증 게시물의 경우 photoUrl 사용, 텍스트 인증 게시물의 경우 textImages 사용
-            const images = verification?.type === 'TEXT'
-              ? (verification?.textImages || [])
-              : (verification?.photoUrl ? [verification.photoUrl] : []);
+            const images =
+              verification?.type === 'TEXT'
+                ? verification?.textImages || []
+                : verification?.photoUrl
+                ? [verification.photoUrl]
+                : [];
 
             return images.map(url => ({ url: url as string }));
           })()}
@@ -1195,11 +1481,15 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           backgroundColor="rgba(0, 0, 0, 1)"
           renderIndicator={() => <View />}
           saveToLocalByLongPress={false}
-          onChange={(index) => setCurrentImageIndex(index || 0)}
+          onChange={index => setCurrentImageIndex(index || 0)}
           renderHeader={() => (
             <View style={styles.imageViewerHeader}>
               <LinearGradient
-                colors={['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0)']}
+                colors={[
+                  'rgba(0, 0, 0, 0.2)',
+                  'rgba(0, 0, 0, 0.1)',
+                  'rgba(0, 0, 0, 0)',
+                ]}
                 style={styles.imageViewerGradient}
               />
               <TouchableOpacity
@@ -1214,16 +1504,23 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
           )}
           renderFooter={() => {
             // 사진 인증 게시물의 경우 photoUrl, 텍스트 인증 게시물의 경우 textImages 사용
-            const images = verification?.type === 'TEXT'
-              ? (verification?.textImages || [])
-              : (verification?.photoUrl ? [verification.photoUrl] : []);
+            const images =
+              verification?.type === 'TEXT'
+                ? verification?.textImages || []
+                : verification?.photoUrl
+                ? [verification.photoUrl]
+                : [];
             const totalImages = images.length;
             if (totalImages <= 1) return <View />;
 
             return (
               <View style={styles.imageViewerFooter}>
                 <LinearGradient
-                  colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 0.2)']}
+                  colors={[
+                    'rgba(0, 0, 0, 0)',
+                    'rgba(0, 0, 0, 0.1)',
+                    'rgba(0, 0, 0, 0.2)',
+                  ]}
                   style={StyleSheet.absoluteFill}
                 />
                 <View style={styles.imageViewerIndicator}>
@@ -1232,7 +1529,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                       key={index}
                       style={[
                         styles.indicatorDot,
-                        currentImageIndex === index ? styles.indicatorDotActive : styles.indicatorDotInactive
+                        currentImageIndex === index
+                          ? styles.indicatorDotActive
+                          : styles.indicatorDotInactive,
                       ]}
                     />
                   ))}

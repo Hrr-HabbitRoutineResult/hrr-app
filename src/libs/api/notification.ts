@@ -16,16 +16,28 @@ export interface NotificationItem {
   imageUrl: string;
   category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
   type:
-  | 'CHALLENGE_EXTENSION'
-  | 'CHALLENGE_EXTENSION_SUCCESS'
-  | 'CHALLENGE_EXTENSION_CANCEL'
-  | 'VERIFICATION_DEADLINE_3H'
-  | 'VERIFICATION_DEADLINE_1H'
-  | 'VERIFICATION_DEADLINE_NOW'
-  | string;
-  targetType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 화면 이동을 위한 타입
+    | 'CHALLENGE_EXTENSION'
+    | 'CHALLENGE_EXTENSION_SUCCESS'
+    | 'CHALLENGE_EXTENSION_CANCEL'
+    | 'VERIFICATION_DEADLINE_3H'
+    | 'VERIFICATION_DEADLINE_1H'
+    | 'VERIFICATION_DEADLINE_NOW'
+    | string;
+  targetType:
+    | 'CHALLENGE'
+    | 'VERIFICATION'
+    | 'COMMENT'
+    | 'USER'
+    | 'BADGE'
+    | 'ROUND'; // 화면 이동을 위한 타입
   targetId: number;
-  contextType: 'CHALLENGE' | 'VERIFICATION' | 'COMMENT' | 'USER' | 'BADGE' | 'ROUND'; // 추가 처리를 위한 타입
+  contextType:
+    | 'CHALLENGE'
+    | 'VERIFICATION'
+    | 'COMMENT'
+    | 'USER'
+    | 'BADGE'
+    | 'ROUND'; // 추가 처리를 위한 타입
   contextId: number;
   isRead: boolean;
   isResponded: boolean; // 챌린지 연장 여부에 응답했는지 여부
@@ -63,22 +75,27 @@ export interface GetNotificationsResponse {
  * 알림 목록 조회
  */
 export const getNotifications = async (
-  params?: GetNotificationsParams
+  params?: GetNotificationsParams,
 ): Promise<GetNotificationsResponse['result']> => {
   try {
-    const response = await apiClient.get<GetNotificationsResponse>('/api/v1/notifications', {
-      params: {
-        category: params?.category,
-        page: params?.page ?? 1,
-        size: params?.size ?? 10,
+    const response = await apiClient.get<GetNotificationsResponse>(
+      '/api/v1/notifications',
+      {
+        params: {
+          category: params?.category,
+          page: params?.page ?? 1,
+          size: params?.size ?? 10,
+        },
       },
-    });
+    );
 
     if (response.data.isSuccess && response.data.result) {
       return response.data.result;
     }
 
-    throw new Error(response.data.message || '알림 목록을 불러오는데 실패했습니다.');
+    throw new Error(
+      response.data.message || '알림 목록을 불러오는데 실패했습니다.',
+    );
   } catch (error: any) {
     throw error;
   }
@@ -102,11 +119,11 @@ export interface MarkNotificationAsReadResponse {
  * 알림 읽음 처리
  */
 export const markNotificationAsRead = async (
-  notificationId: number
+  notificationId: number,
 ): Promise<MarkNotificationAsReadResponse['result']> => {
   try {
     const response = await apiClient.patch<MarkNotificationAsReadResponse>(
-      `/api/v1/notifications/${notificationId}/read`
+      `/api/v1/notifications/${notificationId}/read`,
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -150,28 +167,53 @@ interface FcmTokenResponse {
 /**
  * FCM 토큰 등록
  */
-export const registerFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
-  const response = await apiClient.post<FcmTokenResponse>(
-    '/api/v1/fcm/token',
-    { userId, fcmToken } satisfies FcmTokenRequest
-  );
+export const registerFcmToken = async (
+  userId: number,
+  fcmToken: string,
+): Promise<void> => {
+  console.log('[API] POST /api/v1/fcm/token 요청 시작');
 
-  if (!response.data.isSuccess) {
-    throw new Error(response.data.message || 'FCM 토큰 등록에 실패했습니다.');
+  try {
+    const response = await apiClient.post<FcmTokenResponse>(
+      '/api/v1/fcm/token',
+      { userId, fcmToken } satisfies FcmTokenRequest,
+    );
+
+    console.log('[API] 응답 상태:', response.status);
+    console.log('[API] 응답 body:', response.data);
+
+    if (!response.data.isSuccess) {
+      console.error('[API] ❌ 서버 오류:', response.data.message);
+      throw new Error(response.data.message || 'FCM 토큰 등록에 실패했습니다.');
+    }
+
+    console.log('[API] ✅ FCM 토큰 등록 성공');
+  } catch (error: any) {
+    console.error(
+      '[API] ❌ 요청 실패:',
+      error?.response?.status,
+      error?.message || error,
+    );
+    throw error;
   }
 };
 
 /**
  * FCM 토큰 비활성화 (로그아웃 시 호출)
  */
-export const deactivateFcmToken = async (userId: number, fcmToken: string): Promise<void> => {
+export const deactivateFcmToken = async (
+  userId: number,
+  fcmToken: string,
+): Promise<void> => {
   const response = await apiClient.patch<FcmTokenResponse>(
     '/api/v1/fcm/token',
-    { userId, fcmToken } satisfies FcmTokenRequest
+    { userId, fcmToken } satisfies FcmTokenRequest,
   );
 
   if (!response.data.isSuccess) {
-    throw new Error(response.data.message || 'FCM 토큰 비활성화에 실패했습니다.');
+    throw new Error(
+      response.data.message || 'FCM 토큰 비활성화에 실패했습니다.',
+    );
   }
 };
 
@@ -197,27 +239,30 @@ interface NotificationSettingsResponse {
 /**
  * 알림 수신 설정 조회
  */
-export const getNotificationSettings = async (): Promise<NotificationSettings> => {
-  const response = await apiClient.get<NotificationSettingsResponse>(
-    '/api/v1/notifications/settings'
-  );
+export const getNotificationSettings =
+  async (): Promise<NotificationSettings> => {
+    const response = await apiClient.get<NotificationSettingsResponse>(
+      '/api/v1/notifications/settings',
+    );
 
-  if (response.data.isSuccess && response.data.result) {
-    return response.data.result;
-  }
+    if (response.data.isSuccess && response.data.result) {
+      return response.data.result;
+    }
 
-  throw new Error(response.data.message || '알림 설정을 불러오는데 실패했습니다.');
-};
+    throw new Error(
+      response.data.message || '알림 설정을 불러오는데 실패했습니다.',
+    );
+  };
 
 /**
  * 알림 수신 설정 변경
  */
 export const updateNotificationSettings = async (
-  settings: NotificationSettings
+  settings: NotificationSettings,
 ): Promise<NotificationSettings> => {
   const response = await apiClient.patch<NotificationSettingsResponse>(
     '/api/v1/notifications/settings',
-    settings
+    settings,
   );
 
   if (response.data.isSuccess && response.data.result) {
@@ -233,7 +278,7 @@ export const updateNotificationSettings = async (
 export const getUnreadStatus = async (): Promise<boolean> => {
   try {
     const response = await apiClient.get<GetUnreadStatusResponse>(
-      '/api/v1/notifications/unread-status'
+      '/api/v1/notifications/unread-status',
     );
 
     if (response.data.isSuccess && response.data.result) {
@@ -246,4 +291,3 @@ export const getUnreadStatus = async (): Promise<boolean> => {
     return false;
   }
 };
-

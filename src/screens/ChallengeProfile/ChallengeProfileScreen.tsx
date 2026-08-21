@@ -34,6 +34,7 @@ import {
   ActionSheetItem,
 } from '../../components/common/ActionSheet';
 import { BottomSheet } from '../../components/common/BottomSheet';
+import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
 import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
@@ -48,11 +49,13 @@ import {
   getVerificationStat,
   getVerificationFeed,
   leaveChallenge,
+  reportChallenge,
   ChallengeDetail,
   ChallengeProfile,
   RoundItem,
   VerificationStat,
   VerificationFeedItem,
+  ReportReason,
 } from '../../libs/api/challenge';
 import { useUserStore } from '../../store/userSlice';
 import { getS3ImageUrl } from '../../libs/s3';
@@ -114,6 +117,8 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [showProfileActions, setShowProfileActions] = useState(false);
   const [showLeaveBottomSheet, setShowLeaveBottomSheet] = useState(false);
   const [isLeavingChallenge, setIsLeavingChallenge] = useState(false);
+  const [isReportBottomSheetVisible, setIsReportBottomSheetVisible] =
+    useState(false);
 
   const [rounds, setRounds] = useState<RoundItem[]>([]);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
@@ -750,6 +755,28 @@ ${deepLink}`;
     }
   };
 
+  // 챌린지 신고 제출
+  const handleSubmitReport = async (
+    reason: ReportReason,
+    description: string,
+  ) => {
+    if (!data) return;
+
+    try {
+      await reportChallenge({
+        targetId: data.challengeId,
+        reason,
+        description,
+      });
+
+      setIsReportBottomSheetVisible(false);
+      setShowProfileActions(false);
+      Alert.alert('신고 완료', '신고가 접수되었습니다.');
+    } catch (error: any) {
+      Alert.alert('오류', getErrorMessage(error, '신고에 실패했습니다.'));
+    }
+  };
+
   const hostProfileImage = data.owner.profileImageUrl;
   const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
   const currentRoundNumber =
@@ -771,12 +798,11 @@ ${deepLink}`;
     });
   }
 
-  // 챌린지 신고 API가 아직 없어 항목만 노출하고 안내만 띄운다.
   if (!isOwner) {
     profileActionItems.push({
       label: '신고하기',
       destructive: true,
-      onPress: () => Alert.alert('안내', '현재 준비 중인 기능입니다.'),
+      onPress: () => setIsReportBottomSheetVisible(true),
     });
   }
 
@@ -1656,6 +1682,14 @@ ${deepLink}`;
           </View>
         </View>
       </BottomSheet>
+
+      {/* 챌린지 신고 바텀시트 */}
+      <ReportBottomSheet
+        visible={isReportBottomSheetVisible}
+        type="challenge"
+        onClose={() => setIsReportBottomSheetVisible(false)}
+        onSubmit={handleSubmitReport}
+      />
     </SafeAreaView>
   );
 };

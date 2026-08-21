@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, Platform, Keyboard, Alert, KeyboardAvoidingView } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Platform,
+  Keyboard,
+  Alert,
+  KeyboardAvoidingView,
+} from 'react-native';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
 import { BottomSheet } from './BottomSheet';
 import { Button } from './Button';
@@ -11,7 +20,7 @@ import RadioUncheckedIcon from '../../../assets/icons/radio-unchecked.svg';
 
 interface ReportBottomSheetProps {
   visible: boolean;
-  type: 'post' | 'user'; // 게시글 신고 or 사용자 신고
+  type: 'post' | 'user' | 'challenge'; // 게시글 신고 or 사용자 신고 or 챌린지 신고
   onClose: () => void;
   onSubmit: (reason: ReportReason, description: string) => Promise<void>;
 }
@@ -22,7 +31,8 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [selectedReportReason, setSelectedReportReason] = useState<ReportReason | null>(null);
+  const [selectedReportReason, setSelectedReportReason] =
+    useState<ReportReason | null>(null);
   const [reportReasonDetail, setReportReasonDetail] = useState('');
   const [isTextInputMode, setIsTextInputMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,21 +50,15 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
     const showEvent = 'keyboardDidShow';
     const hideEvent = 'keyboardDidHide';
 
-    const keyboardShowListener = Keyboard.addListener(
-      showEvent,
-      (e) => {
-        // 안드로이드에서는 키보드 높이만큼 바텀시트 높이 줄이기
-        setBottomSheetHeight(560 - e.endCoordinates.height + 100);
-        setIsKeyboardActive(true);
-      }
-    );
-    const keyboardHideListener = Keyboard.addListener(
-      hideEvent,
-      () => {
-        setBottomSheetHeight(560);
-        setIsKeyboardActive(false);
-      }
-    );
+    const keyboardShowListener = Keyboard.addListener(showEvent, e => {
+      // 안드로이드에서는 키보드 높이만큼 바텀시트 높이 줄이기
+      setBottomSheetHeight(560 - e.endCoordinates.height + 100);
+      setIsKeyboardActive(true);
+    });
+    const keyboardHideListener = Keyboard.addListener(hideEvent, () => {
+      setBottomSheetHeight(560);
+      setIsKeyboardActive(false);
+    });
 
     return () => {
       keyboardShowListener.remove();
@@ -103,9 +107,9 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
             onPress: () => {
               resetState();
               onClose();
-            }
-          }
-        ]
+            },
+          },
+        ],
       );
     } else {
       resetState();
@@ -134,7 +138,8 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
       setIsSubmitting(true);
 
       // 부모 컴포넌트의 onSubmit 호출
-      const description = selectedReportReason === 'OTHER' ? reportReasonDetail : '';
+      const description =
+        selectedReportReason === 'OTHER' ? reportReasonDetail : '';
       await onSubmit(selectedReportReason!, description);
 
       // 제출 성공 후 state 초기화
@@ -152,7 +157,9 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
     if (isTextInputMode) {
       return '신고할 문제를 작성해 주세요';
     }
-    return type === 'post' ? '게시글 신고 사유' : '사용자 신고 사유';
+    if (type === 'post') return '게시글 신고 사유';
+    if (type === 'user') return '사용자 신고 사유';
+    return '챌린지 신고 사유';
   };
 
   return (
@@ -167,7 +174,11 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
         style={{ flex: 1 }}
       >
         <View style={styles.content}>
-          <Text variant="header4" color={colors.text.tertiary} style={styles.title}>
+          <Text
+            variant="header4"
+            color={colors.text.tertiary}
+            style={styles.title}
+          >
             {getTitle()}
           </Text>
           <View style={styles.divider} />
@@ -176,10 +187,12 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
             {isTextInputMode ? (
               /* 기타 선택 시 텍스트 입력 필드 */
               <>
-                <View style={[
-                  styles.inputContainer,
-                  !isKeyboardActive && { height: verticalScale(280) } // 키보드 없을 땐 입력창을 더 크게
-                ]}>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    !isKeyboardActive && { height: verticalScale(280) }, // 키보드 없을 땐 입력창을 더 크게
+                  ]}
+                >
                   <TextInput
                     style={styles.input}
                     placeholder="최대 200자까지 작성 가능합니다."
@@ -200,7 +213,11 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
                     allowFontScaling={false}
                   />
                 </View>
-                <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
+                <Text
+                  variant="xsReg"
+                  color={colors.text.tertiary}
+                  style={styles.characterCount}
+                >
                   {reportReasonDetail.length}/200
                 </Text>
               </>
@@ -218,7 +235,11 @@ export const ReportBottomSheet: React.FC<ReportBottomSheetProps> = ({
                   ) : (
                     <RadioUncheckedIcon width={24} height={24} />
                   )}
-                  <Text variant="md" color={colors.text.primary} style={styles.reasonText}>
+                  <Text
+                    variant="md"
+                    color={colors.text.primary}
+                    style={styles.reasonText}
+                  >
                     {reason.label}
                   </Text>
                 </TouchableOpacity>
@@ -296,4 +317,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
