@@ -780,9 +780,10 @@ ${deepLink}`;
 
   const hostProfileImage = data.owner.profileImageUrl;
   const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
+  const today = getTodayYYYYMMDD_KST();
   const isFinished =
-    data.actionButtonStatus === 'FINISHED' ||
-    data.endDate < getTodayYYYYMMDD_KST();
+    data.actionButtonStatus === 'FINISHED' || data.endDate < today;
+
   const currentRoundNumber =
     !isFinished && (data.isObserverMode || data.isParticipant)
       ? rounds.find(round => round.isCurrentRound)?.roundNumber
