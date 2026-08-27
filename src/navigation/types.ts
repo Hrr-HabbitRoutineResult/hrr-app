@@ -12,7 +12,10 @@ export type RootStackParamList = {
   ChallengeProfile: { challengeId: number };
   ChallengeEdit: { challengeId: number };
   ChallengeParticipants: { challengeId: number };
-  ChallengeCertification: { challengeId: number };
+  ChallengeCertification: {
+    challengeId: number;
+    initialTab?: 'my' | 'challenger';
+  };
   ChallengeRanking: { challengeId: number };
   PointHistory: undefined;
   ChallengeCertificationCamera: { challengeId: number };

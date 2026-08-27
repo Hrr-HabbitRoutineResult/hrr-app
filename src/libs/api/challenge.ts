@@ -1383,7 +1383,8 @@ export interface GetMyVerificationsParams {
  */
 export interface MyVerificationInfo {
   nickname: string;
-  totalVerificationCount: number;
+  verificationCount: number;
+  weakVerificationCount: number;
   warningCount: number;
   currentRoundSequence: number;
   verifications: {

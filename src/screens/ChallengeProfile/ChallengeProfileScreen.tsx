@@ -77,6 +77,7 @@ import MoreIcon from '../../../assets/icons/more.svg';
 import { TextCertificationList } from '../../components/common/TextCertificationList';
 import { PhotoCertificationGrid } from '../../components/common/PhotoCertificationGrid';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
+import ChallengeCompleteIcon from '../../../assets/images/challenge-complete.svg';
 
 type ChallengeProfileScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -779,8 +780,11 @@ ${deepLink}`;
 
   const hostProfileImage = data.owner.profileImageUrl;
   const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
+  const isFinished =
+    data.actionButtonStatus === 'FINISHED' ||
+    data.endDate < getTodayYYYYMMDD_KST();
   const currentRoundNumber =
-    data.isObserverMode || data.isParticipant
+    !isFinished && (data.isObserverMode || data.isParticipant)
       ? rounds.find(round => round.isCurrentRound)?.roundNumber
       : undefined;
   const isOwner = data.owner.id === userInfo?.userId;
@@ -850,15 +854,17 @@ ${deepLink}`;
                 <LikeUnselectedIcon width={20} height={18} />
               )}
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setShowProfileActions(true)}
-              style={styles.headerIconButton}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="챌린지 메뉴"
-            >
-              <MoreIcon width={20} height={20} />
-            </TouchableOpacity>
+            {!isFinished && (
+              <TouchableOpacity
+                onPress={() => setShowProfileActions(true)}
+                style={styles.headerIconButton}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="챌린지 메뉴"
+              >
+                <MoreIcon width={20} height={20} />
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -944,10 +950,10 @@ ${deepLink}`;
                 </Text>
               </TouchableOpacity>
               {/* 관찰자 모드 (참가 전이면 항상 표시, isObserverMode 값에 따라 활성화/비활성화) */}
-              {!isParticipated && (
+              {(isFinished || !isParticipated) && (
                 <View style={styles.participantItem}>
                   <View style={styles.iconContainer24}>
-                    {data.isObserverMode ? (
+                    {isFinished || data.isObserverMode ? (
                       <ObserverEnabledIcon width={13} height={12} />
                     ) : (
                       <ObserverDisabledIcon width={17} height={12} />
@@ -956,7 +962,9 @@ ${deepLink}`;
                   <Text
                     variant="xxs"
                     color={
-                      data.isObserverMode ? colors.white : colors.icon.gray
+                      isFinished || data.isObserverMode
+                        ? colors.white
+                        : colors.icon.gray
                     }
                   >
                     관찰자 모드
@@ -967,487 +975,512 @@ ${deepLink}`;
           </View>
         </View>
 
-        {/* 방장 프로필 */}
-        <TouchableOpacity
-          style={styles.hostProfile}
-          onPress={handleHostProfile}
-          activeOpacity={0.7}
-        >
-          {fullHostProfileImage ? (
-            <Image
-              source={{ uri: fullHostProfileImage }}
-              style={{
-                width: scale(40),
-                height: verticalScale(40),
-                borderRadius: 20,
-              }}
-            />
-          ) : (
-            <DefaultProfileIcon width={40} height={40} />
-          )}
-          <Text
-            variant="smMd"
-            color={colors.text.primary}
-            style={styles.hostNickname}
-          >
-            {challengeData.hostNickname}
-          </Text>
-          <View style={styles.chevronContainer}>
-            <ChevronRightTertiaryIcon width={6} height={12} />
-          </View>
-        </TouchableOpacity>
-
-        {/* 구분선 */}
-        <View style={styles.sectionDivider} />
-
-        {/* 프로필/인증현황 탭 (챌린지 시작 이후 + (관찰자 모드가 지원되거나 참가한 경우) 표시) */}
-        {isChallengeStarted() && (data.isObserverMode || isParticipated) && (
-          <TabBar
-            tabs={[
-              { key: 'profile', label: '프로필' },
-              { key: 'certification', label: '인증현황' },
-            ]}
-            activeTab={activeTab}
-            onTabChange={tabKey => {
-              setActiveTab(tabKey as 'profile' | 'certification');
-            }}
-          />
-        )}
-
-        {/* 프로필/인증현황 탭 내용 */}
-        {isChallengeStarted() &&
-        (data.isObserverMode || isParticipated) &&
-        activeTab === 'certification' ? (
-          // 인증현황 탭
-          <View style={styles.certificationSection}>
-            {/* 라운드 캐러셀 */}
-            <View style={styles.roundCarouselContainer}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[
-                  styles.roundCarouselContent,
-                  roundCarouselScrollX > 0 &&
-                    styles.roundCarouselContentScrolled,
-                ]}
-                onScroll={e =>
-                  setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)
-                }
-                scrollEventThrottle={16}
-              >
-                {rounds.map(round => (
-                  <TouchableOpacity
-                    key={round.roundNumber}
-                    style={[
-                      styles.roundButton,
-                      selectedRound === round.roundNumber &&
-                        styles.roundButtonSelected,
-                    ]}
-                    onPress={() => setSelectedRound(round.roundNumber)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      variant={
-                        selectedRound === round.roundNumber ? 'smMd' : 'smReg'
-                      }
-                      color={
-                        selectedRound === round.roundNumber
-                          ? colors.white
-                          : colors.text.tertiary
-                      }
-                    >
-                      {round.roundNumber}R
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* 참가자 요약 */}
-            {verificationStat && (
-              <View style={styles.participantSummary}>
-                <View style={styles.summaryItem}>
-                  <Text variant="xsReg" color={colors.text.secondary}>
-                    총 참가자 수
-                  </Text>
-                  <Text
-                    variant="xsMd"
-                    color={colors.text.primary}
-                    style={styles.summaryValue}
-                  >
-                    {verificationStat.totalParticipantCount}명
-                  </Text>
-                </View>
-                <View style={styles.summaryItem}>
-                  <View style={styles.summaryItemHeaderContainer}>
-                    <View style={styles.summaryItemHeader}>
-                      <Text variant="xsReg" color={colors.text.secondary}>
-                        인증 완료 인원
-                      </Text>
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        style={styles.infoIconButton}
-                        onPress={() =>
-                          setShowCertificationTooltip(!showCertificationTooltip)
-                        }
-                      >
-                        <InfoCircleIcon width={16} height={16} />
-                      </TouchableOpacity>
-                    </View>
-                    {showCertificationTooltip && (
-                      <View style={styles.tooltip}>
-                        <Text variant="xsReg" color={colors.text.secondary}>
-                          직전 인증 요일의 인증완료 인원 기준입니다
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <Text
-                    variant="xsMd"
-                    color={colors.text.primary}
-                    style={styles.summaryValue}
-                  >
-                    {verificationStat.certifiedCount}명
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* 챌린지 인증현황 타이틀 */}
-            <View style={[styles.section, { marginTop: verticalScale(16) }]}>
-              <TouchableOpacity
-                style={styles.sectionTitleRow}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (!isParticipated) {
-                    Alert.alert(
-                      '알림',
-                      '챌린지에 참여하면 인증 현황을 확인할 수 있어요.',
-                    );
-                    return;
-                  }
-                  navigation.navigate('ChallengeCertification', {
-                    challengeId,
-                  });
-                }}
-              >
-                <Text
-                  variant="header4"
-                  color={colors.text.primary}
-                  style={styles.sectionTitleNoMargin}
-                >
-                  챌린지 인증현황
-                </Text>
-                <View style={styles.sectionChevronButton}>
-                  <ChevronRightIcGreyIcon width={5} height={10} />
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* 인증 피드 내용 */}
-            <View style={styles.sectionNoPadding}>
-              {isFeedLoading ? (
-                <View style={styles.feedLoadingContainer}>
-                  <ActivityIndicator size="small" color={colors.primary.main} />
-                </View>
-              ) : verificationFeed.length > 0 ? (
-                <>
-                  {/* 글 인증 리스트 */}
-                  {verificationFeed.filter(item => item.type === 'TEXT')
-                    .length > 0 && (
-                    <View style={styles.textFeedSection}>
-                      <TextCertificationList
-                        items={verificationFeed
-                          .filter(item => item.type === 'TEXT')
-                          .map(item => ({
-                            id: item.verificationId,
-                            title: item.title,
-                            description: item.content,
-                            date: item.createdDate,
-                            thumbnail: item.imageUrl
-                              ? { uri: item.imageUrl }
-                              : null,
-                            hasLink: item.hasLink,
-                            isQuestion: item.isQuestion,
-                            isResolved: item.isResolved,
-                          }))}
-                        containerPadding={scale(24)}
-                        onItemPress={item => {
-                          if (!isParticipated) {
-                            Alert.alert(
-                              '알림',
-                              '챌린지에 참여하면 인증 내용을 확인할 수 있어요.',
-                            );
-                            return;
-                          }
-                          navigation.navigate('ChallengeCertificationDetail', {
-                            verificationId: item.id,
-                          });
-                        }}
-                      />
-                    </View>
-                  )}
-
-                  {/* 사진 인증 그리드 */}
-                  {verificationFeed.filter(item => item.type !== 'TEXT')
-                    .length > 0 && (
-                    <PhotoCertificationGrid
-                      items={verificationFeed
-                        .filter(item => item.type !== 'TEXT')
-                        .map(item => ({
-                          id: item.verificationId,
-                          thumbnail: { uri: item.imageUrl },
-                          isQuestion: item.isQuestion,
-                          isResolved: item.isResolved,
-                        }))}
-                      onItemPress={item => {
-                        if (!isParticipated) {
-                          Alert.alert(
-                            '알림',
-                            '챌린지에 참여하면 인증 내용을 확인할 수 있어요.',
-                          );
-                          return;
-                        }
-                        navigation.navigate('ChallengeCertificationDetail', {
-                          verificationId: item.id,
-                        });
-                      }}
-                    />
-                  )}
-                </>
-              ) : (
-                <View style={styles.emptyFeedContainerPadding}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>
-                    아직 인증된 게시글이 없습니다.
-                  </Text>
-                </View>
-              )}
-            </View>
+        {isFinished ? (
+          <View style={styles.finishedState}>
+            <ChallengeCompleteIcon width={240} height={240} />
           </View>
         ) : (
-          // 프로필 탭
           <>
-            {isParticipated ? (
-              // 참가 후 UI
-              <>
-                {/* 챌린지 기간 */}
-                <View
-                  style={[
-                    styles.challengePeriodSection,
-                    { paddingTop: verticalScale(28) },
-                  ]}
-                >
-                  <Text variant="smReg" color={colors.text.primary}>
-                    {formatChallengePeriod()}
-                  </Text>
-                </View>
+            {/* 방장 프로필 */}
+            <TouchableOpacity
+              style={styles.hostProfile}
+              onPress={handleHostProfile}
+              activeOpacity={0.7}
+            >
+              {fullHostProfileImage ? (
+                <Image
+                  source={{ uri: fullHostProfileImage }}
+                  style={{
+                    width: scale(40),
+                    height: verticalScale(40),
+                    borderRadius: 20,
+                  }}
+                />
+              ) : (
+                <DefaultProfileIcon width={40} height={40} />
+              )}
+              <Text
+                variant="smMd"
+                color={colors.text.primary}
+                style={styles.hostNickname}
+              >
+                {challengeData.hostNickname}
+              </Text>
+              <View style={styles.chevronContainer}>
+                <ChevronRightTertiaryIcon width={6} height={12} />
+              </View>
+            </TouchableOpacity>
 
-                {/* 요일별 인증 상태 */}
-                <View style={styles.daySelectionSection}>
-                  {['일', '월', '화', '수', '목', '금', '토'].map(day => {
-                    const status = dayStatuses[day];
-                    return (
-                      <View
-                        key={day}
+            {/* 구분선 */}
+            <View style={styles.sectionDivider} />
+
+            {/* 프로필/인증현황 탭 (챌린지 시작 이후 + (관찰자 모드가 지원되거나 참가한 경우) 표시) */}
+            {isChallengeStarted() &&
+              (data.isObserverMode || isParticipated) && (
+                <TabBar
+                  tabs={[
+                    { key: 'profile', label: '프로필' },
+                    { key: 'certification', label: '인증현황' },
+                  ]}
+                  activeTab={activeTab}
+                  onTabChange={tabKey => {
+                    setActiveTab(tabKey as 'profile' | 'certification');
+                  }}
+                />
+              )}
+
+            {/* 프로필/인증현황 탭 내용 */}
+            {isChallengeStarted() &&
+            (data.isObserverMode || isParticipated) &&
+            activeTab === 'certification' ? (
+              // 인증현황 탭
+              <View style={styles.certificationSection}>
+                {/* 라운드 캐러셀 */}
+                <View style={styles.roundCarouselContainer}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={[
+                      styles.roundCarouselContent,
+                      roundCarouselScrollX > 0 &&
+                        styles.roundCarouselContentScrolled,
+                    ]}
+                    onScroll={e =>
+                      setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)
+                    }
+                    scrollEventThrottle={16}
+                  >
+                    {rounds.map(round => (
+                      <TouchableOpacity
+                        key={round.roundNumber}
                         style={[
-                          styles.dayButton,
-                          status === 'completed' && styles.dayButtonCompleted,
-                          status === 'required' && styles.dayButtonRequired,
+                          styles.roundButton,
+                          selectedRound === round.roundNumber &&
+                            styles.roundButtonSelected,
                         ]}
+                        onPress={() => setSelectedRound(round.roundNumber)}
+                        activeOpacity={0.7}
                       >
                         <Text
-                          variant={status === 'none' ? 'smReg' : 'smMd'}
+                          variant={
+                            selectedRound === round.roundNumber
+                              ? 'smMd'
+                              : 'smReg'
+                          }
                           color={
-                            status === 'completed'
+                            selectedRound === round.roundNumber
                               ? colors.white
-                              : status === 'required'
-                              ? colors.primary.main
                               : colors.text.tertiary
                           }
                         >
-                          {day}
+                          {round.roundNumber}R
                         </Text>
-                      </View>
-                    );
-                  })}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 </View>
 
-                {/* 인증 시간대 */}
-                {profile && (
-                  <View style={styles.timeRangeBox}>
-                    <View style={styles.timeRangeItem}>
-                      <Text variant="header2" color={colors.text.tertiary}>
-                        {formatTime(profile.verifyStartTime)}
+                {/* 참가자 요약 */}
+                {verificationStat && (
+                  <View style={styles.participantSummary}>
+                    <View style={styles.summaryItem}>
+                      <Text variant="xsReg" color={colors.text.secondary}>
+                        총 참가자 수
                       </Text>
                       <Text
                         variant="xsMd"
-                        color={colors.text.tertiary}
-                        style={styles.timeRangePeriod}
+                        color={colors.text.primary}
+                        style={styles.summaryValue}
                       >
-                        {getAmPm(profile.verifyStartTime)}
+                        {verificationStat.totalParticipantCount}명
                       </Text>
                     </View>
-                    <View style={styles.timeRangeDivider} />
-                    <View style={styles.timeRangeItem}>
-                      <Text variant="header2" color={colors.text.tertiary}>
-                        {formatTime(profile.verifyEndTime)}
-                      </Text>
+                    <View style={styles.summaryItem}>
+                      <View style={styles.summaryItemHeaderContainer}>
+                        <View style={styles.summaryItemHeader}>
+                          <Text variant="xsReg" color={colors.text.secondary}>
+                            인증 완료 인원
+                          </Text>
+                          <TouchableOpacity
+                            activeOpacity={0.7}
+                            style={styles.infoIconButton}
+                            onPress={() =>
+                              setShowCertificationTooltip(
+                                !showCertificationTooltip,
+                              )
+                            }
+                          >
+                            <InfoCircleIcon width={16} height={16} />
+                          </TouchableOpacity>
+                        </View>
+                        {showCertificationTooltip && (
+                          <View style={styles.tooltip}>
+                            <Text variant="xsReg" color={colors.text.secondary}>
+                              직전 인증 요일의 인증완료 인원 기준입니다
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                       <Text
                         variant="xsMd"
-                        color={colors.text.tertiary}
-                        style={styles.timeRangePeriod}
+                        color={colors.text.primary}
+                        style={styles.summaryValue}
                       >
-                        {getAmPm(profile.verifyEndTime)}
+                        {verificationStat.certifiedCount}명
                       </Text>
                     </View>
                   </View>
                 )}
 
-                {/* 구분선 */}
+                {/* 챌린지 인증현황 타이틀 */}
                 <View
-                  style={[
-                    styles.sectionDivider,
-                    styles.sectionDividerAfterTimeRange,
-                  ]}
-                />
-
-                {/* 챌린지 규칙 */}
-                <View style={styles.section}>
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitle}
-                  >
-                    챌린지 규칙
-                  </Text>
-                  <View style={styles.contentBox}>
-                    <Text
-                      variant="xsReg"
-                      color={colors.text.secondary}
-                      style={styles.rulesText}
-                    >
-                      {challengeData.rules}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* 주의사항 */}
-                <View
-                  style={[
-                    styles.section,
-                    {
-                      marginTop: verticalScale(24),
-                      marginBottom: verticalScale(24),
-                    },
-                  ]}
+                  style={[styles.section, { marginTop: verticalScale(16) }]}
                 >
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitle}
+                  <TouchableOpacity
+                    style={styles.sectionTitleRow}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      if (!isParticipated) {
+                        Alert.alert(
+                          '알림',
+                          '챌린지에 참여하면 인증 현황을 확인할 수 있어요.',
+                        );
+                        return;
+                      }
+                      navigation.navigate('ChallengeCertification', {
+                        challengeId,
+                      });
+                    }}
                   >
-                    주의사항
-                  </Text>
-                  <View style={styles.contentBox}>
                     <Text
-                      variant="xsReg"
-                      color={colors.text.secondary}
-                      style={styles.rulesText}
+                      variant="header4"
+                      color={colors.text.primary}
+                      style={styles.sectionTitleNoMargin}
                     >
-                      챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
-                      인증'으로 신고할 수 있습니다. 하나의 게시글에 부실 인증이
-                      3회 누적되면 경고 1회가 부여됩니다. 경고가 총 3회 누적될
-                      경우, 해당 챌린지 참여가 종료되며 재참여는 제한됩니다.
+                      챌린지 인증현황
                     </Text>
-                  </View>
+                    <View style={styles.sectionChevronButton}>
+                      <ChevronRightIcGreyIcon width={5} height={10} />
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </>
+
+                {/* 인증 피드 내용 */}
+                <View style={styles.sectionNoPadding}>
+                  {isFeedLoading ? (
+                    <View style={styles.feedLoadingContainer}>
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.primary.main}
+                      />
+                    </View>
+                  ) : verificationFeed.length > 0 ? (
+                    <>
+                      {/* 글 인증 리스트 */}
+                      {verificationFeed.filter(item => item.type === 'TEXT')
+                        .length > 0 && (
+                        <View style={styles.textFeedSection}>
+                          <TextCertificationList
+                            items={verificationFeed
+                              .filter(item => item.type === 'TEXT')
+                              .map(item => ({
+                                id: item.verificationId,
+                                title: item.title,
+                                description: item.content,
+                                date: item.createdDate,
+                                thumbnail: item.imageUrl
+                                  ? { uri: item.imageUrl }
+                                  : null,
+                                hasLink: item.hasLink,
+                                isQuestion: item.isQuestion,
+                                isResolved: item.isResolved,
+                              }))}
+                            containerPadding={scale(24)}
+                            onItemPress={item => {
+                              if (!isParticipated) {
+                                Alert.alert(
+                                  '알림',
+                                  '챌린지에 참여하면 인증 내용을 확인할 수 있어요.',
+                                );
+                                return;
+                              }
+                              navigation.navigate(
+                                'ChallengeCertificationDetail',
+                                {
+                                  verificationId: item.id,
+                                },
+                              );
+                            }}
+                          />
+                        </View>
+                      )}
+
+                      {/* 사진 인증 그리드 */}
+                      {verificationFeed.filter(item => item.type !== 'TEXT')
+                        .length > 0 && (
+                        <PhotoCertificationGrid
+                          items={verificationFeed
+                            .filter(item => item.type !== 'TEXT')
+                            .map(item => ({
+                              id: item.verificationId,
+                              thumbnail: { uri: item.imageUrl },
+                              isQuestion: item.isQuestion,
+                              isResolved: item.isResolved,
+                            }))}
+                          onItemPress={item => {
+                            if (!isParticipated) {
+                              Alert.alert(
+                                '알림',
+                                '챌린지에 참여하면 인증 내용을 확인할 수 있어요.',
+                              );
+                              return;
+                            }
+                            navigation.navigate(
+                              'ChallengeCertificationDetail',
+                              {
+                                verificationId: item.id,
+                              },
+                            );
+                          }}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <View style={styles.emptyFeedContainerPadding}>
+                      <Text variant="xsReg" color={colors.text.tertiary}>
+                        아직 인증된 게시글이 없습니다.
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
             ) : (
-              // 참가 전 UI
+              // 프로필 탭
               <>
-                {/* 챌린지 기간 */}
-                <View style={styles.challengePeriodSection}>
-                  <Text variant="smReg" color={colors.text.primary}>
-                    {formatChallengePeriod()}
-                  </Text>
-                </View>
-
-                {/* 챌린지 일정 정보 */}
-                <View style={styles.scheduleSection}>
-                  <View style={styles.scheduleItem}>
-                    <View style={styles.iconContainer24}>
-                      <CalendarIcon width={14} height={14} />
-                    </View>
-                    <Text variant="smReg" color={colors.text.primary}>
-                      {challengeData.schedule.days}
-                    </Text>
-                  </View>
-                  <View style={styles.verticalDivider} />
-                  <View style={styles.scheduleItem}>
-                    <View style={styles.iconContainer24}>
-                      <TimeRangeIcon width={16} height={16} />
-                    </View>
-                    <Text variant="smReg" color={colors.text.primary}>
-                      {challengeData.schedule.timeRange}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* 챌린지 규칙 */}
-                <View style={styles.section}>
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitle}
-                  >
-                    챌린지 규칙
-                  </Text>
-                  <View style={styles.contentBox}>
-                    <Text
-                      variant="xsReg"
-                      color={colors.text.secondary}
-                      style={styles.rulesText}
+                {isParticipated ? (
+                  // 참가 후 UI
+                  <>
+                    {/* 챌린지 기간 */}
+                    <View
+                      style={[
+                        styles.challengePeriodSection,
+                        { paddingTop: verticalScale(28) },
+                      ]}
                     >
-                      {challengeData.rules}
-                    </Text>
-                  </View>
-                </View>
+                      <Text variant="smReg" color={colors.text.primary}>
+                        {formatChallengePeriod()}
+                      </Text>
+                    </View>
 
-                {/* 주의사항 */}
-                <View
-                  style={[
-                    styles.section,
-                    {
-                      marginTop: verticalScale(24),
-                      marginBottom: verticalScale(24),
-                    },
-                  ]}
-                >
-                  <Text
-                    variant="header4"
-                    color={colors.text.primary}
-                    style={styles.sectionTitle}
-                  >
-                    주의사항
-                  </Text>
-                  <View style={styles.contentBox}>
-                    <Text
-                      variant="xsReg"
-                      color={colors.text.secondary}
-                      style={styles.rulesText}
+                    {/* 요일별 인증 상태 */}
+                    <View style={styles.daySelectionSection}>
+                      {['일', '월', '화', '수', '목', '금', '토'].map(day => {
+                        const status = dayStatuses[day];
+                        return (
+                          <View
+                            key={day}
+                            style={[
+                              styles.dayButton,
+                              status === 'completed' &&
+                                styles.dayButtonCompleted,
+                              status === 'required' && styles.dayButtonRequired,
+                            ]}
+                          >
+                            <Text
+                              variant={status === 'none' ? 'smReg' : 'smMd'}
+                              color={
+                                status === 'completed'
+                                  ? colors.white
+                                  : status === 'required'
+                                  ? colors.primary.main
+                                  : colors.text.tertiary
+                              }
+                            >
+                              {day}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+
+                    {/* 인증 시간대 */}
+                    {profile && (
+                      <View style={styles.timeRangeBox}>
+                        <View style={styles.timeRangeItem}>
+                          <Text variant="header2" color={colors.text.tertiary}>
+                            {formatTime(profile.verifyStartTime)}
+                          </Text>
+                          <Text
+                            variant="xsMd"
+                            color={colors.text.tertiary}
+                            style={styles.timeRangePeriod}
+                          >
+                            {getAmPm(profile.verifyStartTime)}
+                          </Text>
+                        </View>
+                        <View style={styles.timeRangeDivider} />
+                        <View style={styles.timeRangeItem}>
+                          <Text variant="header2" color={colors.text.tertiary}>
+                            {formatTime(profile.verifyEndTime)}
+                          </Text>
+                          <Text
+                            variant="xsMd"
+                            color={colors.text.tertiary}
+                            style={styles.timeRangePeriod}
+                          >
+                            {getAmPm(profile.verifyEndTime)}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* 구분선 */}
+                    <View
+                      style={[
+                        styles.sectionDivider,
+                        styles.sectionDividerAfterTimeRange,
+                      ]}
+                    />
+
+                    {/* 챌린지 규칙 */}
+                    <View style={styles.section}>
+                      <Text
+                        variant="header4"
+                        color={colors.text.primary}
+                        style={styles.sectionTitle}
+                      >
+                        챌린지 규칙
+                      </Text>
+                      <View style={styles.contentBox}>
+                        <Text
+                          variant="xsReg"
+                          color={colors.text.secondary}
+                          style={styles.rulesText}
+                        >
+                          {challengeData.rules}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 주의사항 */}
+                    <View
+                      style={[
+                        styles.section,
+                        {
+                          marginTop: verticalScale(24),
+                          marginBottom: verticalScale(24),
+                        },
+                      ]}
                     >
-                      챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
-                      인증'으로 신고할 수 있습니다. 하나의 게시글에 부실 인증이
-                      3회 누적되면 경고 1회가 부여됩니다. 경고가 총 3회 누적될
-                      경우, 해당 챌린지 참여가 종료되며 재참여는 제한됩니다.
-                    </Text>
-                  </View>
-                </View>
-              </>
-            )}
+                      <Text
+                        variant="header4"
+                        color={colors.text.primary}
+                        style={styles.sectionTitle}
+                      >
+                        주의사항
+                      </Text>
+                      <View style={styles.contentBox}>
+                        <Text
+                          variant="xsReg"
+                          color={colors.text.secondary}
+                          style={styles.rulesText}
+                        >
+                          챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
+                          인증'으로 신고할 수 있습니다. 하나의 게시글에 부실
+                          인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총
+                          3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는
+                          제한됩니다.
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  // 참가 전 UI
+                  <>
+                    {/* 챌린지 기간 */}
+                    <View style={styles.challengePeriodSection}>
+                      <Text variant="smReg" color={colors.text.primary}>
+                        {formatChallengePeriod()}
+                      </Text>
+                    </View>
 
-            {/* 챌린지 랭킹 - TODO: API 구현 후 활성화 */}
-            {/* {isParticipated || data.isObserverMode ? (
+                    {/* 챌린지 일정 정보 */}
+                    <View style={styles.scheduleSection}>
+                      <View style={styles.scheduleItem}>
+                        <View style={styles.iconContainer24}>
+                          <CalendarIcon width={14} height={14} />
+                        </View>
+                        <Text variant="smReg" color={colors.text.primary}>
+                          {challengeData.schedule.days}
+                        </Text>
+                      </View>
+                      <View style={styles.verticalDivider} />
+                      <View style={styles.scheduleItem}>
+                        <View style={styles.iconContainer24}>
+                          <TimeRangeIcon width={16} height={16} />
+                        </View>
+                        <Text variant="smReg" color={colors.text.primary}>
+                          {challengeData.schedule.timeRange}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 챌린지 규칙 */}
+                    <View style={styles.section}>
+                      <Text
+                        variant="header4"
+                        color={colors.text.primary}
+                        style={styles.sectionTitle}
+                      >
+                        챌린지 규칙
+                      </Text>
+                      <View style={styles.contentBox}>
+                        <Text
+                          variant="xsReg"
+                          color={colors.text.secondary}
+                          style={styles.rulesText}
+                        >
+                          {challengeData.rules}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* 주의사항 */}
+                    <View
+                      style={[
+                        styles.section,
+                        {
+                          marginTop: verticalScale(24),
+                          marginBottom: verticalScale(24),
+                        },
+                      ]}
+                    >
+                      <Text
+                        variant="header4"
+                        color={colors.text.primary}
+                        style={styles.sectionTitle}
+                      >
+                        주의사항
+                      </Text>
+                      <View style={styles.contentBox}>
+                        <Text
+                          variant="xsReg"
+                          color={colors.text.secondary}
+                          style={styles.rulesText}
+                        >
+                          챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
+                          인증'으로 신고할 수 있습니다. 하나의 게시글에 부실
+                          인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총
+                          3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는
+                          제한됩니다.
+                        </Text>
+                      </View>
+                    </View>
+                  </>
+                )}
+
+                {/* 챌린지 랭킹 - TODO: API 구현 후 활성화 */}
+                {/* {isParticipated || data.isObserverMode ? (
               <View style={[styles.section, styles.rankingSection]}>
                 <TouchableOpacity
                   style={styles.sectionTitleRow}
@@ -1517,6 +1550,8 @@ ${deepLink}`;
                 </View>
               </View>
             )} */}
+              </>
+            )}
           </>
         )}
       </RefreshableScrollView>
@@ -1524,7 +1559,29 @@ ${deepLink}`;
       {/* 참가하기/인증하기 버튼 */}
       <View style={styles.buttonDivider} />
       <View style={styles.buttonContainer}>
-        {isParticipated ? (
+        {isFinished ? (
+          <View style={styles.finishedAction}>
+            <Text
+              variant="xsReg"
+              color={colors.icon.gray}
+              style={styles.finishedNotice}
+            >
+              종료한 챌린지는 내 인증기록만 확인 가능합니다
+            </Text>
+            <Button
+              variant="black"
+              size="medium"
+              onPress={() =>
+                navigation.navigate('ChallengeCertification', {
+                  challengeId,
+                  initialTab: 'my',
+                })
+              }
+            >
+              내 인증 보기
+            </Button>
+          </View>
+        ) : isParticipated ? (
           <Button
             variant={isCertificationButtonDisabled() ? 'gray' : 'primary'}
             size="medium"
@@ -1593,7 +1650,8 @@ ${deepLink}`;
                 color={colors.text.tertiary}
                 style={styles.modalDescription}
               >
-                챌린지에 참가하면 한 라운드가 끝나기 전까지{'\n'}
+                챌린지 시작일 전 날까지는 챌린지에서 나갈 수 있어요.{'\n'}
+                챌린지 시작 후에는 한 라운드가 끝나기 전까지{'\n'}
                 취소 및 중도 포기가 불가능해요
               </Text>
             )}
@@ -1726,6 +1784,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: verticalScale(20),
+  },
+  finishedState: {
+    minHeight: verticalScale(400),
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
   },
   headerRightContent: {
     flexDirection: 'row',
@@ -2081,6 +2146,14 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(12),
     alignItems: 'center',
   },
+  finishedAction: {
+    width: '100%',
+    alignItems: 'center',
+    gap: verticalScale(12),
+  },
+  finishedNotice: {
+    textAlign: 'center',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -2090,7 +2163,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '100%',
-    height: verticalScale(180),
+    height: verticalScale(240),
     backgroundColor: colors.white,
     borderRadius: scale(20),
     paddingTop: verticalScale(28),

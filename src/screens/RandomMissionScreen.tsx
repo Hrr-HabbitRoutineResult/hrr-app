@@ -293,7 +293,7 @@ const RandomMissionScreen = () => {
   }
 
   // 기본 미션 화면
-  const missionCompleted = randomMissionCompleted || missionData?.isCompleted;
+  const missionCompleted = true;
   const missionTitle = missionData?.title || '건강식 한 끼 먹기';
   const missionDescription = missionData?.content || '오늘의 한 끼는 건강하게 챙겨보세요!';
 
@@ -332,7 +332,7 @@ const RandomMissionScreen = () => {
                 </Text>
               </View>
               <View style={styles.completeIllustration}>
-                <MissionCompleteIcon width={scale(240)} height={scale(240)} />
+                <MissionCompleteIcon width={scale(152)} height={scale(152)} />
               </View>
               <View style={styles.completedFooter}>
                 <View style={styles.cardDivider} />

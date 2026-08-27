@@ -1,15 +1,34 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { scale, verticalScale } from '../../utils/scaling';
 import { getErrorMessage } from '../../utils/errorHandler';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+  Image,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  RouteProp,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Svg, { Circle } from 'react-native-svg';
 import { Header } from '../../components/common/Header';
 import { TabBar, TabItem } from '../../components/common/TabBar';
-import { PhotoCertificationGrid, PhotoCertificationItem } from '../../components/common/PhotoCertificationGrid';
-import { TextCertificationList, TextCertificationItem } from '../../components/common/TextCertificationList';
+import {
+  PhotoCertificationGrid,
+  PhotoCertificationItem,
+} from '../../components/common/PhotoCertificationGrid';
+import {
+  TextCertificationList,
+  TextCertificationItem,
+} from '../../components/common/TextCertificationList';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
@@ -27,18 +46,22 @@ import {
 } from '../../libs/api/challenge';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
 
-type ChallengeCertificationScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertification'>;
+type ChallengeCertificationScreenRouteProp = RouteProp<
+  RootStackParamList,
+  'ChallengeCertification'
+>;
 type ChallengeCertificationScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
   'ChallengeCertification'
 >;
 
 export const ChallengeCertificationScreen: React.FC = () => {
-  const navigation = useNavigation<ChallengeCertificationScreenNavigationProp>();
+  const navigation =
+    useNavigation<ChallengeCertificationScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationScreenRouteProp>();
-  const { challengeId } = route.params;
+  const { challengeId, initialTab = 'challenger' } = route.params;
 
-  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>('challenger');
+  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>(initialTab);
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
@@ -49,7 +72,9 @@ export const ChallengeCertificationScreen: React.FC = () => {
   // 챌린저 탭 데이터
   const [statData, setStatData] = useState<VerificationStat | null>(null);
   const [rounds, setRounds] = useState<RoundItem[]>([]);
-  const [challengerFeed, setChallengerFeed] = useState<VerificationFeedItem[]>([]);
+  const [challengerFeed, setChallengerFeed] = useState<VerificationFeedItem[]>(
+    [],
+  );
   const [isChallengerLoading, setIsChallengerLoading] = useState(true);
   const [isFeedLoading, setIsFeedLoading] = useState(false);
 
@@ -66,7 +91,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
       } else if (activeTab === 'challenger') {
         fetchChallengerData();
       }
-    }, [activeTab])
+    }, [activeTab]),
   );
 
   // 선택된 라운드 변경 시 피드 로딩
@@ -86,7 +111,10 @@ export const ChallengeCertificationScreen: React.FC = () => {
       let allVerifications: VerificationFeedItem[] = [];
 
       // 첫 페이지 요청
-      const firstPageData = await getMyVerifications(challengeId, { page: currentPage, size: 20 });
+      const firstPageData = await getMyVerifications(challengeId, {
+        page: currentPage,
+        size: 20,
+      });
 
       // MyVerificationInfo 구조 유지하면서 verifications만 누적
       let resultData = firstPageData;
@@ -96,8 +124,14 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
       // 나머지 페이지 요청
       while (hasNext) {
-        const nextPageData = await getMyVerifications(challengeId, { page: currentPage, size: 20 });
-        allVerifications = [...allVerifications, ...nextPageData.verifications.content];
+        const nextPageData = await getMyVerifications(challengeId, {
+          page: currentPage,
+          size: 20,
+        });
+        allVerifications = [
+          ...allVerifications,
+          ...nextPageData.verifications.content,
+        ];
         hasNext = nextPageData.verifications.hasNext;
         currentPage++;
       }
@@ -109,12 +143,15 @@ export const ChallengeCertificationScreen: React.FC = () => {
           ...firstPageData.verifications,
           content: allVerifications,
           hasNext: false,
-        }
+        },
       };
 
       setMyData(resultData);
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '내 인증 현황을 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '내 인증 현황을 불러오는데 실패했습니다.',
+      );
       Alert.alert('오류', errorMessage);
     } finally {
       setIsMyLoading(false);
@@ -150,9 +187,11 @@ export const ChallengeCertificationScreen: React.FC = () => {
       } else {
         setChallengerFeed([]);
       }
-
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '챌린저 정보를 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '챌린저 정보를 불러오는데 실패했습니다.',
+      );
       Alert.alert('오류', errorMessage);
     } finally {
       setIsChallengerLoading(false);
@@ -182,7 +221,10 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
       setChallengerFeed(allFeed);
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '인증 피드를 불러오는데 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '인증 피드를 불러오는데 실패했습니다.',
+      );
       Alert.alert('오류', errorMessage);
       setChallengerFeed([]);
     } finally {
@@ -199,14 +241,21 @@ export const ChallengeCertificationScreen: React.FC = () => {
   }, [activeTab, fetchMyVerifications, fetchChallengerData]);
 
   // 인증 타입 판별 (마이 탭)
-  const myCertificationType = myData?.verifications?.content?.length && myData.verifications.content.length > 0
-    ? myData.verifications.content[0].type === 'TEXT' ? 'text' : 'image'
-    : 'image';
+  const myCertificationType =
+    myData?.verifications?.content?.length &&
+    myData.verifications.content.length > 0
+      ? myData.verifications.content[0].type === 'TEXT'
+        ? 'text'
+        : 'image'
+      : 'image';
 
   // 인증 타입 판별 (챌린저 탭)
-  const challengerCertificationType = challengerFeed.length > 0
-    ? challengerFeed[0].type === 'TEXT' ? 'text' : 'image'
-    : 'image';
+  const challengerCertificationType =
+    challengerFeed.length > 0
+      ? challengerFeed[0].type === 'TEXT'
+        ? 'text'
+        : 'image'
+      : 'image';
 
   const isFirstRound = (round: RoundItem) => round.isCurrentRound;
 
@@ -223,21 +272,20 @@ export const ChallengeCertificationScreen: React.FC = () => {
   // 통계 계산
   const completedCount = statData?.certifiedCount || 0;
   const totalCount = statData?.totalParticipantCount || 0;
-  const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+  const progressPercentage =
+    totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   // 원형 그래프 계산
   const size = 240; // 원형 그래프 크기(240x240)
   const center = size / 2; // 원형 그래프 중심
   const radius = (size - 20) / 2; // 원형 그래프 반지름(strokeWidth 10*2 빼고 / 2)
   const circumference = 2 * Math.PI * radius; // 원형 그래프 원주
-  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference; // 원형 그래프 시작 위치
+  const strokeDashoffset =
+    circumference - (progressPercentage / 100) * circumference; // 원형 그래프 시작 위치
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header
-        title="인증현황"
-        onBack={() => navigation.goBack()}
-      />
+      <Header title="인증현황" onBack={() => navigation.goBack()} />
       <RefreshableScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
@@ -246,7 +294,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={(key) => setActiveTab(key as 'my' | 'challenger')}
+          onTabChange={key => setActiveTab(key as 'my' | 'challenger')}
         />
 
         {activeTab === 'my' ? (
@@ -258,35 +306,40 @@ export const ChallengeCertificationScreen: React.FC = () => {
             <View>
               {/* 프로필 영역 */}
               <View style={styles.profileSection}>
-                <DefaultProfileIcon width={100} height={100} />
-                <View style={styles.profileInfo}>
-                  <Text variant="header2" color={colors.text.primary} style={styles.nickname}>
+                <DefaultProfileIcon width={scale(60)} height={scale(60)} />
+                <View style={styles.profileInfoWrapper}>
+                  <Text
+                    variant="header3"
+                    color={colors.text.primary}
+                    style={styles.nickname}
+                  >
                     {myData.nickname}
                   </Text>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text variant="xsReg" color={colors.text.tertiary}>
-                        인증
-                      </Text>
                       <Text variant="xsMd" color={colors.text.primary}>
-                        {myData.totalVerificationCount}회
+                        인증 {myData.verificationCount}회
                       </Text>
                     </View>
+                    <View style={styles.statDivider} />
                     <View style={styles.statItem}>
-                      <Text variant="xsReg" color={colors.text.tertiary}>
-                        경고
-                      </Text>
                       <Text variant="xsMd" color={colors.text.primary}>
-                        {myData.warningCount}회
+                        부실인증 {myData.weakVerificationCount}회
+                      </Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <Text variant="xsMd" color={colors.text.primary}>
+                        경고 {myData.warningCount}회
                       </Text>
                     </View>
                   </View>
                 </View>
               </View>
 
-              {/* 진행 중 버튼 */}
-              <View style={styles.buttonContainer}>
-                <Button variant="black" size="medium" onPress={() => { }}>
+              {/* 현재 라운드 카드 */}
+              <View style={styles.roundCardContainer}>
+                <Button variant="black" size="medium" onPress={() => {}}>
                   {`${myData.currentRoundSequence}R째 진행 중`}
                 </Button>
               </View>
@@ -308,7 +361,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
                     }))}
-                    onItemPress={(item) => {
+                    onItemPress={item => {
                       navigation.navigate('ChallengeCertificationDetail', {
                         verificationId: item.id,
                       });
@@ -319,15 +372,18 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={myData.verifications.content.map(item => ({
                         id: item.verificationId,
-                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
+                        thumbnail: item.imageUrl
+                          ? { uri: item.imageUrl }
+                          : null,
                         isQuestion: item.isQuestion,
                         isResolved: item.isResolved,
                       }))}
-                      onItemPress={(item) => {
+                      onItemPress={item => {
                         navigation.navigate('ChallengeCertificationDetail', {
                           verificationId: item.id,
                         });
                       }}
+                      containerPadding={0}
                     />
                   </View>
                 )
@@ -340,198 +396,205 @@ export const ChallengeCertificationScreen: React.FC = () => {
               )}
             </View>
           ) : null
-        ) : (
-          isChallengerLoading ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={colors.primary.main} />
-            </View>
-          ) : statData ? (
-            <View>
-              {/* 원형 그래프 영역 */}
-              <View style={styles.progressSection}>
-                <View style={styles.circularProgressContainer}>
-                  <Svg width={size} height={size} style={styles.circularProgressSvg}>
-                    <Circle
-                      cx={center}
-                      cy={center}
-                      r={radius}
-                      stroke={colors.background}
-                      strokeWidth={10}
-                      fill="none"
-                    />
-                    <Circle
-                      cx={center}
-                      cy={center}
-                      r={radius}
-                      stroke={colors.primary.main}
-                      strokeWidth={10}
-                      fill="none"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      transform={`rotate(-90 ${center} ${center})`}
-                    />
-                  </Svg>
-                  <View style={styles.progressTextContainer}>
-                    <Text variant="header1" color={colors.text.primary}>
-                      {completedCount} / {totalCount}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* 통계 정보 */}
-                <View style={styles.statsContainer}>
-                  <View style={styles.statRow}>
-                    <Text variant="xsReg" color={colors.text.tertiary}>
-                      총인원
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.primary}>
-                      {totalCount}명
-                    </Text>
-                  </View>
-                  <View style={styles.statRow}>
-                    <Text variant="xsReg" color={colors.text.tertiary}>
-                      인증완료
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.primary}>
-                      {completedCount}명
-                    </Text>
-                  </View>
-                  <View style={styles.statRow}>
-                    <Text variant="xsReg" color={colors.text.tertiary}>
-                      미인증
-                    </Text>
-                    <Text variant="xsMd" color={colors.text.primary}>
-                      {totalCount - completedCount}명
-                    </Text>
-                  </View>
+        ) : isChallengerLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary.main} />
+          </View>
+        ) : statData ? (
+          <View>
+            {/* 원형 그래프 영역 */}
+            <View style={styles.progressSection}>
+              <View style={styles.circularProgressContainer}>
+                <Svg
+                  width={size}
+                  height={size}
+                  style={styles.circularProgressSvg}
+                >
+                  <Circle
+                    cx={center}
+                    cy={center}
+                    r={radius}
+                    stroke={colors.background}
+                    strokeWidth={10}
+                    fill="none"
+                  />
+                  <Circle
+                    cx={center}
+                    cy={center}
+                    r={radius}
+                    stroke={colors.primary.main}
+                    strokeWidth={10}
+                    fill="none"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    transform={`rotate(-90 ${center} ${center})`}
+                  />
+                </Svg>
+                <View style={styles.progressTextContainer}>
+                  <Text variant="header1" color={colors.text.primary}>
+                    {completedCount} / {totalCount}
+                  </Text>
                 </View>
               </View>
 
-              {/* 구분선 */}
-              <View style={styles.sectionDivider} />
+              {/* 통계 정보 */}
+              <View style={styles.statsContainer}>
+                <View style={styles.statRow}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    총인원
+                  </Text>
+                  <Text variant="xsMd" color={colors.text.primary}>
+                    {totalCount}명
+                  </Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    인증완료
+                  </Text>
+                  <Text variant="xsMd" color={colors.text.primary}>
+                    {completedCount}명
+                  </Text>
+                </View>
+                <View style={styles.statRow}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    미인증
+                  </Text>
+                  <Text variant="xsMd" color={colors.text.primary}>
+                    {totalCount - completedCount}명
+                  </Text>
+                </View>
+              </View>
+            </View>
 
-              {/* 라운드 캐러셀 */}
-              <View style={styles.roundCarouselContainer}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={[
-                    styles.roundCarouselContent,
-                    roundCarouselScrollX > 0 && styles.roundCarouselContentScrolled,
-                  ]}
-                  onScroll={(e) => setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)}
-                  scrollEventThrottle={16}
-                >
-                  {rounds.map((round) => {
-                    const participated = round.isParticipated;
-                    const isFirst = isFirstRound(round);
-                    const isSelected = selectedRound === round.roundNumber;
+            {/* 구분선 */}
+            <View style={styles.sectionDivider} />
 
-                    if (!participated) {
-                      return (
-                        <View
-                          key={round.roundNumber}
-                          style={[styles.roundButton, styles.roundButtonNotParticipated]}
-                        >
-                          <Text variant="smReg" color={colors.button}>
-                            {round.roundNumber}R
-                          </Text>
-                        </View>
-                      );
-                    }
+            {/* 라운드 캐러셀 */}
+            <View style={styles.roundCarouselContainer}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[
+                  styles.roundCarouselContent,
+                  roundCarouselScrollX > 0 &&
+                    styles.roundCarouselContentScrolled,
+                ]}
+                onScroll={e =>
+                  setRoundCarouselScrollX(e.nativeEvent.contentOffset.x)
+                }
+                scrollEventThrottle={16}
+              >
+                {rounds.map(round => {
+                  const participated = round.isParticipated;
+                  const isFirst = isFirstRound(round);
+                  const isSelected = selectedRound === round.roundNumber;
 
-                    if (isFirst) {
-                      return (
-                        <TouchableOpacity
-                          key={round.roundNumber}
-                          style={[
-                            styles.roundButton,
-                            styles.roundButtonFirst,
-                          ]}
-                          onPress={() => handleRoundPress(round.roundNumber)}
-                          activeOpacity={0.7}
-                        >
-                          <Text variant="smReg" color={colors.primary.main}>
-                            {round.roundNumber}R
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }
-
+                  if (!participated) {
                     return (
-                      <TouchableOpacity
+                      <View
                         key={round.roundNumber}
                         style={[
                           styles.roundButton,
-                          isSelected ? styles.roundButtonSelected : styles.roundButtonParticipated,
+                          styles.roundButtonNotParticipated,
                         ]}
+                      >
+                        <Text variant="smReg" color={colors.button}>
+                          {round.roundNumber}R
+                        </Text>
+                      </View>
+                    );
+                  }
+
+                  if (isFirst) {
+                    return (
+                      <TouchableOpacity
+                        key={round.roundNumber}
+                        style={[styles.roundButton, styles.roundButtonFirst]}
                         onPress={() => handleRoundPress(round.roundNumber)}
                         activeOpacity={0.7}
                       >
-                        <Text
-                          variant={isSelected ? 'smMd' : 'smReg'}
-                          color={isSelected ? colors.white : colors.text.tertiary}
-                        >
+                        <Text variant="smReg" color={colors.primary.main}>
                           {round.roundNumber}R
                         </Text>
                       </TouchableOpacity>
                     );
-                  })}
-                </ScrollView>
-              </View>
+                  }
 
-              {/* 인증 목록 */}
-              {isFeedLoading ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="small" color={colors.primary.main} />
-                </View>
-              ) : challengerFeed.length > 0 ? (
-                challengerCertificationType === 'text' ? (
-                  <TextCertificationList
+                  return (
+                    <TouchableOpacity
+                      key={round.roundNumber}
+                      style={[
+                        styles.roundButton,
+                        isSelected
+                          ? styles.roundButtonSelected
+                          : styles.roundButtonParticipated,
+                      ]}
+                      onPress={() => handleRoundPress(round.roundNumber)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        variant={isSelected ? 'smMd' : 'smReg'}
+                        color={isSelected ? colors.white : colors.text.tertiary}
+                      >
+                        {round.roundNumber}R
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
+            {/* 인증 목록 */}
+            {isFeedLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={colors.primary.main} />
+              </View>
+            ) : challengerFeed.length > 0 ? (
+              challengerCertificationType === 'text' ? (
+                <TextCertificationList
+                  items={challengerFeed.map(item => ({
+                    id: item.verificationId,
+                    title: item.title,
+                    description: item.content,
+                    date: item.createdDate,
+                    thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
+                    hasLink: item.hasLink,
+                    isQuestion: item.isQuestion,
+                    isResolved: item.isResolved,
+                  }))}
+                  onItemPress={item => {
+                    navigation.navigate('ChallengeCertificationDetail', {
+                      verificationId: item.id,
+                    });
+                  }}
+                />
+              ) : (
+                <View style={styles.gridContainer}>
+                  <PhotoCertificationGrid
                     items={challengerFeed.map(item => ({
                       id: item.verificationId,
-                      title: item.title,
-                      description: item.content,
-                      date: item.createdDate,
                       thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
-                      hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,
                     }))}
-                    onItemPress={(item) => {
+                    onItemPress={item => {
                       navigation.navigate('ChallengeCertificationDetail', {
                         verificationId: item.id,
                       });
                     }}
                   />
-                ) : (
-                  <View style={styles.gridContainer}>
-                    <PhotoCertificationGrid
-                      items={challengerFeed.map(item => ({
-                        id: item.verificationId,
-                        thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
-                        isQuestion: item.isQuestion,
-                        isResolved: item.isResolved,
-                      }))}
-                      onItemPress={(item) => {
-                        navigation.navigate('ChallengeCertificationDetail', {
-                          verificationId: item.id,
-                        });
-                      }}
-                    />
-                  </View>
-                )
-              ) : (
-                <View style={styles.emptyContainer}>
-                  <Text variant="xsReg" color={colors.text.tertiary}>
-                    아직 인증된 게시글이 없습니다.
-                  </Text>
                 </View>
-              )}
-            </View>
-          ) : null
-        )}
+              )
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text variant="xsReg" color={colors.text.tertiary}>
+                  아직 인증된 게시글이 없습니다.
+                </Text>
+              </View>
+            )}
+          </View>
+        ) : null}
       </RefreshableScrollView>
     </SafeAreaView>
   );
@@ -559,40 +622,46 @@ const styles = StyleSheet.create({
     paddingBottom: verticalScale(50),
   },
   gridContainer: {
-    paddingBottom: verticalScale(0),
+    paddingHorizontal: scale(0),
+    paddingVertical: verticalScale(0),
   },
   profileSection: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: scale(20),
     paddingTop: verticalScale(16),
     paddingBottom: verticalScale(12),
-    gap: scale(20),
+    gap: scale(12),
   },
-  profileInfo: {
+  profileInfoWrapper: {
     flex: 1,
+    justifyContent: 'flex-start',
   },
   nickname: {
-    marginBottom: verticalScale(12),
+    marginBottom: verticalScale(4),
   },
   statsRow: {
     flexDirection: 'row',
-    gap: scale(30),
+    alignItems: 'center',
+    gap: scale(20),
   },
   statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: scale(4),
+    alignItems: 'flex-start',
   },
-  buttonContainer: {
+  statValue: {
+    marginTop: 0,
+  },
+  statDivider: {
+    display: 'none',
+  },
+  roundCardContainer: {
     paddingHorizontal: scale(20),
-    paddingBottom: verticalScale(24),
-    alignItems: 'center',
+    paddingVertical: verticalScale(12),
   },
   sectionDivider: {
-    height: verticalScale(8),
-    backgroundColor: colors.background,
-    marginBottom: verticalScale(12),
+    height: verticalScale(1),
+    backgroundColor: colors.line,
+    marginVertical: verticalScale(0),
   },
   // 챌린저 탭 - 원형 그래프 영역
   progressSection: {

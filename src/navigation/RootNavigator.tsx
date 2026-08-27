@@ -60,6 +60,7 @@ const linking = {
   config: {
     screens: {
       HomeTabs: 'home',
+      RandomMission: 'random-mission',
       ChallengeProfile: 'challenge/:challengeId',
       ChallengeEdit: 'challenge/:challengeId/edit',
       User: 'user/:userId',
