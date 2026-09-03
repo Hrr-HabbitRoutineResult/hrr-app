@@ -35,6 +35,7 @@ import {
 } from '../../components/common/ActionSheet';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
+import { RoundEndBottomSheet } from '../../components/challenge/RoundEndBottomSheet';
 import { Header } from '../../components/common/Header';
 import { TabBar } from '../../components/common/TabBar';
 import { colors } from '../../design/tokens';
@@ -50,6 +51,8 @@ import {
   getVerificationFeed,
   leaveChallenge,
   reportChallenge,
+  submitRoundDecision,
+  RoundDecisionIntent,
   ChallengeDetail,
   ChallengeProfile,
   RoundItem,
@@ -119,6 +122,12 @@ export const ChallengeProfileScreen: React.FC = () => {
   const [showLeaveBottomSheet, setShowLeaveBottomSheet] = useState(false);
   const [isLeavingChallenge, setIsLeavingChallenge] = useState(false);
   const [isReportBottomSheetVisible, setIsReportBottomSheetVisible] =
+    useState(false);
+  // 미응답 챌린지 연장 알림으로 진입한 경우에만 라운드 종료 시트를 자동으로 연다.
+  const [showRoundEndSheet, setShowRoundEndSheet] = useState(
+    route.params.openRoundEndSheet === true,
+  );
+  const [isSubmittingRoundDecision, setIsSubmittingRoundDecision] =
     useState(false);
 
   const [rounds, setRounds] = useState<RoundItem[]>([]);
@@ -756,6 +765,26 @@ ${deepLink}`;
     }
   };
 
+  // 라운드 종료/연장 결정 제출 (알림에서 진입한 라운드 종료 바텀시트)
+  const handleRoundDecision = async (intent: RoundDecisionIntent) => {
+    if (isSubmittingRoundDecision) return;
+
+    try {
+      setIsSubmittingRoundDecision(true);
+      await submitRoundDecision(challengeId, intent);
+      setShowRoundEndSheet(false);
+      await refreshAllData();
+    } catch (error: any) {
+      // 실패 시 시트를 닫지 않고 재시도할 수 있도록 유지한다.
+      Alert.alert(
+        '오류',
+        getErrorMessage(error, '챌린지 연장 여부 제출에 실패했습니다.'),
+      );
+    } finally {
+      setIsSubmittingRoundDecision(false);
+    }
+  };
+
   // 챌린지 신고 제출
   const handleSubmitReport = async (
     reason: ReportReason,
@@ -1388,9 +1417,7 @@ ${deepLink}`;
                         >
                           챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
                           인증'으로 신고할 수 있습니다. 하나의 게시글에 부실
-                          인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총
-                          3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는
-                          제한됩니다.
+                          인증이 3회 누적되면 경고 1회가 부여됩니다.
                         </Text>
                       </View>
                     </View>
@@ -1471,9 +1498,7 @@ ${deepLink}`;
                         >
                           챌린지 규칙과 맞지 않은 인증글은 게시글에서 '부실
                           인증'으로 신고할 수 있습니다. 하나의 게시글에 부실
-                          인증이 3회 누적되면 경고 1회가 부여됩니다. 경고가 총
-                          3회 누적될 경우, 해당 챌린지 참여가 종료되며 재참여는
-                          제한됩니다.
+                          인증이 3회 누적되면 경고 1회가 부여됩니다.
                         </Text>
                       </View>
                     </View>
@@ -1576,6 +1601,7 @@ ${deepLink}`;
                 navigation.navigate('ChallengeCertification', {
                   challengeId,
                   initialTab: 'my',
+                  isCompleted: true,
                 })
               }
             >
@@ -1741,6 +1767,16 @@ ${deepLink}`;
           </View>
         </View>
       </BottomSheet>
+
+      {/* 라운드 종료 바텀시트 (챌린지 연장 알림으로 진입 시 자동 표시) */}
+      <RoundEndBottomSheet
+        visible={showRoundEndSheet}
+        remainDays={data.remainDays}
+        isSubmitting={isSubmittingRoundDecision}
+        onClose={() => setShowRoundEndSheet(false)}
+        onStop={() => handleRoundDecision('STOP')}
+        onContinue={() => handleRoundDecision('CONTINUE')}
+      />
 
       {/* 챌린지 신고 바텀시트 */}
       <ReportBottomSheet

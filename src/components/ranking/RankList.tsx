@@ -16,7 +16,7 @@ const Avatar: React.FC<{ uri?: string }> = ({ uri }) =>
   uri ? (
     <Image source={{ uri }} style={styles.avatar} />
   ) : (
-    <ProfileDefault width={scale(36)} height={scale(36)} />
+    <ProfileDefault width={scale(40)} height={scale(40)} />
   );
 
 export const RankList: React.FC<RankListProps> = ({ top5, me }) => {
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   detachedRow: {
-    marginTop: verticalScale(6),
+    marginTop: verticalScale(2),
   },
   myRow: {
     backgroundColor: colors.primary.lightest,
@@ -99,9 +99,9 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   avatar: {
-    width: scale(36),
-    height: scale(36),
-    borderRadius: scale(18),
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(20),
     backgroundColor: colors.line,
   },
   nickname: {

@@ -74,6 +74,7 @@ import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selec
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
 import CommentIcon from '../../../assets/icons/comment.svg';
 import ScrapIcon from '../../../assets/icons/scrap.svg';
+import ScrapSelectedIcon from '../../../assets/icons/challenge-profile/scrap-selected.svg';
 import LockIcon from '../../../assets/icons/lock.svg';
 import UnlockIcon from '../../../assets/icons/unlock.svg';
 import SendIcon from '../../../assets/icons/send.svg';
@@ -195,9 +196,9 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 
       // 좋아요/스크랩 상태 초기화
       setIsLiked(result.isLiked);
-      setLikeCount(result.likeCount);
+      setLikeCount(result.likeCount ?? 0);
       setIsScrapped(result.isScrapped);
-      setScrapCount(result.scrapCount);
+      setScrapCount(result.scrapCount ?? 0);
 
       // 댓글 조회 (모든 페이지)
       let allComments: CommentItemType[] = [];
@@ -541,7 +542,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         : await likeVerification(verificationId);
 
       setIsLiked(result.isLiked);
-      setLikeCount(result.likeCount);
+      setLikeCount(result.likeCount ?? 0);
     } catch (error: any) {
       const errorMessage = getErrorMessage(
         error,
@@ -574,7 +575,7 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         : await scrapVerification(verificationId);
 
       setIsScrapped(result.isScrapped);
-      setScrapCount(result.scrapCount);
+      setScrapCount(result.scrapCount ?? 0);
     } catch (error: any) {
       const errorMessage = getErrorMessage(
         error,
@@ -974,12 +975,19 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         {verification.textUrl && (
           <TouchableOpacity
             style={styles.linkBox}
-            onPress={() => {
-              Linking.canOpenURL(verification.textUrl).then(supported => {
-                if (supported) {
-                  Linking.openURL(verification.textUrl);
-                }
-              });
+            onPress={async () => {
+              const rawUrl = verification.textUrl?.trim();
+              if (!rawUrl) return;
+
+              const normalizedUrl = /^https?:\/\//i.test(rawUrl)
+                ? rawUrl
+                : `https://${rawUrl}`;
+
+              try {
+                await Linking.openURL(normalizedUrl);
+              } catch (error) {
+                Alert.alert('오류', '링크를 열 수 없습니다.');
+              }
             }}
             activeOpacity={0.7}
           >
@@ -1057,7 +1065,11 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
                 disabled: isScrapPending,
               }}
             >
-              <ScrapIcon width={14} height={18} />
+              {isScrapped ? (
+                <ScrapSelectedIcon width={14} height={18} />
+              ) : (
+                <ScrapIcon width={14} height={18} />
+              )}
             </TouchableOpacity>
             <Text
               variant="xxs"

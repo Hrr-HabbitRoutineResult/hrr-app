@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -21,14 +20,8 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import Svg, { Circle } from 'react-native-svg';
 import { Header } from '../../components/common/Header';
 import { TabBar, TabItem } from '../../components/common/TabBar';
-import {
-  PhotoCertificationGrid,
-  PhotoCertificationItem,
-} from '../../components/common/PhotoCertificationGrid';
-import {
-  TextCertificationList,
-  TextCertificationItem,
-} from '../../components/common/TextCertificationList';
+import { PhotoCertificationGrid } from '../../components/common/PhotoCertificationGrid';
+import { TextCertificationList } from '../../components/common/TextCertificationList';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
 import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
@@ -59,9 +52,15 @@ export const ChallengeCertificationScreen: React.FC = () => {
   const navigation =
     useNavigation<ChallengeCertificationScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationScreenRouteProp>();
-  const { challengeId, initialTab = 'challenger' } = route.params;
+  const {
+    challengeId,
+    initialTab = 'challenger',
+    isCompleted = false,
+  } = route.params;
 
-  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'my' | 'challenger'>(
+    isCompleted ? 'my' : initialTab,
+  );
   const [roundCarouselScrollX, setRoundCarouselScrollX] = useState(0);
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
@@ -83,25 +82,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
     { key: 'challenger', label: '챌린저' },
   ];
 
-  // 화면이 포커스될 때마다 현재 활성화된 탭의 데이터 새로고침
-  useFocusEffect(
-    React.useCallback(() => {
-      if (activeTab === 'my') {
-        fetchMyVerifications();
-      } else if (activeTab === 'challenger') {
-        fetchChallengerData();
-      }
-    }, [activeTab]),
-  );
-
-  // 선택된 라운드 변경 시 피드 로딩
-  useEffect(() => {
-    if (activeTab === 'challenger' && selectedRound !== null) {
-      fetchChallengerFeed(selectedRound);
-    }
-  }, [selectedRound, activeTab]);
-
-  const fetchMyVerifications = async () => {
+  const fetchMyVerifications = useCallback(async () => {
     try {
       setIsMyLoading(true);
 
@@ -147,6 +128,16 @@ export const ChallengeCertificationScreen: React.FC = () => {
       };
 
       setMyData(resultData);
+
+      if (isCompleted) {
+        try {
+          const completedRounds = await getChallengeRounds(challengeId);
+          setRounds(completedRounds);
+        } catch {
+          // 인증 기록은 보여주되, 라운드 정보만 비워 둔다.
+          setRounds([]);
+        }
+      }
     } catch (error: any) {
       const errorMessage = getErrorMessage(
         error,
@@ -156,7 +147,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
     } finally {
       setIsMyLoading(false);
     }
-  };
+  }, [challengeId, isCompleted]);
 
   const fetchChallengerData = async () => {
     try {
@@ -232,6 +223,24 @@ export const ChallengeCertificationScreen: React.FC = () => {
     }
   };
 
+  // 화면이 포커스될 때마다 현재 활성화된 탭의 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      if (activeTab === 'my') {
+        fetchMyVerifications();
+      } else {
+        fetchChallengerData();
+      }
+    }, [activeTab]),
+  );
+
+  // 선택된 라운드 변경 시 피드 로딩
+  useEffect(() => {
+    if (activeTab === 'challenger' && selectedRound !== null) {
+      fetchChallengerFeed(selectedRound);
+    }
+  }, [activeTab, selectedRound]);
+
   const onRefresh = useCallback(async () => {
     if (activeTab === 'my') {
       await fetchMyVerifications();
@@ -285,17 +294,23 @@ export const ChallengeCertificationScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header title="인증현황" onBack={() => navigation.goBack()} />
+      <Header
+        title={isCompleted ? '인증기록' : '인증현황'}
+        onBack={() => navigation.goBack()}
+        showDivider={isCompleted}
+      />
       <RefreshableScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         onRefresh={onRefresh}
       >
-        <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={key => setActiveTab(key as 'my' | 'challenger')}
-        />
+        {!isCompleted && (
+          <TabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={key => setActiveTab(key as 'my' | 'challenger')}
+          />
+        )}
 
         {activeTab === 'my' ? (
           isMyLoading ? (
@@ -305,8 +320,16 @@ export const ChallengeCertificationScreen: React.FC = () => {
           ) : myData ? (
             <View>
               {/* 프로필 영역 */}
-              <View style={styles.profileSection}>
-                <DefaultProfileIcon width={scale(60)} height={scale(60)} />
+              <View
+                style={[
+                  styles.profileSection,
+                  isCompleted && styles.completedProfileSection,
+                ]}
+              >
+                <DefaultProfileIcon
+                  width={scale(isCompleted ? 100 : 60)}
+                  height={scale(isCompleted ? 100 : 60)}
+                />
                 <View style={styles.profileInfoWrapper}>
                   <Text
                     variant="header3"
@@ -321,13 +344,17 @@ export const ChallengeCertificationScreen: React.FC = () => {
                         인증 {myData.verificationCount}회
                       </Text>
                     </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text variant="xsMd" color={colors.text.primary}>
-                        부실인증 {myData.weakVerificationCount}회
-                      </Text>
-                    </View>
-                    <View style={styles.statDivider} />
+                    {!isCompleted && (
+                      <>
+                        <View style={styles.statDivider} />
+                        <View style={styles.statItem}>
+                          <Text variant="xsMd" color={colors.text.primary}>
+                            부실인증 {myData.weakVerificationCount}회
+                          </Text>
+                        </View>
+                        <View style={styles.statDivider} />
+                      </>
+                    )}
                     <View style={styles.statItem}>
                       <Text variant="xsMd" color={colors.text.primary}>
                         경고 {myData.warningCount}회
@@ -337,15 +364,38 @@ export const ChallengeCertificationScreen: React.FC = () => {
                 </View>
               </View>
 
-              {/* 현재 라운드 카드 */}
-              <View style={styles.roundCardContainer}>
-                <Button variant="black" size="medium" onPress={() => {}}>
-                  {`${myData.currentRoundSequence}R째 진행 중`}
-                </Button>
-              </View>
+              {isCompleted ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.completedRoundContent}
+                >
+                  {rounds
+                    .filter(round => round.isParticipated)
+                    .map(round => (
+                      <View
+                        key={round.roundNumber}
+                        style={styles.completedRoundButton}
+                      >
+                        <Text variant="smReg" color={colors.text.tertiary}>
+                          {round.roundNumber}R
+                        </Text>
+                      </View>
+                    ))}
+                </ScrollView>
+              ) : (
+                <>
+                  {/* 현재 라운드 카드 */}
+                  <View style={styles.roundCardContainer}>
+                    <Button variant="black" size="medium" onPress={() => {}}>
+                      {`${myData.currentRoundSequence}R째 진행 중`}
+                    </Button>
+                  </View>
 
-              {/* 구분선 */}
-              <View style={styles.sectionDivider} />
+                  {/* 구분선 */}
+                  <View style={styles.sectionDivider} />
+                </>
+              )}
 
               {/* 인증 목록 */}
               {myData.verifications.content.length > 0 ? (
@@ -632,6 +682,25 @@ const styles = StyleSheet.create({
     paddingTop: verticalScale(16),
     paddingBottom: verticalScale(12),
     gap: scale(12),
+  },
+  completedRoundContent: {
+    gap: scale(8),
+    paddingHorizontal: scale(20),
+    paddingTop: verticalScale(4),
+    paddingBottom: verticalScale(12),
+  },
+  completedProfileSection: {
+    gap: scale(20),
+  },
+  completedRoundButton: {
+    width: scale(60),
+    height: verticalScale(60),
+    borderRadius: scale(10),
+    borderWidth: scale(1),
+    borderColor: colors.line,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileInfoWrapper: {
     flex: 1,

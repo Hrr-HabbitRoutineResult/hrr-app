@@ -9,12 +9,17 @@ export type RootStackParamList = {
   Notifications: undefined;
   ChallengeList: { category?: string; recommend?: boolean };
   RandomMission: undefined;
-  ChallengeProfile: { challengeId: number };
+  ChallengeProfile: {
+    challengeId: number;
+    // 미응답 CHALLENGE_EXTENSION 알림으로 진입한 경우 라운드 종료 바텀시트를 자동 표시
+    openRoundEndSheet?: boolean;
+  };
   ChallengeEdit: { challengeId: number };
   ChallengeParticipants: { challengeId: number };
   ChallengeCertification: {
     challengeId: number;
     initialTab?: 'my' | 'challenger';
+    isCompleted?: boolean;
   };
   ChallengeRanking: { challengeId: number };
   PointHistory: undefined;

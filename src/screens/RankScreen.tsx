@@ -225,7 +225,7 @@ const RankScreen: React.FC = () => {
 
         {isRising ? (
           <LinearGradient
-            colors={['#FFE2E0', '#FFF1F0']}
+            colors={['#FFF1F0', '#FFE2E0']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
             style={styles.statusCard}
@@ -308,13 +308,13 @@ const styles = StyleSheet.create({
   },
   statusCard: {
     height: verticalScale(80),
-    borderRadius: scale(18),
+    borderRadius: scale(20),
     paddingLeft: scale(18),
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: verticalScale(16),
+    marginBottom: verticalScale(24),
   },
   statusCardDown: {
     backgroundColor: colors.line,

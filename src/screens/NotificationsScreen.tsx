@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { scale, verticalScale } from '../utils/scaling';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,9 +17,8 @@ import { NotificationItem as NotificationItemComponent } from '../components/not
 import {
   getNotifications,
   markNotificationAsRead,
-  NotificationItem as NotificationItemType
+  NotificationItem as NotificationItemType,
 } from '../libs/api/notification';
-import { submitRoundDecision } from '../libs/api/challenge';
 import LogoGray from '../../assets/images/logo-gray.svg';
 
 // 카테고리 매핑
@@ -30,14 +36,20 @@ const CATEGORIES: CategoryInfo[] = [
 
 const NotificationsScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const [activeCategory, setActiveCategory] = useState<'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE'>('CHALLENGE');
-  const [notifications, setNotifications] = useState<NotificationItemType[]>([]);
+  const [activeCategory, setActiveCategory] = useState<
+    'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE'
+  >('CHALLENGE');
+  const [notifications, setNotifications] = useState<NotificationItemType[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
 
   // 알림 목록 조회 (모든 페이지)
-  const fetchNotifications = async (category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE') => {
+  const fetchNotifications = async (
+    category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE',
+  ) => {
     try {
       setLoading(true);
 
@@ -77,7 +89,7 @@ const NotificationsScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       fetchNotifications(activeCategory);
-    }, [activeCategory])
+    }, [activeCategory]),
   );
 
   // 시간 포맷팅 함수
@@ -105,13 +117,28 @@ const NotificationsScreen = () => {
     }
   };
 
-  // 알림 타입에 따른 컴포넌트 타입 결정
-  const getNotificationComponentType = (type: string): 'normal' | 'challenge_ending' => {
-    return type === 'CHALLENGE_EXTENSION' ? 'challenge_ending' : 'normal';
+  // 알림 payload에서 인증글 ID 추출
+  // - targetType VERIFICATION: targetId가 인증글 ID
+  // - targetType COMMENT: targetId는 댓글 ID이므로 contextType VERIFICATION의 contextId 사용
+  const getVerificationId = (
+    notification: NotificationItemType,
+  ): number | undefined => {
+    if (notification.targetType === 'VERIFICATION') {
+      return notification.targetId;
+    }
+    if (
+      notification.targetType === 'COMMENT' &&
+      notification.contextType === 'VERIFICATION'
+    ) {
+      return notification.contextId;
+    }
+    return undefined;
   };
 
   // 알림 클릭 처리 (읽음 처리 + 화면 이동)
-  const handleNotificationPress = async (notification: NotificationItemType) => {
+  const handleNotificationPress = async (
+    notification: NotificationItemType,
+  ) => {
     // 읽지 않은 알림만 읽음 처리
     if (!notification.isRead) {
       try {
@@ -121,10 +148,8 @@ const NotificationsScreen = () => {
         if (result.isRead) {
           setNotifications(prev =>
             prev.map(item =>
-              item.id === notification.id
-                ? { ...item, isRead: true }
-                : item
-            )
+              item.id === notification.id ? { ...item, isRead: true } : item,
+            ),
           );
         }
       } catch (error) {
@@ -134,75 +159,23 @@ const NotificationsScreen = () => {
 
     // 화면 이동
     if (notification.targetType === 'CHALLENGE') {
+      // 아직 연장 여부에 응답하지 않은 종료 예정 알림은
+      // 챌린지 프로필의 라운드 종료 바텀시트에서 응답받는다.
+      const shouldOpenRoundEndSheet =
+        notification.type === 'CHALLENGE_EXTENSION' &&
+        !notification.isResponded;
+
       navigation.navigate('ChallengeProfile', {
-        challengeId: notification.targetId
+        challengeId: notification.targetId,
+        ...(shouldOpenRoundEndSheet ? { openRoundEndSheet: true } : {}),
       });
+      return;
     }
-  };
 
-  const handleYesPress = async (id: number) => {
-    const notification = notifications.find(n => n.id === id);
-    if (!notification) return;
-
-    const challengeId = notification.targetId;
-
-    try {
-      await submitRoundDecision(challengeId, 'CONTINUE');
-
-      // 서버에 읽음 처리 요청
-      try {
-        await markNotificationAsRead(id);
-      } catch (error) {
-        // 읽음 처리 실패해도 계속 진행
-      }
-
-      // 로컬 state 업데이트
-      setNotifications(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, isRead: true, isResponded: true } : item
-        )
-      );
-
-      // 성공 시 알림 목록 새로고침하여 새 알림 반영
-      setTimeout(() => {
-        fetchNotifications(activeCategory);
-      }, 1000);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
-      Alert.alert('알림', errorMessage);
-    }
-  };
-
-  const handleNoPress = async (id: number) => {
-    const notification = notifications.find(n => n.id === id);
-    if (!notification) return;
-
-    const challengeId = notification.targetId;
-
-    try {
-      await submitRoundDecision(challengeId, 'STOP');
-
-      // 서버에 읽음 처리 요청
-      try {
-        await markNotificationAsRead(id);
-      } catch (error) {
-        // 읽음 처리 실패해도 계속 진행
-      }
-
-      // 로컬 state 업데이트
-      setNotifications(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, isRead: true, isResponded: true } : item
-        )
-      );
-
-      // 성공 시 알림 목록 새로고침하여 새 알림 반영
-      setTimeout(() => {
-        fetchNotifications(activeCategory);
-      }, 1000);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '챌린지 연장 여부 제출에 실패했습니다.';
-      Alert.alert('알림', errorMessage);
+    // 댓글/인증 관련 알림은 인증 상세 화면으로 이동
+    const verificationId = getVerificationId(notification);
+    if (verificationId) {
+      navigation.navigate('ChallengeCertificationDetail', { verificationId });
     }
   };
 
@@ -218,7 +191,7 @@ const NotificationsScreen = () => {
       />
 
       <View style={styles.filterContainer}>
-        {CATEGORIES.map((category) => (
+        {CATEGORIES.map(category => (
           <TouchableOpacity
             key={category.value}
             style={[
@@ -230,7 +203,8 @@ const NotificationsScreen = () => {
             <Text
               style={[
                 styles.filterButtonText,
-                activeCategory === category.value && styles.filterButtonTextActive,
+                activeCategory === category.value &&
+                  styles.filterButtonTextActive,
               ]}
               allowFontScaling={false}
             >
@@ -246,19 +220,19 @@ const NotificationsScreen = () => {
         </View>
       ) : hasNotifications ? (
         <ScrollView style={styles.notificationList}>
-          {notifications.map((item) => (
+          {notifications.map(item => (
             <NotificationItemComponent
               key={item.id}
-              type={getNotificationComponentType(item.type)}
-              profileImage={item.imageUrl ? { uri: item.imageUrl } : require('../../assets/images/mock-challenge-profile.png')}
+              profileImage={
+                item.imageUrl
+                  ? { uri: item.imageUrl }
+                  : require('../../assets/images/mock-challenge-profile.png')
+              }
               title={item.title}
               description={item.message.replace(/\\n/g, '\n')}
               timeAgo={formatTimeAgo(item.createdAt)}
               isRead={item.isRead}
-              showButtons={!item.isResponded}
               onPress={() => handleNotificationPress(item)}
-              onYesPress={() => handleYesPress(item.id)}
-              onNoPress={() => handleNoPress(item.id)}
             />
           ))}
           {loading && page > 1 && (
@@ -270,7 +244,9 @@ const NotificationsScreen = () => {
       ) : (
         <View style={styles.emptyContainer}>
           <LogoGray width={124.16} height={119.79} />
-          <Text style={styles.emptyText} allowFontScaling={false}>받은 알림이 없어요</Text>
+          <Text style={styles.emptyText} allowFontScaling={false}>
+            받은 알림이 없어요
+          </Text>
         </View>
       )}
     </View>
