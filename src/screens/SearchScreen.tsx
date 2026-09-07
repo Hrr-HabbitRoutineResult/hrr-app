@@ -60,7 +60,7 @@ const SearchScreen = () => {
       if (response.isSuccess && Array.isArray(response.result)) {
         setPopularSearches(response.result);
       }
-    } catch (error) {
+    } catch {
       // 인기 검색어 불러오기 실패
     }
   };
@@ -76,7 +76,7 @@ const SearchScreen = () => {
             setRecentSearches(parsed);
           }
         }
-      } catch (error) {
+      } catch {
         // 최근 검색어 불러오기 실패
       }
     };
@@ -93,7 +93,7 @@ const SearchScreen = () => {
 
   // 검색 탭을 다시 누르면 초기 화면으로 리셋
   useEffect(() => {
-    const unsubscribe = navigation.addListener('tabPress', (e) => {
+    const unsubscribe = navigation.addListener('tabPress', () => {
       // 현재 화면이 포커스된 상태에서 검색 탭을 누른 경우
       if (navigation.isFocused()) {
         handleBackToPopular();
@@ -107,7 +107,7 @@ const SearchScreen = () => {
   const saveRecentSearches = async (searches: string[]) => {
     try {
       await AsyncStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(searches));
-    } catch (error) {
+    } catch {
       // 최근 검색어 저장 실패
     }
   };
@@ -135,7 +135,7 @@ const SearchScreen = () => {
         return days.map(d => dayMap[d] || d).join(' / ');
       }
       return '매일';
-    } catch (e) {
+    } catch {
       return '매일';
     }
   };
@@ -206,7 +206,7 @@ const SearchScreen = () => {
       const updated = [trimmedQuery, ...recentSearches.filter(s => s !== trimmedQuery)].slice(0, MAX_RECENT_SEARCHES);
       setRecentSearches(updated);
       await saveRecentSearches(updated);
-    } catch (error) {
+    } catch {
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -320,9 +320,20 @@ const SearchScreen = () => {
                 </View>
               ) : (
                 <View style={styles.emptyContainer}>
-                  <LogoGray width={124.16} height={119.79} />
-                  <Text style={styles.emptyText}>
-                    검색어에 맞는 결과가 없어요
+                  <LogoGray width={116} height={112} />
+                  <TouchableOpacity
+                    style={styles.createChallengeButton}
+                    onPress={() => {
+                      navigation.navigate('CreateChallengeQ1');
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text variant="smMd" color={colors.white} style={styles.createChallengeButtonText}>
+                      챌린지 개설하기
+                    </Text>
+                  </TouchableOpacity>
+                  <Text variant="xxs" color={colors.icon.gray} style={styles.emptyText}>
+                    검색어에 맞는 챌린지가 없어요{'\n'}원하는 챌린지를 개설해보세요!
                   </Text>
                 </View>
               )}
@@ -570,13 +581,28 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: verticalScale(228),
+    paddingTop: verticalScale(190),
+  },
+  createChallengeButton: {
+    width: scale(168),
+    height: verticalScale(42),
+    backgroundColor: colors.text.primary,
+    borderRadius: scale(21),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: verticalScale(32),
+  },
+  createChallengeButtonText: {
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+    fontSize: moderateScale(14),
+    lineHeight: moderateScale(20),
+    fontFamily: 'Pretendard-Medium',
+    fontWeight: '500',
   },
   emptyText: {
-    ...typography.smReg,
-    color: colors.icon.gray,
     textAlign: 'center',
-    marginTop: verticalScale(32),
+    marginTop: verticalScale(16),
   },
   whiteBackground: {
     backgroundColor: colors.white,

@@ -38,6 +38,9 @@ import { TextField } from '../../components/common/TextField';
 import { CommentItem } from '../../components/challenge/CommentItem';
 import { BottomSheet } from '../../components/common/BottomSheet';
 import { ReportBottomSheet } from '../../components/common/ReportBottomSheet';
+import { ToastNotification } from '../../components/common/ToastNotification';
+import RadioCheckedIcon from '../../../assets/icons/radio-checked.svg';
+import RadioUncheckedIcon from '../../../assets/icons/radio-unchecked.svg';
 import {
   ActionSheet,
   ActionSheetItem,
@@ -157,6 +160,12 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   >(null);
 
   // 신고 관련 state
+  const [isWeakReportVisible, setIsWeakReportVisible] = useState(false);
+  const [isWeakReasonSelected, setIsWeakReasonSelected] = useState(false);
+  const [isWeakReportPending, setIsWeakReportPending] = useState(false);
+  const [isReportToastVisible, setIsReportToastVisible] = useState(false);
+  const weakReportInFlight = useRef(false);
+  const hideReportToast = useCallback(() => setIsReportToastVisible(false), []);
   const [isReportPostBottomSheetVisible, setIsReportPostBottomSheetVisible] =
     useState(false);
   const [isReportUserBottomSheetVisible, setIsReportUserBottomSheetVisible] =
@@ -392,32 +401,40 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   };
 
   // 부실인증 신고하기
-  const handleReportPoorVerification = async () => {
+  const handleReportPoorVerification = () => {
     if (!verification) return;
+    setIsWeakReasonSelected(false);
+    setIsReportToastVisible(false);
+    setIsWeakReportVisible(true);
+  };
 
-    Alert.alert(
-      '부실인증 신고',
-      '해당 게시글을 부실인증으로 신고하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '신고',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await reportWeakVerification(verification.verificationId);
-              Alert.alert('신고 완료', '신고가 접수되었습니다.');
-            } catch (error: any) {
-              const { title, message } = getErrorInfo(
-                error,
-                '신고에 실패했습니다.',
-              );
-              Alert.alert(title, message);
-            }
-          },
-        },
-      ],
-    );
+  const closeWeakReport = () => {
+    if (weakReportInFlight.current) return;
+    setIsWeakReportVisible(false);
+    setIsWeakReasonSelected(false);
+  };
+
+  const submitWeakReport = async () => {
+    if (!verification || !isWeakReasonSelected || weakReportInFlight.current) return;
+    weakReportInFlight.current = true;
+    setIsWeakReportPending(true);
+    try {
+      // The weak-report endpoint represents this reason and accepts targetId only.
+      await reportWeakVerification(verification.verificationId);
+      setIsWeakReportVisible(false);
+      setIsWeakReasonSelected(false);
+      setIsReportToastVisible(true);
+    } catch (error: unknown) {
+      const code = (error as { response?: { data?: { code?: string } } })
+        ?.response?.data?.code;
+      const message = code === 'VERIFICATION40919'
+        ? '이미 신고한 게시글입니다.'
+        : getErrorMessage(error, '신고에 실패했습니다.');
+      Alert.alert('오류', message, [{ text: 'OK' }]);
+    } finally {
+      weakReportInFlight.current = false;
+      setIsWeakReportPending(false);
+    }
   };
 
   // 게시글 신고하기
@@ -1453,6 +1470,47 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
         </View>
       </BottomSheet>
 
+      <BottomSheet
+        visible={isWeakReportVisible}
+        onClose={closeWeakReport}
+        height={380}
+      >
+        <Text variant="header4" color={colors.text.tertiary} style={styles.weakReportTitle}>
+          부실인증 신고
+        </Text>
+        <View style={styles.weakReportDivider} />
+        <Text variant="md" color={colors.text.primary}>
+          해당 게시물을 부실인증으로 신고하시겠어요?
+        </Text>
+        <TouchableOpacity
+          style={styles.weakReportReason}
+          accessibilityRole="radio"
+          accessibilityLabel="인증 기준을 충족하지 않음"
+          accessibilityState={{ checked: isWeakReasonSelected, disabled: isWeakReportPending }}
+          disabled={isWeakReportPending}
+          onPress={() => setIsWeakReasonSelected(true)}
+        >
+          {isWeakReasonSelected ? <RadioCheckedIcon width={24} height={24} /> : <RadioUncheckedIcon width={24} height={24} />}
+          <Text variant="md" style={styles.weakReportReasonText}>
+            인증 기준을 충족하지 않음
+          </Text>
+        </TouchableOpacity>
+        <View style={styles.weakReportButtons}>
+          <Button variant="white" style={styles.weakReportButton} onPress={closeWeakReport} disabled={isWeakReportPending}>
+            취소
+          </Button>
+          <Button variant="black" style={styles.weakReportButton} onPress={submitWeakReport} disabled={!isWeakReasonSelected || isWeakReportPending}>
+            신고하기
+          </Button>
+        </View>
+      </BottomSheet>
+      <ToastNotification
+        visible={isReportToastVisible}
+        message="신고가 접수되었어요"
+        iconType="success"
+        onHide={hideReportToast}
+      />
+
       {/* 게시글 신고 바텀시트 */}
       <ReportBottomSheet
         visible={isReportPostBottomSheetVisible}
@@ -1558,6 +1616,31 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  weakReportTitle: {
+    textAlign: 'center',
+    marginBottom: verticalScale(16),
+  },
+  weakReportDivider: {
+    height: 1,
+    backgroundColor: colors.line,
+    marginBottom: verticalScale(20),
+  },
+  weakReportReason: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: verticalScale(24),
+  },
+  weakReportReasonText: {
+    flex: 1,
+    marginLeft: scale(12),
+  },
+  weakReportButtons: {
+    marginTop: 'auto',
+    gap: verticalScale(8),
+  },
+  weakReportButton: {
+    width: '100%',
+  },
   container: {
     flex: 1,
     backgroundColor: colors.white,

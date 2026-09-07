@@ -36,12 +36,13 @@
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
-      <!-- Deep Link Scheme -->
+      <!-- Deep Link Schemes (iOS URL Types와 동일하게 지원) -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="hrr" />
+        <data android:scheme="hrrapp" />
       </intent-filter>
       <!-- App Link (앱 설치 시 브라우저 대신 앱 직접 오픈) -->
       <intent-filter android:autoVerify="true">

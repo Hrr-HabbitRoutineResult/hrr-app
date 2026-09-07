@@ -1964,7 +1964,11 @@ export const reportWeakVerification = async (
     );
 
     if (!response.data.isSuccess) {
-      throw new Error(response.data.message || '부실인증 신고에 실패했습니다.');
+      // Preserve the server code for successful HTTP responses containing an error.
+      throw Object.assign(
+        new Error(response.data.message || '부실인증 신고에 실패했습니다.'),
+        { response: { data: response.data, status: response.status } },
+      );
     }
   } catch (error: any) {
     throw error;

@@ -21,7 +21,6 @@ import CheckboxFilterChecked from '../../assets/icons/checkbox-filter-checked.sv
 import ChevronDownTextPrimary from '../../assets/icons/chevron-down-text-primary.svg';
 import ChevronDownWhite from '../../assets/icons/chevron-down-white.svg';
 import LogoGray from '../../assets/images/logo-gray.svg';
-import AddFab from '../../assets/icons/add-fab.svg';
 import { Button } from '../components/common/Button';
 
 type ChallengeListScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeList'>;
@@ -382,7 +381,8 @@ const ChallengeListScreen = ({ route }: Props) => {
         }}
         activeOpacity={0.7}
       >
-        <AddFab width={56} height={56} />
+        <View style={styles.fabPlusHorizontal} />
+        <View style={styles.fabPlusVertical} />
       </TouchableOpacity>
     </View>
   );
@@ -513,9 +513,13 @@ const styles = StyleSheet.create({
   fabButton: {
     position: 'absolute',
     right: scale(20),
-    bottom: verticalScale(82),
+    bottom: verticalScale(56),
     width: scale(56),
-    height: verticalScale(56),
+    height: scale(56),
+    borderRadius: scale(28),
+    backgroundColor: colors.primary.main,
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 2,
     shadowColor: '#000000',
     shadowOffset: {
@@ -525,6 +529,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: scale(6),
     elevation: 6, // Android
+  },
+  fabPlusHorizontal: {
+    position: 'absolute',
+    width: scale(24),
+    height: scale(2.5),
+    borderRadius: scale(1.25),
+    backgroundColor: colors.white,
+  },
+  fabPlusVertical: {
+    position: 'absolute',
+    width: scale(2.5),
+    height: scale(24),
+    borderRadius: scale(1.25),
+    backgroundColor: colors.white,
   },
 });
 

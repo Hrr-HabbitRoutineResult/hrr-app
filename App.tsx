@@ -8,34 +8,73 @@ import { LOGOUT_EVENT } from './src/libs/auth/session';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import appsFlyer from 'react-native-appsflyer';
 import Config from 'react-native-config';
-import { navigate, navigationRef, setAuthReady } from './src/navigation/navigationRef';
+import { navigate, setAuthReady } from './src/navigation/navigationRef';
 
 // URL에서 query parameter 추출
 function getQueryParam(url: string, param: string): string | null {
   const match = url.match(new RegExp(`[?&]${param}=([^&]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
+  if (!match) return null;
+
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
 }
 
 function App() {
   useEffect(() => {
+    let lastHandledChallenge: { id: number; handledAt: number } | null = null;
+
+    const openChallenge = (rawChallengeId: string | number | undefined) => {
+      const challengeId = Number(rawChallengeId);
+      if (!Number.isSafeInteger(challengeId) || challengeId <= 0) return;
+
+      // Android에서는 같은 링크가 Linking과 AppsFlyer 양쪽으로 전달될 수 있다.
+      const now = Date.now();
+      if (
+        lastHandledChallenge?.id === challengeId &&
+        now - lastHandledChallenge.handledAt < 1500
+      ) {
+        return;
+      }
+
+      lastHandledChallenge = { id: challengeId, handledAt: now };
+      navigate('ChallengeProfile', { challengeId });
+    };
+
+    const handleIncomingUrl = (url: string) => {
+      const deepLinkValue = getQueryParam(url, 'deep_link_value');
+      const queryChallengeId = getQueryParam(url, 'deep_link_sub1');
+
+      if (deepLinkValue === 'challenge' && queryChallengeId) {
+        openChallenge(queryChallengeId);
+        return;
+      }
+
+      // AppsFlyer의 af_dp 또는 직접 실행된 커스텀 스킴도 처리한다.
+      const customSchemeMatch = url.match(
+        /^(?:hrr|hrrapp):\/\/challenge\/(\d+)(?:[/?#]|$)/i,
+      );
+      if (customSchemeMatch) openChallenge(customSchemeMatch[1]);
+    };
+
+    // AppsFlyer UDL 리스너는 SDK 초기화 전에 등록해야 iOS/Android에서
+    // cold start와 deferred deep link 이벤트를 모두 받을 수 있다.
+    const removeAppsFlyerDeepLinkListener = appsFlyer.onDeepLink((res: any) => {
+      if (__DEV__) console.log('AppsFlyer 딥링크 데이터 수신:', JSON.stringify(res));
+      const value = res?.data?.deep_link_value;
+      const challengeId = res?.data?.deep_link_sub1;
+
+      if (value === 'challenge') openChallenge(challengeId);
+    });
+
     // 앱 초기화 작업
     const init = async () => {
       try {
         // 앱이 종료된 상태에서 딥링크로 실행된 경우 처리
         const initialURL = await Linking.getInitialURL();
-        if (initialURL) {
-          const deepLinkValue = getQueryParam(initialURL, 'deep_link_value');
-          const challengeId = getQueryParam(initialURL, 'deep_link_sub1');
-
-          if (deepLinkValue === 'challenge' && challengeId) {
-            setTimeout(() => {
-              navigationRef.reset({
-                index: 0,
-                routes: [{ name: 'ChallengeProfile', params: { challengeId: parseInt(challengeId, 10) } }],
-              });
-            }, 500);
-          }
-        }
+        if (initialURL) handleIncomingUrl(initialURL);
 
         // AppsFlyer SDK 초기화
         appsFlyer.initSdk(
@@ -54,17 +93,6 @@ function App() {
           }
         );
 
-        // 앱 실행 중 딥링크 수신 처리 (iOS)
-        appsFlyer.onDeepLink((res: any) => {
-          if (__DEV__) console.log('딥링크 데이터 수신:', JSON.stringify(res));
-          const value = res?.data?.deep_link_value;
-          const challengeId = res?.data?.deep_link_sub1;
-
-          if (value === 'challenge' && challengeId) {
-            navigate('ChallengeProfile', { challengeId: parseInt(challengeId, 10) });
-          }
-        });
-
         // 기존 초기화 대기 로직
         await new Promise((resolve) => setTimeout(() => resolve(undefined), 2500));
 
@@ -77,18 +105,14 @@ function App() {
       BootSplash.hide({ fade: true });
     });
 
-    // 앱 실행 중 딥링크 수신 처리 (Android)
+    // 앱 실행 중 URI scheme/App Link 수신 처리 (iOS/Android 공통)
     const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
       if (__DEV__) console.log('Linking url 수신:', url);
-      const deepLinkValue = getQueryParam(url, 'deep_link_value');
-      const challengeId = getQueryParam(url, 'deep_link_sub1');
-
-      if (deepLinkValue === 'challenge' && challengeId) {
-        navigate('ChallengeProfile', { challengeId: parseInt(challengeId, 10) });
-      }
+      handleIncomingUrl(url);
     });
 
     return () => {
+      removeAppsFlyerDeepLinkListener();
       linkingSubscription.remove();
     };
   }, []);

@@ -173,7 +173,9 @@ const RankScreen: React.FC = () => {
           </Text>
         ) : null}
       </View>
-      {ranking.rankDelta === null ? null : <TrendGraphic rising={isRising} />}
+      {ranking.rankDelta === null || ranking.rankDelta === 0 ? null : (
+        <TrendGraphic rising={isRising} />
+      )}
     </>
   );
 

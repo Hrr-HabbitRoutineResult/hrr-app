@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { colors } from '../../design/tokens';
 import { RankEntry } from '../../types/ranking';
 import { formatPoints } from '../../utils/number';
 import { scale, verticalScale } from '../../utils/scaling';
-import ProfileDefault from '../../../assets/icons/mypage/profile-default.svg';
+import ProfileDefault from '../../../assets/icons/ranking/profile-placeholder.svg';
 import { Text } from '../common/Text';
 
 interface RankListProps {
@@ -12,12 +12,20 @@ interface RankListProps {
   me?: RankEntry;
 }
 
-const Avatar: React.FC<{ uri?: string }> = ({ uri }) =>
-  uri ? (
-    <Image source={{ uri }} style={styles.avatar} />
+const Avatar: React.FC<{ uri?: string }> = ({ uri }) => {
+  // 실패한 uri를 저장해 두면 uri가 바뀔 때 초기화 없이 다시 이미지를 시도한다.
+  const [failedUri, setFailedUri] = useState<string>();
+
+  return uri && failedUri !== uri ? (
+    <Image
+      source={{ uri }}
+      style={styles.avatar}
+      onError={() => setFailedUri(uri)}
+    />
   ) : (
     <ProfileDefault width={scale(40)} height={scale(40)} />
   );
+};
 
 export const RankList: React.FC<RankListProps> = ({ top5, me }) => {
   const shouldAppendMe = Boolean(me && me.rank > 5);

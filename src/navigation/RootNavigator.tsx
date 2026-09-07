@@ -56,7 +56,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 // Deep Link 설정
 const linking = {
-  prefixes: ['hrr://', 'https://hrr.onelink.me'],
+  prefixes: ['hrr://', 'hrrapp://', 'https://hrr.onelink.me'],
   config: {
     screens: {
       HomeTabs: 'home',
