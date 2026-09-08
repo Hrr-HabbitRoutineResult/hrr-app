@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Image, Alert, Platform, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  Alert,
+  Platform,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+} from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { scale, verticalScale } from '../utils/scaling';
 import { getErrorMessage } from '../utils/errorHandler';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import RNBlobUtil from 'react-native-blob-util';
 import { Button } from '../components/common/Button';
 import { Text } from '../components/common/Text';
 import { colors, typography } from '../design/tokens';
 import BackIcon from '../../assets/icons/back.svg';
+import CloseIcon from '../../assets/icons/challenge-profile/delete-viewer.svg';
 import IconExercise from '../../assets/icons/homescreen/categorychips/ic_exercise.svg';
 import IconStudy from '../../assets/icons/homescreen/categorychips/ic_study.svg';
 import IconHobby from '../../assets/icons/homescreen/categorychips/ic_hobby.svg';
@@ -28,6 +41,16 @@ import { useUserStore } from '../store/userSlice';
 
 const RandomMissionScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  // The reference frame reserves 44pt above the header and 40pt below the CTA.
+  // App.tsx already applies the Android bottom safe area.
+  const safeAreaStyle = {
+    paddingTop: Math.max(insets.top, verticalScale(44)),
+    paddingBottom:
+      Platform.OS === 'android'
+        ? Math.max(0, verticalScale(40) - insets.bottom)
+        : Math.max(insets.bottom, verticalScale(40)),
+  };
   const { setRandomMissionCompleted, randomMissionCompleted } = useUserStore();
   const [missionData, setMissionData] = useState<DailyMissionInfo | null>(null);
   const [, setIsLoading] = useState(true);
@@ -66,7 +89,9 @@ const RandomMissionScreen = () => {
       setSelectedImage(asset.uri);
       const capturedAt = asset.timestamp ? new Date(asset.timestamp) : null;
       setImageTimestamp(
-        capturedAt && !Number.isNaN(capturedAt.getTime()) ? capturedAt : new Date(),
+        capturedAt && !Number.isNaN(capturedAt.getTime())
+          ? capturedAt
+          : new Date(),
       );
     }
   };
@@ -101,7 +126,8 @@ const RandomMissionScreen = () => {
         normalizedUri = `file://${normalizedUri}`;
       }
 
-      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileExtension =
+        normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `image.${fileExtension}`;
       const mimeType = getMimeType(fileExtension);
 
@@ -116,7 +142,10 @@ const RandomMissionScreen = () => {
         const urlParts = presignedUrl.split('?');
         if (urlParts.length > 1) {
           const params = urlParts[1];
-          if (params.includes('X-Amz-SignedHeaders') && params.includes('x-amz-acl')) {
+          if (
+            params.includes('X-Amz-SignedHeaders') &&
+            params.includes('x-amz-acl')
+          ) {
             uploadHeaders['x-amz-acl'] = 'public-read';
           }
         }
@@ -129,7 +158,12 @@ const RandomMissionScreen = () => {
         : normalizedUri;
 
       if (Platform.OS === 'android') {
-        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
+        const resp = await RNBlobUtil.fetch(
+          'PUT',
+          presignedUrl,
+          uploadHeaders,
+          RNBlobUtil.wrap(localPath),
+        );
         const status = resp.info().status;
         if (status !== 200 && status !== 204) {
           throw new Error(`업로드 실패 (${status})`);
@@ -150,7 +184,10 @@ const RandomMissionScreen = () => {
 
       return s3Key;
     } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
+      const errorMessage = getErrorMessage(
+        error,
+        '이미지 업로드에 실패했습니다.',
+      );
       Alert.alert('이미지 업로드 실패', errorMessage);
       return null;
     } finally {
@@ -215,65 +252,78 @@ const RandomMissionScreen = () => {
   // 이미지가 선택된 경우 인증 화면 표시
   if (selectedImage) {
     return (
-      <SafeAreaView style={styles.certificationContainer} edges={['top', 'left', 'right']}>
-        <View style={styles.certificationContent}>
+      <SafeAreaView
+        style={[styles.certificationContainer, safeAreaStyle]}
+        edges={['left', 'right']}
+      >
+        <StatusBar barStyle="light-content" />
+        <View style={styles.cameraHeader}>
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="촬영 닫기"
             onPress={handleBack}
             style={styles.cameraClose}
-            hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           >
-            <Text variant="header2" color={colors.white} style={styles.cameraCloseText}>×</Text>
+            <CloseIcon width={scale(18)} height={scale(18)} />
           </TouchableOpacity>
-          {/* 이미지 썸네일 */}
-          <View style={styles.thumbnailContainer}>
-            <Image
-              source={{ uri: selectedImage }}
-              style={styles.thumbnailImage}
-              resizeMode="cover"
-            />
-            {/* 타임스탬프 오버레이 */}
-            {imageTimestamp && (
-              <View style={styles.timestampContainer}>
-                {Platform.OS === 'ios' ? (
-                  <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="light"
-                    blurAmount={20}
-                    reducedTransparencyFallbackColor="black"
-                  />
-                ) : (
-                  <>
-                    {/* 어두운 블러 효과 시뮬레이션 레이어 */}
-                    <View
-                      style={[
-                        StyleSheet.absoluteFill,
-                        styles.cameraShade,
-                      ]}
+        </View>
+        <View style={styles.certificationContent}>
+          <ScrollView
+            style={styles.previewScroll}
+            contentContainerStyle={styles.previewContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* 이미지 썸네일 */}
+            <View style={styles.thumbnailContainer}>
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.thumbnailImage}
+                resizeMode="cover"
+              />
+              {/* 타임스탬프 오버레이 */}
+              {imageTimestamp && (
+                <View style={styles.timestampContainer}>
+                  {Platform.OS === 'ios' ? (
+                    <BlurView
+                      style={StyleSheet.absoluteFill}
+                      blurType="light"
+                      blurAmount={20}
+                      reducedTransparencyFallbackColor="black"
                     />
-                    {/* 밝은 블러 효과 시뮬레이션 레이어 */}
-                    <View
-                      style={[
-                        StyleSheet.absoluteFill,
-                        styles.cameraHighlight,
-                      ]}
-                    />
-                  </>
-                )}
-                <Text variant="xsReg" color={colors.white} style={styles.timestampText}>
-                  {formatTimestamp(imageTimestamp)}
-                </Text>
-              </View>
-            )}
-          </View>
+                  ) : (
+                    <>
+                      {/* 어두운 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[StyleSheet.absoluteFill, styles.cameraShade]}
+                      />
+                      {/* 밝은 블러 효과 시뮬레이션 레이어 */}
+                      <View
+                        style={[
+                          StyleSheet.absoluteFill,
+                          styles.cameraHighlight,
+                        ]}
+                      />
+                    </>
+                  )}
+                  <Text
+                    variant="xsReg"
+                    color={colors.white}
+                    style={styles.timestampText}
+                  >
+                    {formatTimestamp(imageTimestamp)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
 
           {/* 버튼 컨테이너 */}
           <View style={styles.certificationButtonContainer}>
             <Button
               variant="white"
               onPress={handleRetake}
-              style={styles.retakeButton}
+              style={styles.actionButton}
+              accessibilityRole="button"
               disabled={isUploading}
             >
               재촬영하기
@@ -281,7 +331,8 @@ const RandomMissionScreen = () => {
             <Button
               variant="primary"
               onPress={handleCertify}
-              style={styles.certifyButton}
+              style={styles.actionButton}
+              accessibilityRole="button"
               disabled={isUploading}
             >
               {isUploading ? '업로드 중...' : '인증하기'}
@@ -293,12 +344,17 @@ const RandomMissionScreen = () => {
   }
 
   // 기본 미션 화면
-  const missionCompleted = true;
+  const missionCompleted = randomMissionCompleted || missionData?.isCompleted;
   const missionTitle = missionData?.title || '건강식 한 끼 먹기';
-  const missionDescription = missionData?.content || '오늘의 한 끼는 건강하게 챙겨보세요!';
+  const missionDescription =
+    missionData?.content || '오늘의 한 끼는 건강하게 챙겨보세요!';
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.container, safeAreaStyle]}
+      edges={['left', 'right']}
+    >
+      <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
         <TouchableOpacity
           accessibilityRole="button"
@@ -307,36 +363,62 @@ const RandomMissionScreen = () => {
           style={styles.backButton}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
-          <BackIcon width={9} height={18} />
+          <BackIcon width={scale(9)} height={scale(18)} />
         </TouchableOpacity>
-        <Text variant="header4" color={colors.text.primary} style={styles.headerTitle}>
+        <Text
+          variant="header4"
+          color={colors.text.primary}
+          style={styles.headerTitle}
+        >
           랜덤미션
         </Text>
         <View style={styles.backButton} />
       </View>
 
-      <View style={styles.content}>
-        <Text variant="header2" color={colors.text.primary} style={styles.mainTitle}>
-          {missionCompleted ? '미션을 완료했어요!' : '오늘의 랜덤미션이 도착했어요!'}
+      <ScrollView
+        style={styles.missionScroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text
+          variant="header2"
+          color={colors.text.primary}
+          style={styles.mainTitle}
+        >
+          {missionCompleted
+            ? '미션을 완료했어요!'
+            : '오늘의 랜덤미션이 도착했어요!'}
         </Text>
 
         <View style={styles.missionCard}>
           {missionCompleted ? (
             <>
               <View style={styles.completedMissionText}>
-                <Text variant="header2" color={colors.text.primary} style={styles.missionTitle}>
+                <Text
+                  variant="header1"
+                  color={colors.text.tertiary}
+                  style={styles.missionTitle}
+                >
                   {missionTitle}
                 </Text>
-                <Text variant="xsReg" color={colors.text.tertiary} style={styles.missionDescription}>
+                <Text
+                  variant="smReg"
+                  color={colors.text.tertiary}
+                  style={styles.missionDescription}
+                >
                   {missionDescription}
                 </Text>
               </View>
               <View style={styles.completeIllustration}>
-                <MissionCompleteIcon width={scale(152)} height={scale(152)} />
+                <MissionCompleteIcon width={scale(168)} height={scale(168)} />
               </View>
               <View style={styles.completedFooter}>
                 <View style={styles.cardDivider} />
-                <Text variant="smMd" color={colors.text.primary} style={styles.completeMessage}>
+                <Text
+                  variant="header3"
+                  color={colors.text.primary}
+                  style={styles.completeMessage}
+                >
                   내일 새로운 미션으로 다시 만나요
                 </Text>
                 <View style={styles.cardDivider} />
@@ -346,34 +428,65 @@ const RandomMissionScreen = () => {
             <>
               <MissionArrivedIcon width={scale(152)} height={scale(152)} />
               <View style={styles.missionText}>
-                <Text variant="header2" color={colors.text.primary} style={styles.missionTitle}>
+                <Text
+                  variant="header1"
+                  color={colors.text.primary}
+                  style={styles.missionTitle}
+                >
                   {missionTitle}
                 </Text>
-                <Text variant="xsReg" color={colors.text.tertiary} style={styles.missionDescription}>
+                <Text
+                  variant="smReg"
+                  color={colors.text.primary}
+                  style={styles.missionDescription}
+                >
                   {missionDescription}
                 </Text>
               </View>
               <View style={styles.categoryFooter}>
                 <View style={styles.cardDivider} />
                 <View style={styles.categoryIconRow}>
-                  <IconExercise width={24} height={24} />
-                  <IconStudy width={24} height={24} />
-                  <IconHobby width={24} height={24} />
-                  <IconJob width={24} height={24} />
-                  <IconLifestyle width={24} height={24} />
+                  <IconExercise
+                    width={scale(24)}
+                    height={scale(24)}
+                    viewBox="12 12 24 24"
+                  />
+                  <IconStudy
+                    width={scale(24)}
+                    height={scale(24)}
+                    viewBox="12 12 24 24"
+                  />
+                  <IconHobby
+                    width={scale(24)}
+                    height={scale(24)}
+                    viewBox="12 12 24 24"
+                  />
+                  <IconJob
+                    width={scale(24)}
+                    height={scale(24)}
+                    viewBox="12 12 24 24"
+                  />
+                  <IconLifestyle
+                    width={scale(24)}
+                    height={scale(24)}
+                    viewBox="12 12 24 24"
+                  />
                 </View>
                 <View style={styles.cardDivider} />
               </View>
             </>
           )}
         </View>
-      </View>
+      </ScrollView>
 
       <View style={styles.buttonContainer}>
         <Button
           variant={missionCompleted ? 'gray' : 'black'}
           onPress={handleCertify}
           disabled={missionCompleted}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !!missionCompleted }}
+          style={styles.actionButton}
         >
           {missionCompleted ? '완료' : '인증하기'}
         </Button>
@@ -385,10 +498,10 @@ const RandomMissionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primary.lightest,
+    backgroundColor: '#FFF2F0',
   },
   header: {
-    height: verticalScale(72),
+    height: verticalScale(56),
     paddingHorizontal: scale(20),
     borderBottomWidth: scale(1),
     borderBottomColor: colors.primary.lighter,
@@ -404,16 +517,19 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  content: {
+  missionScroll: {
     flex: 1,
+  },
+  content: {
     paddingHorizontal: scale(20),
+    paddingBottom: verticalScale(24),
     alignItems: 'center',
   },
   mainTitle: {
-    marginTop: verticalScale(30),
-    marginBottom: verticalScale(24),
+    marginTop: verticalScale(56),
+    marginBottom: verticalScale(20),
     textAlign: 'center',
-    lineHeight: typography.header2.lineHeight,
+    lineHeight: verticalScale(28),
   },
   missionCard: {
     width: '100%',
@@ -421,12 +537,15 @@ const styles = StyleSheet.create({
     borderRadius: scale(20),
     backgroundColor: colors.white,
     alignItems: 'center',
-    paddingTop: verticalScale(40),
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: scale(10),
-    elevation: 4,
+    paddingTop: verticalScale(28),
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: verticalScale(4),
+        blurRadius: scale(10),
+        color: 'rgba(0, 0, 0, 0.08)',
+      },
+    ],
   },
   missionText: {
     marginTop: verticalScale(8),
@@ -435,6 +554,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(24),
   },
   completedMissionText: {
+    paddingTop: verticalScale(4),
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: scale(24),
@@ -445,19 +565,20 @@ const styles = StyleSheet.create({
   },
   missionDescription: {
     textAlign: 'center',
-    lineHeight: typography.xsReg.lineHeight,
+    lineHeight: typography.smReg.lineHeight,
   },
   categoryFooter: {
     position: 'absolute',
-    bottom: verticalScale(28),
+    bottom: verticalScale(32),
+    width: scale(290),
     alignItems: 'center',
   },
   categoryIconRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: scale(10),
-    marginVertical: verticalScale(10),
+    gap: scale(8),
+    height: verticalScale(54),
   },
   cardDivider: {
     width: scale(290),
@@ -466,21 +587,29 @@ const styles = StyleSheet.create({
   },
   completeIllustration: {
     flex: 1,
+    paddingBottom: verticalScale(12),
     justifyContent: 'center',
     alignItems: 'center',
   },
   completedFooter: {
     alignItems: 'center',
-    marginBottom: verticalScale(28),
+    marginBottom: verticalScale(32),
   },
   completeMessage: {
     textAlign: 'center',
-    marginVertical: verticalScale(12),
+    fontFamily: 'Pretendard-Medium',
+    fontWeight: '500',
+    lineHeight: verticalScale(26),
+    marginVertical: verticalScale(14),
   },
   buttonContainer: {
     paddingHorizontal: scale(20),
-    paddingBottom: verticalScale(32),
     alignItems: 'center',
+  },
+  actionButton: {
+    width: '100%',
+    height: verticalScale(48),
+    borderRadius: scale(10),
   },
   // 인증 화면 스타일
   certificationContainer: {
@@ -490,44 +619,43 @@ const styles = StyleSheet.create({
   certificationContent: {
     flex: 1,
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(28),
-    justifyContent: 'space-between',
-    paddingBottom: verticalScale(32),
     alignItems: 'center',
+  },
+  cameraHeader: {
+    height: verticalScale(56),
+    paddingHorizontal: scale(20),
+    justifyContent: 'center',
   },
   cameraClose: {
-    position: 'absolute',
-    top: verticalScale(16),
-    left: scale(20),
-    zIndex: 2,
-    width: scale(40),
-    height: scale(40),
+    width: scale(44),
+    height: scale(44),
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingLeft: scale(4),
   },
-  cameraCloseText: {
-    fontSize: scale(30),
-    lineHeight: scale(32),
-    fontFamily: 'Pretendard-Light',
-    fontWeight: '300',
+  previewScroll: {
+    flex: 1,
+    width: '100%',
+  },
+  previewContent: {
+    paddingTop: verticalScale(80),
+    paddingBottom: verticalScale(24),
+    alignItems: 'center',
   },
   thumbnailContainer: {
     width: '100%',
     maxWidth: scale(350),
-    height: verticalScale(350),
+    aspectRatio: 1,
     borderRadius: scale(20),
     overflow: 'hidden',
     position: 'relative',
-    marginTop: verticalScale(80),
   },
   thumbnailImage: {
     width: '100%',
-    maxWidth: scale(350),
-    height: verticalScale(350),
+    height: '100%',
   },
   timestampContainer: {
     position: 'absolute',
-    bottom: verticalScale(16),
+    bottom: verticalScale(14),
     right: scale(16),
     width: scale(137),
     height: verticalScale(32),
@@ -552,13 +680,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: scale(350),
     gap: verticalScale(10),
-    paddingBottom: verticalScale(32),
-  },
-  retakeButton: {
-    marginBottom: 0,
-  },
-  certifyButton: {
-    marginBottom: 0,
   },
 });
 
