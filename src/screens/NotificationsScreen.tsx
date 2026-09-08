@@ -30,7 +30,7 @@ interface CategoryInfo {
 const CATEGORIES: CategoryInfo[] = [
   { label: '챌린지', value: 'CHALLENGE' },
   { label: '인증', value: 'VERIFICATION' },
-  // { label: '팔로우', value: 'FOLLOW' },
+  { label: '팔로우', value: 'FOLLOW' },
   // { label: '뱃지', value: 'BADGE' },
 ];
 
