@@ -104,7 +104,7 @@ const HomeScreen = () => {
 
               <View style={styles.sectionContainer}>
                 <PopularList
-                  challenges={ongoingChallenges.length > 0 ? dailyTop.slice(0, 3) : []}
+                  challenges={dailyTop.slice(0, 3)}
                 />
               </View>
 
