@@ -188,35 +188,51 @@ export const getVerificationHistory = async (
 };
 
 /**
- * 스크랩한 인증 게시글 목록 응답
- *
- * 사용자 인증 기록 API와 같은 페이지 구조를 사용합니다. 백엔드 응답이
- * 사용자별 인증 기록처럼 verifications로 한 번 감싸진 경우도 함께 처리합니다.
+ * 스크랩한 인증 게시글 목록 항목 (ScrappedVerificationDto)
  */
+export interface ScrappedVerificationItem {
+  verificationId: number;
+  type: 'CAMERA' | 'TEXT';
+  title: string;
+  content: string | null;
+  imageUrl: string | null;
+  hasLink: boolean;
+  isQuestion: boolean;
+  isResolved: boolean;
+  writerNickname: string;
+  writerProfileUrl: string | null;
+  writerId: number;
+  /** 표시용 날짜 (실제 API 응답: yyyy.MM.dd) */
+  createdDate: string;
+}
+
 export interface ScrappedVerificationsResponse {
   isSuccess: boolean;
   status: string;
   code: string;
   message: string;
-  result:
-    | VerificationHistoryPage
-    | {
-        verifications: VerificationHistoryPage;
-      };
+  result: {
+    content: ScrappedVerificationItem[];
+    currentPage: number;
+    size: number;
+    hasNext: boolean;
+    first: boolean;
+    last: boolean;
+  };
 }
 
 /**
  * 스크랩한 인증 게시글 목록 조회
  */
 export const getScrappedVerifications = async (
-  userId: number,
+  type: ScrappedVerificationItem['type'],
   page: number = 1,
   size: number = 20,
-): Promise<VerificationHistoryPage> => {
+): Promise<ScrappedVerificationsResponse['result']> => {
   const response = await apiClient.get<ScrappedVerificationsResponse>(
-    `/api/v1/user/${userId}/verifications/scrap`,
+    '/api/v1/user/me/verifications/scrap',
     {
-      params: { page, size },
+      params: { type, page, size },
     },
   );
 
@@ -226,9 +242,7 @@ export const getScrappedVerifications = async (
     );
   }
 
-  return 'verifications' in response.data.result
-    ? response.data.result.verifications
-    : response.data.result;
+  return response.data.result;
 };
 
 /**

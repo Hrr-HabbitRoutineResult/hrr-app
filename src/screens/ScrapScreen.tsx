@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,16 +18,14 @@ import CertificationRecordList, {
 } from '../components/MyPage/CertificationRecordList';
 import { colors } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
-import { useUserStore } from '../store/userSlice';
 import {
   getScrappedVerifications,
-  VerificationHistoryItem,
+  ScrappedVerificationItem,
 } from '../libs/api/user';
-import { format } from '../libs/format';
 import { scale, verticalScale } from '../utils/scaling';
 import TextPlaceholderIcon from '../../assets/icons/text.svg';
 
-type ScrapTab = VerificationHistoryItem['type'];
+type ScrapTab = ScrappedVerificationItem['type'];
 
 const PAGE_SIZE = 20;
 const TABS = [
@@ -37,9 +35,8 @@ const TABS = [
 
 const ScrapScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { userInfo, fetchUserInfo } = useUserStore();
   const [activeTab, setActiveTab] = useState<ScrapTab>('CAMERA');
-  const [items, setItems] = useState<VerificationHistoryItem[]>([]);
+  const [items, setItems] = useState<ScrappedVerificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -47,33 +44,29 @@ const ScrapScreen = () => {
   const currentPageRef = useRef(1);
   const hasNextRef = useRef(false);
   const requestInFlightRef = useRef(false);
+  const requestIdRef = useRef(0);
 
   const fetchPage = useCallback(async (
     page: number,
     mode: 'initial' | 'more' | 'refresh' = 'initial'
   ) => {
-    if (requestInFlightRef.current) return;
+    if (requestInFlightRef.current && mode !== 'initial') return;
 
-    let userId = userInfo?.userId;
-    if (!userId) {
-      await fetchUserInfo();
-      userId = useUserStore.getState().userInfo?.userId;
-    }
-
-    if (!userId) {
-      setError('사용자 정보를 불러오지 못했어요');
-      setIsLoading(false);
-      return;
-    }
-
+    const requestId = ++requestIdRef.current;
     requestInFlightRef.current = true;
     setError(null);
-    if (mode === 'initial') setIsLoading(true);
+    if (mode === 'initial') {
+      setItems([]);
+      setIsLoading(true);
+      setIsLoadingMore(false);
+      setIsRefreshing(false);
+    }
     if (mode === 'more') setIsLoadingMore(true);
     if (mode === 'refresh') setIsRefreshing(true);
 
     try {
-      const pageResult = await getScrappedVerifications(userId, page, PAGE_SIZE);
+      const pageResult = await getScrappedVerifications(activeTab, page, PAGE_SIZE);
+      if (requestId !== requestIdRef.current) return;
       setItems((previous) => page === 1
         ? pageResult.content
         : [...previous, ...pageResult.content]
@@ -81,39 +74,36 @@ const ScrapScreen = () => {
       currentPageRef.current = pageResult.currentPage;
       hasNextRef.current = pageResult.hasNext;
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setError('스크랩한 인증 글을 불러오지 못했어요');
       if (page === 1) setItems([]);
     } finally {
-      requestInFlightRef.current = false;
-      setIsLoading(false);
-      setIsLoadingMore(false);
-      setIsRefreshing(false);
+      if (requestId === requestIdRef.current) {
+        requestInFlightRef.current = false;
+        setIsLoading(false);
+        setIsLoadingMore(false);
+        setIsRefreshing(false);
+      }
     }
-  }, [fetchUserInfo, userInfo?.userId]);
+  }, [activeTab]);
 
   useFocusEffect(
     useCallback(() => {
       currentPageRef.current = 1;
       hasNextRef.current = false;
       fetchPage(1);
+      return () => {
+        // 이전 탭/화면에서 시작한 응답이 현재 목록을 덮어쓰지 않도록 합니다.
+        requestIdRef.current += 1;
+        requestInFlightRef.current = false;
+      };
     }, [fetchPage])
-  );
-
-  const filteredItems = useMemo(
-    () => items.filter((item) => item.type === activeTab),
-    [activeTab, items]
   );
 
   const loadNextPage = useCallback(() => {
     if (!hasNextRef.current || requestInFlightRef.current) return;
     fetchPage(currentPageRef.current + 1, 'more');
   }, [fetchPage]);
-
-  useEffect(() => {
-    if (!isLoading && !error && filteredItems.length === 0 && hasNextRef.current) {
-      loadNextPage();
-    }
-  }, [error, filteredItems.length, isLoading, loadNextPage]);
 
   const openDetail = useCallback((verificationId: number) => {
     navigation.navigate('ChallengeCertificationDetail', { verificationId });
@@ -122,8 +112,8 @@ const ScrapScreen = () => {
   const renderPhotoItem = useCallback(({
     item,
     index,
-  }: ListRenderItemInfo<VerificationHistoryItem>) => {
-    const thumbnailUrl = item.photoUrl || item.textImages?.[0] || null;
+  }: ListRenderItemInfo<ScrappedVerificationItem>) => {
+    const thumbnailUrl = item.imageUrl;
 
     return (
       <TouchableOpacity
@@ -147,17 +137,17 @@ const ScrapScreen = () => {
 
   const renderTextItem = useCallback(({
     item,
-  }: ListRenderItemInfo<VerificationHistoryItem>) => {
+  }: ListRenderItemInfo<ScrappedVerificationItem>) => {
     const record: CertificationRecordItem = {
       id: item.verificationId,
       title: item.title,
-      challengeTitle: item.challengeTitle,
-      description: item.content || item.challengeTitle,
-      date: format.date(item.verifiedAt),
+      challengeTitle: '',
+      description: item.content ?? '',
+      date: item.createdDate,
       type: item.type,
-      thumbnailUrl: item.textImages?.[0] || item.photoUrl || null,
+      thumbnailUrl: item.imageUrl,
       metaIcon: 'link',
-      hasLink: Boolean(item.textUrl),
+      hasLink: item.hasLink,
     };
 
     return (
@@ -220,13 +210,13 @@ const ScrapScreen = () => {
       />
       <FlatList
         key={activeTab}
-        data={filteredItems}
+        data={items}
         keyExtractor={(item) => String(item.verificationId)}
         numColumns={activeTab === 'CAMERA' ? 3 : 1}
         renderItem={activeTab === 'CAMERA' ? renderPhotoItem : renderTextItem}
         contentContainerStyle={[
           activeTab === 'CAMERA' ? styles.photoList : styles.textList,
-          filteredItems.length === 0 && styles.emptyList,
+          items.length === 0 && styles.emptyList,
         ]}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={isLoadingMore ? (
