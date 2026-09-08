@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { scale, verticalScale, moderateScale } from '../../utils/scaling';
-import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -131,7 +131,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}>
       <Header
         onBack={handleBack}
         title="새 게시글"
@@ -153,89 +153,96 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         }
       />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior="padding"
       >
-        {/* 이미지 썸네일 */}
-        <View style={styles.imageContainer}>
-          <View style={styles.thumbnailContainer}>
-            {imageUri && !imageError ? (
-              <Image
-                source={{ uri: imageUri }}
-                style={styles.thumbnailImage}
-                resizeMode="cover"
-                onError={(error) => {
-                  setImageError(true);
-                }}
-                onLoad={() => {
-                }}
-              />
-            ) : (
-              <View style={[styles.thumbnailImage, styles.placeholderContainer]}>
-                <Text variant="xsReg" color={colors.text.tertiary}>
-                  {imageError ? '이미지를 불러올 수 없습니다' : '이미지 로딩 중...'}
-                </Text>
-              </View>
-            )}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="none"
+        >
+          {/* 이미지 썸네일 */}
+          <View style={styles.imageContainer}>
+            <View style={styles.thumbnailContainer}>
+              {imageUri && !imageError ? (
+                <Image
+                  source={{ uri: imageUri }}
+                  style={styles.thumbnailImage}
+                  resizeMode="cover"
+                  onError={(error) => {
+                    setImageError(true);
+                  }}
+                  onLoad={() => {
+                  }}
+                />
+              ) : (
+                <View style={[styles.thumbnailImage, styles.placeholderContainer]}>
+                  <Text variant="xsReg" color={colors.text.tertiary}>
+                    {imageError ? '이미지를 불러올 수 없습니다' : '이미지 로딩 중...'}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
 
-        {/* 제목 입력 필드 */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputRow}>
+          {/* 제목 입력 필드 */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="제목을 입력하세요"
+                placeholderTextColor={colors.icon.gray}
+                value={title}
+                onChangeText={setTitle}
+                allowFontScaling={false}
+              />
+            </View>
+          </View>
+
+          {/* 내용 입력 필드 */}
+          <View style={styles.rulesContainer}>
             <TextInput
-              style={styles.input}
-              placeholder="제목을 입력하세요"
+              style={styles.rulesInput}
+              placeholder="내용을 입력하세요 (200자 이내)"
               placeholderTextColor={colors.icon.gray}
-              value={title}
-              onChangeText={setTitle}
+              value={content}
+              onChangeText={handleContentChange}
+              multiline
+              textAlignVertical="top"
+              maxLength={200}
               allowFontScaling={false}
             />
           </View>
-        </View>
+          <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
+            {content.length}/200
+          </Text>
 
-        {/* 내용 입력 필드 */}
-        <View style={styles.rulesContainer}>
-          <TextInput
-            style={styles.rulesInput}
-            placeholder="내용을 입력하세요 (200자 이내)"
-            placeholderTextColor={colors.icon.gray}
-            value={content}
-            onChangeText={handleContentChange}
-            multiline
-            textAlignVertical="top"
-            maxLength={200}
-            allowFontScaling={false}
-          />
-        </View>
-        <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
-          {content.length}/200
-        </Text>
-
-        {/* 질문 등록 토글 */}
-        <View style={styles.questionSection}>
-          <View style={styles.questionInfo}>
-            <Text variant="md" color={colors.text.primary}>
-              질문 등록
-            </Text>
-            <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
-              챌린저들에게 빠른 답변을 받을 수 있어요
-            </Text>
+          {/* 질문 등록 토글 */}
+          <View style={styles.questionSection}>
+            <View style={styles.questionInfo}>
+              <Text variant="md" color={colors.text.primary}>
+                질문 등록
+              </Text>
+              <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
+                챌린저들에게 빠른 답변을 받을 수 있어요
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
+              activeOpacity={0.7}
+            >
+              {isQuestionEnabled ? (
+                <ToggleOnIcon width={48} height={28} />
+              ) : (
+                <ToggleOffIcon width={48} height={28} />
+              )}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
-            activeOpacity={0.7}
-          >
-            {isQuestionEnabled ? (
-              <ToggleOnIcon width={48} height={28} />
-            ) : (
-              <ToggleOffIcon width={48} height={28} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -244,6 +251,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

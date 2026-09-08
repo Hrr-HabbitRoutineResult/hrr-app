@@ -45,7 +45,6 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   const [isQuestionEnabled, setIsQuestionEnabled] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [selectedImages, setSelectedImages] = useState<Array<{ uri: string; url: string; uploading: boolean }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
@@ -60,16 +59,14 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
-      (e) => {
+      () => {
         setIsKeyboardVisible(true);
-        setKeyboardHeight(e.endCoordinates.height);
       }
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
         setIsKeyboardVisible(false);
-        setKeyboardHeight(0);
       }
     );
 
@@ -358,7 +355,7 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={Platform.OS === 'ios' ? ['top', 'bottom'] : ['top']}>
       <Header
         onBack={handleBack}
         title="새 게시글"
@@ -380,176 +377,143 @@ export const ChallengeCertificationTextScreen: React.FC = () => {
         }
       />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          isKeyboardVisible && {
-            paddingBottom: keyboardHeight + verticalScale(80), // 키보드 높이 + 하단 바 높이
-          }
-        ]}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior="padding"
       >
-        {/* 제목 입력 필드 */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputRow}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="none"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 제목 입력 필드 */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                placeholder="제목을 입력하세요"
+                placeholderTextColor={colors.icon.gray}
+                value={title}
+                onChangeText={setTitle}
+                allowFontScaling={false}
+              />
+            </View>
+          </View>
+
+          {/* 내용 입력 필드 */}
+          <View style={styles.contentContainer}>
             <TextInput
-              style={styles.input}
-              placeholder="제목을 입력하세요"
+              style={styles.contentInput}
+              placeholder="내용을 입력하세요 (200자 이내)"
               placeholderTextColor={colors.icon.gray}
-              value={title}
-              onChangeText={setTitle}
+              value={content}
+              onChangeText={handleContentChange}
+              multiline
+              textAlignVertical="top"
+              maxLength={200}
               allowFontScaling={false}
             />
           </View>
-        </View>
+          <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
+            {content.length}/200
+          </Text>
 
-        {/* 내용 입력 필드 */}
-        <View style={styles.contentContainer}>
-          <TextInput
-            style={styles.contentInput}
-            placeholder="내용을 입력하세요 (200자 이내)"
-            placeholderTextColor={colors.icon.gray}
-            value={content}
-            onChangeText={handleContentChange}
-            multiline
-            textAlignVertical="top"
-            maxLength={200}
-            allowFontScaling={false}
-          />
-        </View>
-        <Text variant="xsReg" color={colors.text.tertiary} style={styles.characterCount}>
-          {content.length}/200
-        </Text>
+          {/* 첨부된 링크 */}
+          {attachedLink && (
+            <View style={styles.linkBox}>
+              <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
+                {attachedLink}
+              </Text>
+              <TouchableOpacity
+                onPress={handleRemoveLink}
+                activeOpacity={0.7}
+                style={styles.linkDeleteIconContainer}
+              >
+                <DeleteLinkIcon width={9} height={9} />
+              </TouchableOpacity>
+            </View>
+          )}
 
-        {/* 첨부된 링크 */}
-        {attachedLink && (
-          <View style={styles.linkBox}>
-            <Text variant="smReg" color={colors.text.secondary} numberOfLines={1} style={styles.linkText}>
-              {attachedLink}
-            </Text>
-            <TouchableOpacity
-              onPress={handleRemoveLink}
-              activeOpacity={0.7}
-              style={styles.linkDeleteIconContainer}
+          {/* 선택한 이미지 썸네일들 */}
+          {selectedImages.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.thumbnailsScrollView}
+              contentContainerStyle={styles.thumbnailsContent}
             >
-              <DeleteLinkIcon width={9} height={9} />
+              {selectedImages.map((image, index) => (
+                <View key={`${image.uri}-${index}`} style={styles.thumbnailContainer}>
+                  <Image
+                    source={{ uri: image.uri }}
+                    style={styles.thumbnail}
+                    resizeMode="cover"
+                  />
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleRemoveImage(image.uri)}
+                    activeOpacity={0.7}
+                  >
+                    <DeleteIcon width={24} height={24} />
+                  </TouchableOpacity>
+                  {image.uploading && (
+                    <View style={styles.uploadingOverlay}>
+                      <ActivityIndicator size="small" color={colors.white} />
+                    </View>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+          )}
+
+          {/* 질문 등록 토글 */}
+          <View style={styles.questionSection}>
+            <View style={styles.questionInfo}>
+              <Text variant="md" color={colors.text.primary}>
+                질문 등록
+              </Text>
+              <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
+                챌린저들에게 빠른 답변을 받을 수 있어요
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
+              activeOpacity={0.7}
+            >
+              {isQuestionEnabled ? (
+                <ToggleOnIcon width={48} height={28} />
+              ) : (
+                <ToggleOffIcon width={48} height={28} />
+              )}
             </TouchableOpacity>
           </View>
-        )}
+        </ScrollView>
 
-        {/* 선택한 이미지 썸네일들 */}
-        {selectedImages.length > 0 && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.thumbnailsScrollView}
-            contentContainerStyle={styles.thumbnailsContent}
-          >
-            {selectedImages.map((image, index) => (
-              <View key={`${image.uri}-${index}`} style={styles.thumbnailContainer}>
-                <Image
-                  source={{ uri: image.uri }}
-                  style={styles.thumbnail}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => handleRemoveImage(image.uri)}
-                  activeOpacity={0.7}
-                >
-                  <DeleteIcon width={24} height={24} />
-                </TouchableOpacity>
-                {image.uploading && (
-                  <View style={styles.uploadingOverlay}>
-                    <ActivityIndicator size="small" color={colors.white} />
-                  </View>
-                )}
-              </View>
-            ))}
-          </ScrollView>
-        )}
-
-        {/* 질문 등록 토글 */}
-        <View style={styles.questionSection}>
-          <View style={styles.questionInfo}>
-            <Text variant="md" color={colors.text.primary}>
-              질문 등록
-            </Text>
-            <Text variant="xsReg" color={colors.text.tertiary} style={styles.questionDescription}>
-              챌린저들에게 빠른 답변을 받을 수 있어요
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={() => setIsQuestionEnabled(!isQuestionEnabled)}
-            activeOpacity={0.7}
-          >
-            {isQuestionEnabled ? (
-              <ToggleOnIcon width={48} height={28} />
-            ) : (
-              <ToggleOffIcon width={48} height={28} />
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* 하단 첨부 바 */}
-      {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView
-          behavior="padding"
-          keyboardVerticalOffset={0}
-          style={styles.keyboardAvoidingView}
-        >
-          <View style={[
-            styles.attachmentBar,
-            isKeyboardVisible && styles.attachmentBarKeyboard,
-          ]}>
-            <View style={styles.attachmentButtons}>
-              <TouchableOpacity
-                style={styles.attachmentButton}
-                onPress={handleGalleryPress}
-                activeOpacity={0.7}
-              >
-                <PostGalleryIcon width={20} height={20} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.attachmentButton}
-                onPress={handleLinkPress}
-                activeOpacity={0.7}
-              >
-                <PostLinkIcon width={20} height={20} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      ) : (
+        {/* 하단 첨부 바: 스크롤 영역과 같은 레이아웃에서 공간을 확보한다. */}
         <View style={[
-          styles.keyboardAvoidingView,
-          isKeyboardVisible && { bottom: keyboardHeight }
+          styles.attachmentBar,
+          isKeyboardVisible && styles.attachmentBarKeyboard,
         ]}>
-          <View style={[
-            styles.attachmentBar,
-            isKeyboardVisible && styles.attachmentBarKeyboard,
-          ]}>
-            <View style={styles.attachmentButtons}>
-              <TouchableOpacity
-                style={styles.attachmentButton}
-                onPress={handleGalleryPress}
-                activeOpacity={0.7}
-              >
-                <PostGalleryIcon width={20} height={20} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.attachmentButton}
-                onPress={handleLinkPress}
-                activeOpacity={0.7}
-              >
-                <PostLinkIcon width={20} height={20} />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.attachmentButtons}>
+            <TouchableOpacity
+              style={styles.attachmentButton}
+              onPress={handleGalleryPress}
+              activeOpacity={0.7}
+            >
+              <PostGalleryIcon width={20} height={20} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.attachmentButton}
+              onPress={handleLinkPress}
+              activeOpacity={0.7}
+            >
+              <PostLinkIcon width={20} height={20} />
+            </TouchableOpacity>
           </View>
         </View>
-      )}
+      </KeyboardAvoidingView>
 
       {/* 링크 첨부 모달 */}
       <Modal
@@ -667,7 +631,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: scale(24),
     paddingTop: verticalScale(24),
-    paddingBottom: verticalScale(100),
+    paddingBottom: verticalScale(32),
   },
   inputContainer: {
     height: verticalScale(54),
@@ -707,6 +671,8 @@ const styles = StyleSheet.create({
     paddingRight: scale(4),
   },
   thumbnailsScrollView: {
+    flexGrow: 0,
+    flexShrink: 0,
     marginBottom: verticalScale(24),
   },
   thumbnailsContent: {
@@ -756,10 +722,7 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(4),
   },
   keyboardAvoidingView: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
+    flex: 1,
   },
   attachmentBar: {
     paddingHorizontal: scale(20),
@@ -872,4 +835,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-
