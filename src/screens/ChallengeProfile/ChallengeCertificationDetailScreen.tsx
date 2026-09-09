@@ -85,6 +85,7 @@ import ChevronDownIcon from '../../../assets/icons/chevron-down-text-primary.svg
 import DeleteViewerIcon from '../../../assets/icons/challenge-profile/delete-viewer.svg';
 import PhotoUnselectedIcon from '../../../assets/icons/challenge-create/photo-unselected.svg';
 import RefreshableScrollView from '../../components/common/RefreshableScrollView';
+import { useVerificationReaction } from './useVerificationReaction';
 type ChallengeCertificationDetailScreenRouteProp = RouteProp<
   RootStackParamList,
   'ChallengeCertificationDetail'
@@ -112,8 +113,6 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const commentInputRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
   const commentYPositions = useRef<Record<string | number, number>>({});
-  const isLikeRequestInFlight = useRef(false);
-  const isScrapRequestInFlight = useRef(false);
 
   const [verification, setVerification] = useState<
     VerificationDetailResponse['result'] | null
@@ -121,12 +120,14 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [commentPage, setCommentPage] = useState(1);
   const [isCommentLocked, setIsCommentLocked] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [isLikePending, setIsLikePending] = useState(false);
-  const [isScrapped, setIsScrapped] = useState(false);
-  const [scrapCount, setScrapCount] = useState(0);
-  const [isScrapPending, setIsScrapPending] = useState(false);
+  const {
+    selected: isLiked, count: likeCount, pending: isLikePending,
+    sync: syncLike, toggle: toggleLike,
+  } = useVerificationReaction();
+  const {
+    selected: isScrapped, count: scrapCount, pending: isScrapPending,
+    sync: syncScrap, toggle: toggleScrap,
+  } = useVerificationReaction();
   const [isActionSheetVisible, setIsActionSheetVisible] = useState(false);
   const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] =
     useState(false);
@@ -204,10 +205,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       setVerification(result);
 
       // 좋아요/스크랩 상태 초기화
-      setIsLiked(result.isLiked);
-      setLikeCount(result.likeCount ?? 0);
-      setIsScrapped(result.isScrapped);
-      setScrapCount(result.scrapCount ?? 0);
+      syncLike(result.isLiked, result.likeCount);
+      syncScrap(result.isScrapped, result.scrapCount);
 
       // 댓글 조회 (모든 페이지)
       let allComments: CommentItemType[] = [];
@@ -304,6 +303,8 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
     initialVerification,
     route.params.verificationId,
     navigation,
+    syncLike,
+    syncScrap,
   ]);
 
   // 화면이 포커스될 때마다 데이터 새로고침
@@ -545,30 +546,21 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       initialVerification?.verificationId ||
       route.params.verificationId;
 
-    // 연속 탭으로 PUT/DELETE가 중복 발사되지 않도록 ref로 즉시 차단
-    if (!verificationId || isLikeRequestInFlight.current) {
-      return;
-    }
-
-    isLikeRequestInFlight.current = true;
-    setIsLikePending(true);
+    if (!verificationId) return;
 
     try {
-      const result = isLiked
-        ? await unlikeVerification(verificationId)
-        : await likeVerification(verificationId);
-
-      setIsLiked(result.isLiked);
-      setLikeCount(result.likeCount ?? 0);
+      await toggleLike(async selected => {
+        const result = selected
+          ? await unlikeVerification(verificationId)
+          : await likeVerification(verificationId);
+        return { selected: result.isLiked, count: result.likeCount };
+      });
     } catch (error: any) {
       const errorMessage = getErrorMessage(
         error,
         '좋아요 처리에 실패했습니다.',
       );
       Alert.alert('오류', errorMessage);
-    } finally {
-      isLikeRequestInFlight.current = false;
-      setIsLikePending(false);
     }
   };
 
@@ -578,30 +570,21 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
       initialVerification?.verificationId ||
       route.params.verificationId;
 
-    // 연속 탭으로 PUT/DELETE가 중복 발사되지 않도록 ref로 즉시 차단
-    if (!verificationId || isScrapRequestInFlight.current) {
-      return;
-    }
-
-    isScrapRequestInFlight.current = true;
-    setIsScrapPending(true);
+    if (!verificationId) return;
 
     try {
-      const result = isScrapped
-        ? await unscrapVerification(verificationId)
-        : await scrapVerification(verificationId);
-
-      setIsScrapped(result.isScrapped);
-      setScrapCount(result.scrapCount ?? 0);
+      await toggleScrap(async selected => {
+        const result = selected
+          ? await unscrapVerification(verificationId)
+          : await scrapVerification(verificationId);
+        return { selected: result.isScrapped, count: result.scrapCount };
+      });
     } catch (error: any) {
       const errorMessage = getErrorMessage(
         error,
         '스크랩 처리에 실패했습니다.',
       );
       Alert.alert('오류', errorMessage);
-    } finally {
-      isScrapRequestInFlight.current = false;
-      setIsScrapPending(false);
     }
   };
 

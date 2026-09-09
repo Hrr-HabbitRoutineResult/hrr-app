@@ -1534,7 +1534,8 @@ export interface VerificationLikeResponse {
   result: {
     verificationId: number;
     isLiked: boolean;
-    likeCount: number;
+    // 카운트가 없는 응답도 상세 화면의 이전 상태를 기준으로 처리한다.
+    likeCount?: number | null;
   };
 }
 
@@ -1591,7 +1592,7 @@ export interface VerificationScrapResponse {
   result: {
     verificationId: number;
     isScrapped: boolean;
-    scrapCount: number;
+    scrapCount?: number | null;
   };
 }
 
