@@ -925,6 +925,7 @@ export interface CreatePhotoVerificationRequest {
   title: string;
   content: string;
   s3Key: string;
+  originalS3Key?: string;
   isQuestion: boolean;
 }
 
@@ -940,6 +941,7 @@ export interface VerificationDetail {
   title: string;
   content: string;
   photoUrl: string;
+  originalPhotoUrl?: string | null;
   textUrl: string;
   textImages: string[];
   isQuestion: boolean;
@@ -1098,6 +1100,7 @@ export interface VerificationDetailResponse {
     content: string;
     textUrl: string;
     photoUrl: string;
+    originalPhotoUrl?: string | null;
     textImages: string[];
     isQuestion: boolean;
     isResolved: boolean;
@@ -1299,6 +1302,7 @@ export interface VerificationFeedItem {
   title: string;
   content: string;
   imageUrl: string;
+  originalPhotoUrl?: string | null;
   hasLink: boolean;
   isQuestion: boolean;
   isResolved: boolean;

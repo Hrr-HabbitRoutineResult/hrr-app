@@ -1216,6 +1216,7 @@ ${deepLink}`;
                                 title: item.title,
                                 description: item.content,
                                 date: item.createdDate,
+                                originalPhotoUrl: item.originalPhotoUrl,
                                 thumbnail: item.imageUrl
                                   ? { uri: item.imageUrl }
                                   : null,
@@ -1251,6 +1252,7 @@ ${deepLink}`;
                             .filter(item => item.type !== 'TEXT')
                             .map(item => ({
                               id: item.verificationId,
+                              originalPhotoUrl: item.originalPhotoUrl,
                               thumbnail: { uri: item.imageUrl },
                               isQuestion: item.isQuestion,
                               isResolved: item.isResolved,

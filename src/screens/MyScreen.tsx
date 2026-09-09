@@ -95,6 +95,7 @@ const MyScreen = () => {
         date: format.date(item.verifiedAt),
         type: item.type,
         thumbnailUrl,
+        originalPhotoUrl: item.originalPhotoUrl,
       };
     });
   }, [myVerificationHistory]);

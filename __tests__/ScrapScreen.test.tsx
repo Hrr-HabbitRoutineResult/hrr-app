@@ -116,3 +116,14 @@ it('maps text preview, createdDate and hasLink and opens the selected verificati
   item.props.onItemPress(item.props.items[0]);
   expect(mockNavigate).toHaveBeenCalledWith('ChallengeCertificationDetail', { verificationId: 11 });
 });
+
+
+it('prefers originalPhotoUrl in the scrap photo grid without changing detail navigation', async () => {
+  const newPhoto = { ...photo, originalPhotoUrl: 'https://example.com/original.jpg' };
+  getScraps.mockResolvedValue(page([newPhoto]));
+  await mount();
+  const item = list().props.renderItem({ item: newPhoto, index: 0 });
+  expect(item.props.children.props.source.uri).toBe(newPhoto.originalPhotoUrl);
+  item.props.onPress();
+  expect(mockNavigate).toHaveBeenCalledWith('ChallengeCertificationDetail', { verificationId: 10 });
+});

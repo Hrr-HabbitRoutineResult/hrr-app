@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCertificationThumbnailSource } from '../../utils/certificationThumbnail';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { colors } from '../../design/tokens';
 import { scale, verticalScale } from '../../utils/scaling';
@@ -15,6 +16,7 @@ export interface CertificationRecordItem {
   date: string;
   type: 'CAMERA' | 'TEXT';
   thumbnailUrl: string | null;
+  originalPhotoUrl?: string | null;
   description?: string;
   metaIcon?: 'type' | 'link';
   hasLink?: boolean;
@@ -32,7 +34,12 @@ const CertificationRecordList = ({
   variant = 'default',
 }: CertificationRecordListProps) => (
   <View>
-    {items.map((item) => (
+    {items.map((item) => {
+      const thumbnail = getCertificationThumbnailSource(
+        item.originalPhotoUrl,
+        item.thumbnailUrl ? { uri: item.thumbnailUrl } : null,
+      );
+      return (
       <TouchableOpacity
         key={item.id}
         style={[styles.row, variant === 'scrap' && styles.scrapRow]}
@@ -66,8 +73,8 @@ const CertificationRecordList = ({
         </View>
 
         <View style={[styles.thumbnail, variant === 'scrap' && styles.scrapThumbnail]}>
-          {item.thumbnailUrl ? (
-            <Image source={{ uri: item.thumbnailUrl }} style={styles.thumbnailImage} />
+          {thumbnail ? (
+            <Image source={thumbnail} style={styles.thumbnailImage} />
           ) : (
             <View style={styles.placeholder}>
               <ThumbnailDefaultIcon width={scale(40)} height={verticalScale(40)} />
@@ -75,7 +82,8 @@ const CertificationRecordList = ({
           )}
         </View>
       </TouchableOpacity>
-    ))}
+      );
+    })}
   </View>
 );
 

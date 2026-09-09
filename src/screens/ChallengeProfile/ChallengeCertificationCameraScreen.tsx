@@ -13,7 +13,7 @@ import { Text } from '../../components/common/Text';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import { openCamera } from '../../libs/imagePicker';
-import { getPresignedUrl } from '../../libs/api/challenge';
+import { uploadVerificationImages } from '../../libs/verificationImages';
 
 type ChallengeCertificationCameraScreenRouteProp = RouteProp<RootStackParamList, 'ChallengeCertificationCamera'>;
 type ChallengeCertificationCameraScreenNavigationProp = StackNavigationProp<
@@ -32,6 +32,8 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const viewShotRef = useRef<ViewShot>(null);
+  const uploadInFlightRef = useRef(false);
+  const originalMimeTypeRef = useRef('image/jpeg');
 
   // 화면에 보이는 프리뷰 크기
   const PREVIEW_SIZE = 350;
@@ -66,6 +68,7 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
     if (asset?.uri) {
       setIsImageLoaded(false);
       setSelectedImage(asset.uri);
+      originalMimeTypeRef.current = asset.type || 'image/jpeg';
       setImageTimestamp(new Date());
 
       Image.getSize(
@@ -92,104 +95,17 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
     return `${year}.${month}.${day}  |  ${hours}:${minutes}`;
   };
 
-  const getMimeType = (extension: string): string => {
-    const mimeTypes: Record<string, string> = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      webp: 'image/webp',
-    };
-    return mimeTypes[extension.toLowerCase()] || 'image/jpeg';
-  };
-
-  /**
-   * S3 presigned PUT 업로드
-   * - Android: `fetch(file://...)`가 실패하므로 react-native-blob-util 사용
-   * - iOS: 기존 fetch + blob 방식
-   */
-  const uploadImageToS3 = async (imageUri: string): Promise<string | null> => {
-    try {
-      setIsUploading(true);
-
-      // Android: URI에 file:// prefix가 없을 수 있어 보정
-      let normalizedUri = imageUri;
-      if (
-        Platform.OS === 'android' &&
-        !normalizedUri.startsWith('file://') &&
-        !normalizedUri.startsWith('content://')
-      ) {
-        normalizedUri = `file://${normalizedUri}`;
-      }
-
-      const fileExtension = normalizedUri.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `challenge-cert-${Date.now()}.${fileExtension}`;
-      const mimeType = getMimeType(fileExtension);
-
-      const { presignedUrl, s3Key } = await getPresignedUrl(fileName);
-
-      const uploadHeaders: Record<string, string> = {
-        'Content-Type': mimeType,
-      };
-
-      // x-amz-acl 헤더 (서명에 포함되어 있으면 추가)
-      try {
-        const urlParts = presignedUrl.split('?');
-        if (urlParts.length > 1) {
-          const params = urlParts[1];
-          if (params.includes('X-Amz-SignedHeaders') && params.includes('x-amz-acl')) {
-            uploadHeaders['x-amz-acl'] = 'public-read';
-          }
-        }
-      } catch (e) {
-        // 파싱 실패 시에도 업로드 가능하므로 무시
-      }
-
-      const localPath = normalizedUri.startsWith('file://')
-        ? normalizedUri.replace(/^file:\/\//, '')
-        : normalizedUri;
-
-      if (Platform.OS === 'android') {
-        const resp = await RNBlobUtil.fetch('PUT', presignedUrl, uploadHeaders, RNBlobUtil.wrap(localPath));
-        const status = resp.info().status;
-        if (status !== 200 && status !== 204) {
-          throw new Error(`업로드 실패 (${status})`);
-        }
-      } else {
-        const response = await fetch(normalizedUri);
-        if (!response.ok) throw new Error('이미지 로드 실패');
-        const blob = await response.blob();
-        if (blob.size === 0) throw new Error('이미지가 비어있습니다.');
-        const uploadResponse = await fetch(presignedUrl, {
-          method: 'PUT',
-          body: blob,
-          headers: uploadHeaders,
-        });
-        if (!uploadResponse.ok) {
-          throw new Error(`업로드 실패 (${uploadResponse.status})`);
-        }
-      }
-
-      const s3ImageUrl = presignedUrl.split('?')[0];
-
-      return s3ImageUrl;
-    } catch (error: any) {
-      const errorMessage = getErrorMessage(error, '이미지 업로드에 실패했습니다.');
-      Alert.alert('이미지 업로드 실패', errorMessage);
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleRetake = () => {
     handleImagePicker();
   };
 
   const handleCertify = async () => {
-    if (!selectedImage || !imageTimestamp || !viewShotRef.current) {
+    if (uploadInFlightRef.current || !selectedImage || !imageTimestamp || !viewShotRef.current) {
       return;
     }
 
+    uploadInFlightRef.current = true;
+    setIsUploading(true);
     try {
       if (!isImageLoaded) {
         await new Promise<void>((resolve) => setTimeout(() => resolve(), 500));
@@ -235,18 +151,21 @@ export const ChallengeCertificationCameraScreen: React.FC = () => {
         return;
       }
 
-      const s3ImageUrl = await uploadImageToS3(localUri);
-
-      if (!s3ImageUrl) {
-        return;
-      }
+      const images = await uploadVerificationImages(
+        selectedImage,
+        localUri,
+        originalMimeTypeRef.current,
+      );
 
       navigation.navigate('ChallengeCertificationPost', {
         challengeId,
-        imageUri: s3ImageUrl,
+        ...images,
       });
     } catch (error) {
-      Alert.alert('오류', '이미지를 처리하는데 실패했습니다.');
+      Alert.alert('오류', getErrorMessage(error, '이미지를 처리하는데 실패했습니다.'));
+    } finally {
+      uploadInFlightRef.current = false;
+      setIsUploading(false);
     }
   };
 

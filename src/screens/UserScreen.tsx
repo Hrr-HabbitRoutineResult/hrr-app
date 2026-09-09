@@ -232,6 +232,7 @@ const UserScreen = () => {
       challengeTitle: item.challengeTitle,
       date: format.date(item.verifiedAt),
       type: item.type,
+      originalPhotoUrl: item.originalPhotoUrl,
       thumbnailUrl: item.photoUrl ||
         (item.type === 'TEXT' && item.textImages?.length ? item.textImages[0] : null),
     }))

@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCertificationThumbnailSource } from '../../utils/certificationThumbnail';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from './Text';
@@ -14,6 +15,7 @@ export interface TextCertificationItem {
   description: string;  // 인증 글 내용
   date: string;         // 인증 날짜
   thumbnail: any | null; // 썸네일 이미지 (없으면 null)
+  originalPhotoUrl?: string | null;
   hasLink?: boolean;    // 링크 첨부 여부
   isQuestion?: boolean; // 질문 여부
   isResolved?: boolean; // 채택 답변 존재 여부
@@ -33,7 +35,9 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
 }) => {
   return (
     <View style={[styles.list, { paddingHorizontal: containerPadding }]}>
-      {items.map((item) => (
+      {items.map((item) => {
+        const thumbnail = getCertificationThumbnailSource(item.originalPhotoUrl, item.thumbnail);
+        return (
         <TouchableOpacity
           key={item.id}
           style={styles.item}
@@ -55,8 +59,8 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
             </View>
           </View>
           <View style={styles.thumbnail}>
-            {item.thumbnail ? (
-              <Image source={item.thumbnail} style={styles.thumbnailImage} />
+            {thumbnail ? (
+              <Image source={thumbnail} style={styles.thumbnailImage} />
             ) : (
               <View style={styles.defaultThumbnail}>
                 <ThumbnailDefaultIcon width={scale(40)} height={verticalScale(40)} />
@@ -74,7 +78,8 @@ export const TextCertificationList: React.FC<TextCertificationListProps> = ({
             )}
           </View>
         </TouchableOpacity>
-      ))}
+        );
+      })}
     </View>
   );
 };

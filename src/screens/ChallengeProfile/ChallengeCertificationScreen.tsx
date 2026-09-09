@@ -406,6 +406,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                       title: item.title,
                       description: item.content,
                       date: item.createdDate,
+                      originalPhotoUrl: item.originalPhotoUrl,
                       thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       hasLink: item.hasLink,
                       isQuestion: item.isQuestion,
@@ -422,6 +423,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     <PhotoCertificationGrid
                       items={myData.verifications.content.map(item => ({
                         id: item.verificationId,
+                        originalPhotoUrl: item.originalPhotoUrl,
                         thumbnail: item.imageUrl
                           ? { uri: item.imageUrl }
                           : null,
@@ -608,6 +610,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                     title: item.title,
                     description: item.content,
                     date: item.createdDate,
+                    originalPhotoUrl: item.originalPhotoUrl,
                     thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                     hasLink: item.hasLink,
                     isQuestion: item.isQuestion,
@@ -624,6 +627,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   <PhotoCertificationGrid
                     items={challengerFeed.map(item => ({
                       id: item.verificationId,
+                      originalPhotoUrl: item.originalPhotoUrl,
                       thumbnail: item.imageUrl ? { uri: item.imageUrl } : null,
                       isQuestion: item.isQuestion,
                       isResolved: item.isResolved,

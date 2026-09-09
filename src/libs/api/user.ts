@@ -126,6 +126,7 @@ export interface VerificationHistoryItem {
   title: string;
   content: string | null;
   photoUrl: string | null;
+  originalPhotoUrl?: string | null;
   textUrl: string | null;
   textImages?: string[];
   verifiedAt: string;
@@ -196,6 +197,7 @@ export interface ScrappedVerificationItem {
   title: string;
   content: string | null;
   imageUrl: string | null;
+  originalPhotoUrl?: string | null;
   hasLink: boolean;
   isQuestion: boolean;
   isResolved: boolean;

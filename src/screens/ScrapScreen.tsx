@@ -1,3 +1,4 @@
+import { getCertificationThumbnailSource } from '../utils/certificationThumbnail';
 import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -113,7 +114,9 @@ const ScrapScreen = () => {
     item,
     index,
   }: ListRenderItemInfo<ScrappedVerificationItem>) => {
-    const thumbnailUrl = item.imageUrl;
+    const thumbnail = getCertificationThumbnailSource(
+      item.originalPhotoUrl, item.imageUrl ? { uri: item.imageUrl } : null,
+    );
 
     return (
       <TouchableOpacity
@@ -124,8 +127,8 @@ const ScrapScreen = () => {
         activeOpacity={0.8}
         onPress={() => openDetail(item.verificationId)}
       >
-        {thumbnailUrl ? (
-          <Image source={{ uri: thumbnailUrl }} style={styles.photo} />
+        {thumbnail ? (
+          <Image source={thumbnail} style={styles.photo} />
         ) : (
           <View style={styles.photoPlaceholder}>
             <TextPlaceholderIcon width="100%" height="100%" />
@@ -146,6 +149,7 @@ const ScrapScreen = () => {
       date: item.createdDate,
       type: item.type,
       thumbnailUrl: item.imageUrl,
+      originalPhotoUrl: item.originalPhotoUrl,
       metaIcon: 'link',
       hasLink: item.hasLink,
     };

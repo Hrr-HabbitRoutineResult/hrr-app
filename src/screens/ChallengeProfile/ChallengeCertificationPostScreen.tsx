@@ -23,7 +23,7 @@ type ChallengeCertificationPostScreenNavigationProp = StackNavigationProp<
 export const ChallengeCertificationPostScreen: React.FC = () => {
   const navigation = useNavigation<ChallengeCertificationPostScreenNavigationProp>();
   const route = useRoute<ChallengeCertificationPostScreenRouteProp>();
-  const { challengeId, imageUri } = route.params;
+  const { challengeId, imageUri, s3Key, originalS3Key } = route.params;
   const { fetchMyVerificationHistory } = useUserStore();
 
   const [title, setTitle] = useState('');
@@ -40,27 +40,6 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
     navigation.goBack();
   };
 
-  // S3 URL에서 s3Key 추출
-  const extractS3Key = (s3Url: string): string | null => {
-    try {
-      // URL에서 도메인 부분 제거하고 경로만 추출
-      const urlParts = s3Url.split('.amazonaws.com/');
-      if (urlParts.length < 2) {
-        return null;
-      }
-
-      let key = urlParts[1];
-      // 끝에 슬래시가 있으면 제거
-      if (key.endsWith('/')) {
-        key = key.slice(0, -1);
-      }
-
-      return key;
-    } catch (error) {
-      return null;
-    }
-  };
-
   const handlePost = async () => {
     if (!title.trim()) {
       Alert.alert('알림', '제목을 입력해주세요.');
@@ -72,10 +51,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
       return;
     }
 
-    // S3 URL에서 s3Key 추출
-    const s3Key = extractS3Key(imageUri);
-
-    if (!s3Key) {
+    if (!s3Key || !originalS3Key) {
       Alert.alert('오류', '이미지 정보를 가져올 수 없습니다.');
       return;
     }
@@ -87,6 +63,7 @@ export const ChallengeCertificationPostScreen: React.FC = () => {
         title: title.trim(),
         content: content.trim(),
         s3Key,
+        originalS3Key,
         isQuestion: isQuestionEnabled,
       });
 

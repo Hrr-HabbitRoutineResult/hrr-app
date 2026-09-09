@@ -25,7 +25,12 @@ export type RootStackParamList = {
   PointHistory: undefined;
   ChallengeCertificationCamera: { challengeId: number };
   ChallengeCertificationText: { challengeId: number };
-  ChallengeCertificationPost: { challengeId: number; imageUri: string };
+  ChallengeCertificationPost: {
+    challengeId: number;
+    imageUri: string;
+    s3Key: string;
+    originalS3Key: string;
+  };
   ChallengeCertificationDetail: {
     verification?: VerificationDetail;
     verificationId?: number;

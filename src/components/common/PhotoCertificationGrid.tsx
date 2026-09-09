@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCertificationThumbnailSource } from '../../utils/certificationThumbnail';
 import { View, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../design/tokens';
@@ -9,6 +10,7 @@ import TextIcon from '../../../assets/icons/text.svg';
 export interface PhotoCertificationItem {
   id: number;      // 인증 아이템 고유 ID
   thumbnail: any;  // 썸네일 이미지
+  originalPhotoUrl?: string | null;
   isQuestion?: boolean; // 질문 여부
   isResolved?: boolean; // 채택 답변 존재 여부
 }
@@ -33,15 +35,20 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
 
   return (
     <View style={[styles.grid, { paddingHorizontal: containerPadding }]}>
-      {items.map((item) => (
+      {items.map((item) => {
+        const thumbnail = getCertificationThumbnailSource(
+          item.originalPhotoUrl,
+          item.thumbnail?.uri ? item.thumbnail : null,
+        );
+        return (
         <TouchableOpacity
           key={item.id}
           style={[styles.gridItem, { width: itemWidth, height: itemWidth }]}
           onPress={() => onItemPress?.(item)}
           activeOpacity={0.8}
         >
-          {item.thumbnail && item.thumbnail.uri ? (
-            <Image source={item.thumbnail} style={styles.gridImage} />
+          {thumbnail ? (
+            <Image source={thumbnail} style={styles.gridImage} />
           ) : (
             <View style={styles.fallbackContainer}>
               <TextIcon width="100%" height="100%" />
@@ -58,7 +65,8 @@ export const PhotoCertificationGrid: React.FC<PhotoCertificationGridProps> = ({
             </View>
           )}
         </TouchableOpacity>
-      ))}
+        );
+      })}
     </View>
   );
 };
