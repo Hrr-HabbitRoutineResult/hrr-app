@@ -21,6 +21,8 @@ interface HeaderProps {
   backIcon?: 'arrow' | 'close';     // 뒤로가기 버튼 아이콘 타입 (기본값: 'arrow')
   horizontalPadding?: number;       // 화면별 헤더 좌우 여백 (기본값: 24)
   verticalPadding?: number;         // 화면별 헤더 상하 여백 (기본값: iOS 16, Android 24)
+  backgroundColor?: string;
+  dividerColor?: string;
 }
 
 // 공통 Header 컴포넌트
@@ -33,6 +35,8 @@ export const Header: React.FC<HeaderProps> = ({
   backIcon = 'arrow',
   horizontalPadding = 24,
   verticalPadding: verticalPaddingProp,
+  backgroundColor = colors.white,
+  dividerColor = colors.line,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -55,6 +59,8 @@ export const Header: React.FC<HeaderProps> = ({
       styles.header,
       showDivider && styles.headerBorder,
       {
+        backgroundColor,
+        borderBottomColor: dividerColor,
         paddingHorizontal: scale(horizontalPadding),
         paddingTop: safeAreaTop + verticalPadding,
         paddingBottom: showDivider ? verticalPadding - 1 : verticalPadding, // borderBottomWidth 1px 차감

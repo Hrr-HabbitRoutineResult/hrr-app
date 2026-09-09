@@ -19,15 +19,16 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import RNBlobUtil from 'react-native-blob-util';
 import { Button } from '../components/common/Button';
+import { Header } from '../components/common/Header';
 import { Text } from '../components/common/Text';
-import { colors, typography } from '../design/tokens';
-import BackIcon from '../../assets/icons/back.svg';
+import { colors } from '../design/tokens';
 import CloseIcon from '../../assets/icons/challenge-profile/delete-viewer.svg';
 import IconExercise from '../../assets/icons/homescreen/categorychips/ic_exercise.svg';
 import IconStudy from '../../assets/icons/homescreen/categorychips/ic_study.svg';
 import IconHobby from '../../assets/icons/homescreen/categorychips/ic_hobby.svg';
 import IconJob from '../../assets/icons/homescreen/categorychips/ic_job.svg';
 import IconLifestyle from '../../assets/icons/homescreen/categorychips/ic_lifestyle.svg';
+// Figma 3917:1883 / 3917:1955 exports; retain their original viewBoxes.
 import MissionArrivedIcon from '../../assets/images/random-mission-arrived.svg';
 import MissionCompleteIcon from '../../assets/images/random-mission-complete.svg';
 import {
@@ -42,14 +43,15 @@ import { useUserStore } from '../store/userSlice';
 const RandomMissionScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  // The reference frame reserves 44pt above the header and 40pt below the CTA.
   // App.tsx already applies the Android bottom safe area.
-  const safeAreaStyle = {
+  const bottomPadding =
+    Platform.OS === 'android'
+      ? Math.max(0, verticalScale(40) - insets.bottom)
+      : Math.max(insets.bottom, verticalScale(40));
+  // Keep the camera preview layout; the mission App Bar owns its top safe area.
+  const certificationSafeAreaStyle = {
     paddingTop: Math.max(insets.top, verticalScale(44)),
-    paddingBottom:
-      Platform.OS === 'android'
-        ? Math.max(0, verticalScale(40) - insets.bottom)
-        : Math.max(insets.bottom, verticalScale(40)),
+    paddingBottom: bottomPadding,
   };
   const { setRandomMissionCompleted, randomMissionCompleted } = useUserStore();
   const [missionData, setMissionData] = useState<DailyMissionInfo | null>(null);
@@ -253,7 +255,7 @@ const RandomMissionScreen = () => {
   if (selectedImage) {
     return (
       <SafeAreaView
-        style={[styles.certificationContainer, safeAreaStyle]}
+        style={[styles.certificationContainer, certificationSafeAreaStyle]}
         edges={['left', 'right']}
       >
         <StatusBar barStyle="light-content" />
@@ -351,29 +353,18 @@ const RandomMissionScreen = () => {
 
   return (
     <SafeAreaView
-      style={[styles.container, safeAreaStyle]}
+      style={[styles.container, { paddingBottom: bottomPadding }]}
       edges={['left', 'right']}
     >
       <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="뒤로가기"
-          onPress={handleBack}
-          style={styles.backButton}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <BackIcon width={scale(9)} height={scale(18)} />
-        </TouchableOpacity>
-        <Text
-          variant="header4"
-          color={colors.text.primary}
-          style={styles.headerTitle}
-        >
-          랜덤미션
-        </Text>
-        <View style={styles.backButton} />
-      </View>
+      <Header
+        title="랜덤미션"
+        onBack={handleBack}
+        useSafeArea
+        showDivider
+        backgroundColor={colors.primary.lightest}
+        dividerColor={colors.primary.lighter}
+      />
 
       <ScrollView
         style={styles.missionScroll}
@@ -382,7 +373,7 @@ const RandomMissionScreen = () => {
       >
         <Text
           variant="header2"
-          color={colors.text.primary}
+          color={missionCompleted ? colors.text.secondary : colors.text.primary}
           style={styles.mainTitle}
         >
           {missionCompleted
@@ -390,13 +381,13 @@ const RandomMissionScreen = () => {
             : '오늘의 랜덤미션이 도착했어요!'}
         </Text>
 
-        <View style={styles.missionCard}>
+        <View style={[styles.missionCard, missionCompleted && styles.completedCard]}>
           {missionCompleted ? (
             <>
               <View style={styles.completedMissionText}>
                 <Text
                   variant="header1"
-                  color={colors.text.tertiary}
+                  color={colors.text.primary}
                   style={styles.missionTitle}
                 >
                   {missionTitle}
@@ -410,7 +401,11 @@ const RandomMissionScreen = () => {
                 </Text>
               </View>
               <View style={styles.completeIllustration}>
-                <MissionCompleteIcon width={scale(168)} height={scale(168)} />
+                <MissionCompleteIcon
+                  width={scale(200)}
+                  height={scale(200)}
+                  preserveAspectRatio="xMidYMid meet"
+                />
               </View>
               <View style={styles.completedFooter}>
                 <View style={styles.cardDivider} />
@@ -426,7 +421,14 @@ const RandomMissionScreen = () => {
             </>
           ) : (
             <>
-              <MissionArrivedIcon width={scale(152)} height={scale(152)} />
+              <View style={styles.arrivedIllustration}>
+                {/* Figma's 112pt frame exports to 115pt including the border. */}
+                <MissionArrivedIcon
+                  width={scale(115)}
+                  height={scale(115)}
+                  preserveAspectRatio="xMidYMid meet"
+                />
+              </View>
               <View style={styles.missionText}>
                 <Text
                   variant="header1"
@@ -498,24 +500,7 @@ const RandomMissionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF2F0',
-  },
-  header: {
-    height: verticalScale(56),
-    paddingHorizontal: scale(20),
-    borderBottomWidth: scale(1),
-    borderBottomColor: colors.primary.lighter,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    width: scale(48),
-    height: verticalScale(48),
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
+    backgroundColor: colors.primary.lightest,
   },
   missionScroll: {
     flex: 1,
@@ -529,7 +514,6 @@ const styles = StyleSheet.create({
     marginTop: verticalScale(56),
     marginBottom: verticalScale(20),
     textAlign: 'center',
-    lineHeight: verticalScale(28),
   },
   missionCard: {
     width: '100%',
@@ -537,7 +521,7 @@ const styles = StyleSheet.create({
     borderRadius: scale(20),
     backgroundColor: colors.white,
     alignItems: 'center',
-    paddingTop: verticalScale(28),
+    paddingTop: verticalScale(48),
     boxShadow: [
       {
         offsetX: 0,
@@ -548,24 +532,31 @@ const styles = StyleSheet.create({
     ],
   },
   missionText: {
-    marginTop: verticalScale(8),
+    marginTop: verticalScale(32),
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: scale(24),
   },
+  arrivedIllustration: {
+    width: scale(112),
+    height: scale(112),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completedCard: {
+    paddingTop: verticalScale(36),
+  },
   completedMissionText: {
-    paddingTop: verticalScale(4),
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: scale(24),
   },
   missionTitle: {
     textAlign: 'center',
-    marginBottom: verticalScale(6),
+    marginBottom: verticalScale(8),
   },
   missionDescription: {
     textAlign: 'center',
-    lineHeight: typography.smReg.lineHeight,
   },
   categoryFooter: {
     position: 'absolute',
@@ -577,7 +568,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: scale(8),
+    gap: scale(10),
     height: verticalScale(54),
   },
   cardDivider: {
@@ -587,7 +578,6 @@ const styles = StyleSheet.create({
   },
   completeIllustration: {
     flex: 1,
-    paddingBottom: verticalScale(12),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -597,9 +587,6 @@ const styles = StyleSheet.create({
   },
   completeMessage: {
     textAlign: 'center',
-    fontFamily: 'Pretendard-Medium',
-    fontWeight: '500',
-    lineHeight: verticalScale(26),
     marginVertical: verticalScale(14),
   },
   buttonContainer: {
