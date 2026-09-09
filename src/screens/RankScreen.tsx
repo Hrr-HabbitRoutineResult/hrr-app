@@ -10,13 +10,13 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Line, Path } from 'react-native-svg';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MoreIcon from '../../assets/icons/chevron-right-grey.svg';
+import MoreIcon from '../../assets/icons/chevron-left-medium-ic-grey.svg';
 import { PointCriteriaSheet } from '../components/ranking/PointCriteriaSheet';
 import { RankList } from '../components/ranking/RankList';
 import { RankingLoadError } from '../components/ranking/RankingLoadError';
 import { Text } from '../components/common/Text';
-import { colors } from '../design/tokens';
+import SectionHeader from '../components/common/SectionHeader';
+import { colors, spacing } from '../design/tokens';
 import { RootStackParamList } from '../navigation/types';
 import {
   pointService,
@@ -96,7 +96,6 @@ const TrendGraphic: React.FC<{ rising: boolean }> = ({ rising }) => (
 );
 
 const RankScreen: React.FC = () => {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation<RankScreenNavigationProp>();
   const [ranking, setRanking] = useState<WeeklyRanking | null>(null);
   const [criteria, setCriteria] = useState<PointCriteria[]>([]);
@@ -181,31 +180,23 @@ const RankScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
+      <SectionHeader title="랭킹" isScreenHeader />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top,
             paddingBottom: verticalScale(104),
           },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          variant="header3"
-          color={colors.text.primary}
-          style={styles.title}
-        >
-          랭킹
-        </Text>
-
         <View style={styles.myRank}>
-          <Text variant="smMd" color={colors.text.primary}>
+          <Text variant="header2" color={colors.text.primary}>
             이번 주 내 순위
           </Text>
           <Text
-            variant="header2"
+            variant="header1"
             color={colors.primary.sub}
             style={styles.myRankValue}
           >
@@ -217,11 +208,16 @@ const RankScreen: React.FC = () => {
             onPress={() => navigation.navigate('PointHistory')}
             accessibilityRole="button"
             accessibilityLabel="보유포인트 확인"
+            hitSlop={spacing.sm}
           >
-            <Text variant="caption" color={colors.text.tertiary}>
+            <Text variant="xsReg" color={colors.text.tertiary}>
               보유포인트
             </Text>
-            <MoreIcon width={scale(12)} height={scale(12)} />
+            <MoreIcon
+              width={scale(20)}
+              height={scale(20)}
+              style={styles.pointsChevron}
+            />
           </TouchableOpacity>
         </View>
 
@@ -290,23 +286,25 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: scale(20),
-  },
-  title: {
-    marginBottom: verticalScale(24),
+    paddingTop: verticalScale(8),
   },
   myRank: {
     alignItems: 'center',
-    marginBottom: verticalScale(18),
+    marginBottom: verticalScale(20),
   },
   myRankValue: {
-    marginTop: verticalScale(4),
+    marginTop: verticalScale(12),
   },
   pointsRow: {
-    minHeight: verticalScale(24),
+    minHeight: scale(20),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: scale(3),
-    marginTop: verticalScale(1),
+    paddingLeft: spacing.sm,
+    gap: scale(2),
+    marginTop: verticalScale(4),
+  },
+  pointsChevron: {
+    transform: [{ scaleX: -1 }],
   },
   statusCard: {
     height: verticalScale(80),
