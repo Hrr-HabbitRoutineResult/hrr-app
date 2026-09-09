@@ -1044,24 +1044,22 @@ ${deepLink}`;
             {/* 구분선 */}
             <View style={styles.sectionDivider} />
 
-            {/* 프로필/인증현황 탭 (챌린지 시작 이후 + (관찰자 모드가 지원되거나 참가한 경우) 표시) */}
-            {isChallengeStarted() &&
-              (data.isObserverMode || isParticipated) && (
-                <TabBar
-                  tabs={[
-                    { key: 'profile', label: '프로필' },
-                    { key: 'certification', label: '인증현황' },
-                  ]}
-                  activeTab={activeTab}
-                  onTabChange={tabKey => {
-                    setActiveTab(tabKey as 'profile' | 'certification');
-                  }}
-                />
-              )}
+            {/* 프로필/인증현황 탭 (시작 전에도 참가자 또는 관찰자 모드에 표시) */}
+            {(data.isObserverMode || isParticipated) && (
+              <TabBar
+                tabs={[
+                  { key: 'profile', label: '프로필' },
+                  { key: 'certification', label: '인증현황' },
+                ]}
+                activeTab={activeTab}
+                onTabChange={tabKey => {
+                  setActiveTab(tabKey as 'profile' | 'certification');
+                }}
+              />
+            )}
 
             {/* 프로필/인증현황 탭 내용 */}
-            {isChallengeStarted() &&
-            (data.isObserverMode || isParticipated) &&
+            {(data.isObserverMode || isParticipated) &&
             activeTab === 'certification' ? (
               // 인증현황 탭
               <View style={styles.certificationSection}>
