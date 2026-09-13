@@ -13,7 +13,7 @@ export interface NotificationItem {
   id: number;
   title: string;
   message: string;
-  imageUrl: string;
+  imageUrl: string | null;
   category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE';
   type:
     | 'CHALLENGE_EXTENSION'
@@ -286,7 +286,7 @@ export const getUnreadStatus = async (): Promise<boolean> => {
     }
 
     return false;
-  } catch (error: any) {
+  } catch {
     // 에러가 발생해도 조용히 false 반환
     return false;
   }

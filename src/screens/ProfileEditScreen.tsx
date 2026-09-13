@@ -22,7 +22,6 @@ import { RootStackParamList } from '../navigation/types';
 import { UserMe, getUserMe, UpdateUserProfileRequest } from '../libs/api/user';
 import { checkNickname } from '../libs/api/auth';
 import { getPresignedUrl } from '../libs/api/challenge';
-import { getS3ImageUrl } from '../libs/s3';
 import { colors as Color, typography } from '../design/tokens';
 import { scale, verticalScale } from '../utils/scaling';
 import { getErrorMessage } from '../utils/errorHandler';
@@ -330,7 +329,7 @@ const ProfileEditScreen: React.FC = () => {
 
       <View style={styles.profileImageContainer}>
         <ProfileImageWithEdit
-          profileImageUrl={profileImage ? getS3ImageUrl(profileImage) || undefined : undefined}
+          profileImageUrl={profileImage}
           onPress={handleImagePick}
           size={scale(80)}
           overlayOpacity={0.6}

@@ -61,7 +61,6 @@ import {
   ReportReason,
 } from '../../libs/api/challenge';
 import { useUserStore } from '../../store/userSlice';
-import { getS3ImageUrl } from '../../libs/s3';
 import Config from 'react-native-config';
 import ShareIcon from '../../../assets/icons/challenge-profile/share.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
@@ -69,7 +68,7 @@ import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-uns
 import PeopleIcon from '../../../assets/icons/challenge-profile/people.svg';
 import ObserverDisabledIcon from '../../../assets/icons/challenge-profile/observer-disabled.svg';
 import ObserverEnabledIcon from '../../../assets/icons/challenge-profile/observer-enabled.svg';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import { ProfileImage } from '../../components/common/ProfileImage';
 import CalendarIcon from '../../../assets/icons/challenge-profile/calendar.svg';
 import TimeRangeIcon from '../../../assets/icons/challenge-profile/time-range.svg';
 import ChevronRightTertiaryIcon from '../../../assets/icons/chevron-right-tertiary.svg';
@@ -807,8 +806,6 @@ ${deepLink}`;
     }
   };
 
-  const hostProfileImage = data.owner.profileImageUrl;
-  const fullHostProfileImage = getS3ImageUrl(hostProfileImage);
   const today = getTodayYYYYMMDD_KST();
   const isFinished =
     data.actionButtonStatus === 'FINISHED' || data.endDate < today;
@@ -1017,18 +1014,10 @@ ${deepLink}`;
               onPress={handleHostProfile}
               activeOpacity={0.7}
             >
-              {fullHostProfileImage ? (
-                <Image
-                  source={{ uri: fullHostProfileImage }}
-                  style={{
-                    width: scale(40),
-                    height: verticalScale(40),
-                    borderRadius: 20,
-                  }}
-                />
-              ) : (
-                <DefaultProfileIcon width={40} height={40} />
-              )}
+              <ProfileImage
+                uri={data.owner.profileImageUrl}
+                size={scale(40)}
+              />
               <Text
                 variant="smMd"
                 color={colors.text.primary}
@@ -1534,7 +1523,7 @@ ${deepLink}`;
                       <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
                         {item.rank}
                       </Text>
-                      <DefaultProfileIcon width={40} height={40} />
+                      <ProfileImage size={scale(40)} />
                       <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
                         {item.nickname}
                       </Text>
@@ -1564,7 +1553,7 @@ ${deepLink}`;
                       <Text variant="smMd" color={colors.text.tertiary} style={styles.rankNumber}>
                         {item.rank}
                       </Text>
-                      <DefaultProfileIcon width={40} height={40} />
+                      <ProfileImage size={scale(40)} />
                       <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
                         {item.nickname}
                       </Text>

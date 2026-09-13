@@ -24,7 +24,7 @@ import { PhotoCertificationGrid } from '../../components/common/PhotoCertificati
 import { TextCertificationList } from '../../components/common/TextCertificationList';
 import { Button } from '../../components/common/Button';
 import { Text } from '../../components/common/Text';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import { ProfileImage } from '../../components/common/ProfileImage';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
 import {
@@ -326,10 +326,7 @@ export const ChallengeCertificationScreen: React.FC = () => {
                   isCompleted && styles.completedProfileSection,
                 ]}
               >
-                <DefaultProfileIcon
-                  width={scale(isCompleted ? 100 : 60)}
-                  height={scale(isCompleted ? 100 : 60)}
-                />
+                <ProfileImage size={scale(isCompleted ? 100 : 60)} />
                 <View style={styles.profileInfoWrapper}>
                   <Text
                     variant="header3"

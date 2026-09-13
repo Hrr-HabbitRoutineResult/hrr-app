@@ -70,9 +70,8 @@ import {
   scrapVerification,
   unscrapVerification,
 } from '../../libs/api/challenge';
-import { getS3ImageUrl } from '../../libs/s3';
 import MoreIcon from '../../../assets/icons/more.svg';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import { ProfileImage } from '../../components/common/ProfileImage';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
 import CommentIcon from '../../../assets/icons/comment.svg';
@@ -851,22 +850,10 @@ export const ChallengeCertificationDetailScreen: React.FC = () => {
               isPhotoVerification && styles.photoUserAvatar,
             ]}
           >
-            {getS3ImageUrl(verification.user.profileImageUrl) ? (
-              <Image
-                source={{
-                  uri: getS3ImageUrl(verification.user.profileImageUrl)!,
-                }}
-                style={[
-                  styles.profileImage,
-                  isPhotoVerification && styles.photoProfileImage,
-                ]}
-              />
-            ) : (
-              <DefaultProfileIcon
-                width={isPhotoVerification ? 32 : 40}
-                height={isPhotoVerification ? 32 : 40}
-              />
-            )}
+            <ProfileImage
+              uri={verification.user.profileImageUrl}
+              size={scale(isPhotoVerification ? 32 : 40)}
+            />
           </View>
           <View style={styles.userInfo}>
             <View style={styles.userNameRow}>
@@ -1659,20 +1646,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileImage: {
-    width: scale(40),
-    height: verticalScale(40),
-    borderRadius: scale(20),
-  },
   photoUserAvatar: {
     width: scale(32),
     height: verticalScale(32),
     marginRight: scale(8),
-    borderRadius: scale(16),
-  },
-  photoProfileImage: {
-    width: scale(32),
-    height: verticalScale(32),
     borderRadius: scale(16),
   },
   userInfo: {

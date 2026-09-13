@@ -3,15 +3,14 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  ImageSourcePropType,
 } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { colors } from '../../design/tokens';
 import { Text } from '../common/Text';
+import { ProfileImage } from '../common/ProfileImage';
 
 interface NotificationItemProps {
-  profileImage: ImageSourcePropType;
+  profileImageUrl?: string | null;
   title: string;
   description: string;
   timeAgo: string;
@@ -20,7 +19,7 @@ interface NotificationItemProps {
 }
 
 export const NotificationItem: React.FC<NotificationItemProps> = ({
-  profileImage,
+  profileImageUrl,
   title,
   description,
   timeAgo,
@@ -36,7 +35,9 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Image source={profileImage} style={styles.profileImage} />
+      <View style={styles.profileImage}>
+        <ProfileImage uri={profileImageUrl} size={scale(40)} />
+      </View>
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
           <Text
@@ -73,9 +74,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary.lightest,
   },
   profileImage: {
-    width: scale(40),
-    height: scale(40),
-    borderRadius: scale(20),
     marginRight: scale(14),
   },
   notificationContent: {

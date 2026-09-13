@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable, Alert, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, Alert } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { Text } from '../common/Text';
 import { colors } from '../../design/tokens';
 import { CommentItem as CommentItemType } from '../../libs/api/challenge';
-import { getS3ImageUrl } from '../../libs/s3';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import { ProfileImage } from '../common/ProfileImage';
 import LikeUnselectedIcon from '../../../assets/icons/challenge-profile/like-unselected.svg';
 import LikeSelectedIcon from '../../../assets/icons/challenge-profile/like-selected.svg';
 import MoreIcon from '../../../assets/icons/more.svg';
@@ -141,14 +140,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           activeOpacity={0.7}
           disabled={!comment.userId}
         >
-          {getS3ImageUrl(comment.userProfileUrl) ? (
-            <Image
-              source={{ uri: getS3ImageUrl(comment.userProfileUrl)! }}
-              style={styles.profileImage}
-            />
-          ) : (
-            <DefaultProfileIcon width={32} height={32} />
-          )}
+          <ProfileImage uri={comment.userProfileUrl} size={scale(32)} />
         </TouchableOpacity>
       )}
 
@@ -325,11 +317,6 @@ const styles = StyleSheet.create({
     marginRight: scale(8),
     overflow: 'hidden',
   },
-  profileImage: {
-    width: scale(32),
-    height: verticalScale(32),
-    borderRadius: scale(16),
-  },
   contentContainer: {
     flex: 1,
   },
@@ -420,4 +407,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.line,
   },
 });
-

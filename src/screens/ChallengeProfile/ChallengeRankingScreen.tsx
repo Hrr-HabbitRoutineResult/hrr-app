@@ -12,7 +12,7 @@ import { Text } from '../../components/common/Text';
 import { Header } from '../../components/common/Header';
 import { colors } from '../../design/tokens';
 import { RootStackParamList } from '../../navigation/types';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
+import { ProfileImage } from '../../components/common/ProfileImage';
 import RankUpIcon from '../../../assets/icons/challenge-profile/rank-up.svg';
 import RankDownIcon from '../../../assets/icons/challenge-profile/rank-down.svg';
 import RankNewIcon from '../../../assets/icons/challenge-profile/rank-new.svg';
@@ -72,7 +72,7 @@ export const ChallengeRankingScreen: React.FC = () => {
           {/* 내 프로필 영역 */}
           <View style={styles.myProfileSection}>
             <View style={styles.profileImageContainer}>
-              <DefaultProfileIcon width={32} height={32} />
+              <ProfileImage size={scale(32)} />
             </View>
             <Text variant="smMd" color={colors.text.primary} style={styles.myNickname}>
               {mockMyRanking.nickname}
@@ -93,7 +93,7 @@ export const ChallengeRankingScreen: React.FC = () => {
           <View style={styles.topThreeContainer}>
             {/* 2위 (왼쪽) */}
             <View style={styles.topThreeItem}>
-              <DefaultProfileIcon width={80} height={80} />
+              <ProfileImage size={scale(80)} />
               <Text variant="header2" color={colors.text.primary} style={styles.topThreeNickname}>
                 {mockRankings[1].nickname}
               </Text>
@@ -113,7 +113,7 @@ export const ChallengeRankingScreen: React.FC = () => {
 
             {/* 1위 (가운데) */}
             <View style={styles.topThreeItem}>
-              <DefaultProfileIcon width={80} height={80} />
+              <ProfileImage size={scale(80)} />
               <Text variant="header2" color={colors.text.primary} style={styles.topThreeNickname}>
                 {mockRankings[0].nickname}
               </Text>
@@ -125,7 +125,7 @@ export const ChallengeRankingScreen: React.FC = () => {
 
             {/* 3위 (오른쪽) */}
             <View style={styles.topThreeItem}>
-              <DefaultProfileIcon width={80} height={80} />
+              <ProfileImage size={scale(80)} />
               <Text variant="header2" color={colors.text.primary} style={styles.topThreeNickname}>
                 {mockRankings[2].nickname}
               </Text>
@@ -156,7 +156,7 @@ export const ChallengeRankingScreen: React.FC = () => {
                 </View>
               </View>
               <View style={styles.profileContainer}>
-                <DefaultProfileIcon width={40} height={40} />
+                <ProfileImage size={scale(40)} />
               </View>
               <Text variant="md" color={colors.text.primary} style={styles.rankingNickname}>
                 {item.nickname}
@@ -303,4 +303,3 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 });
-

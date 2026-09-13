@@ -1,31 +1,16 @@
-import React, { useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '../../design/tokens';
 import { RankEntry } from '../../types/ranking';
 import { formatPoints } from '../../utils/number';
 import { scale, verticalScale } from '../../utils/scaling';
-import ProfileDefault from '../../../assets/icons/ranking/profile-placeholder.svg';
 import { Text } from '../common/Text';
+import { ProfileImage } from '../common/ProfileImage';
 
 interface RankListProps {
   top5: RankEntry[];
   me?: RankEntry;
 }
-
-const Avatar: React.FC<{ uri?: string }> = ({ uri }) => {
-  // 실패한 uri를 저장해 두면 uri가 바뀔 때 초기화 없이 다시 이미지를 시도한다.
-  const [failedUri, setFailedUri] = useState<string>();
-
-  return uri && failedUri !== uri ? (
-    <Image
-      source={{ uri }}
-      style={styles.avatar}
-      onError={() => setFailedUri(uri)}
-    />
-  ) : (
-    <ProfileDefault width={scale(40)} height={scale(40)} />
-  );
-};
 
 export const RankList: React.FC<RankListProps> = ({ top5, me }) => {
   const shouldAppendMe = Boolean(me && me.rank > 5);
@@ -54,7 +39,7 @@ export const RankList: React.FC<RankListProps> = ({ top5, me }) => {
               >
                 {entry.rank}
               </Text>
-              <Avatar uri={entry.avatarUrl} />
+              <ProfileImage uri={entry.avatarUrl} size={scale(40)} />
               <Text
                 variant="xsMd"
                 color={colors.text.primary}
@@ -105,12 +90,6 @@ const styles = StyleSheet.create({
     width: scale(30),
     marginRight: scale(8),
     textAlign: 'right',
-  },
-  avatar: {
-    width: scale(40),
-    height: scale(40),
-    borderRadius: scale(20),
-    backgroundColor: colors.line,
   },
   nickname: {
     flex: 1,

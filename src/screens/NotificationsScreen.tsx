@@ -223,11 +223,7 @@ const NotificationsScreen = () => {
           {notifications.map(item => (
             <NotificationItemComponent
               key={item.id}
-              profileImage={
-                item.imageUrl
-                  ? { uri: item.imageUrl }
-                  : require('../../assets/images/mock-challenge-profile.png')
-              }
+              profileImageUrl={item.imageUrl}
               title={item.title}
               description={item.message.replace(/\\n/g, '\n')}
               timeAgo={formatTimeAgo(item.createdAt)}

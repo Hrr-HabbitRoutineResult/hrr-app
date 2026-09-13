@@ -14,7 +14,7 @@ export interface UserMe {
   nickname: string;
   email: string;
   phoneNumber: string;
-  profileImage: string;
+  profileImage: string | null;
   level: string;
   followerCount: number;
   followingCount: number;

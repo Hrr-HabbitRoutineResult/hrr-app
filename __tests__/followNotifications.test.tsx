@@ -8,6 +8,10 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
   useFocusEffect: (callback: () => void) => require('react').useEffect(callback, [callback]),
 }));
+jest.mock('react-native-config', () => ({
+  __esModule: true,
+  default: { S3_BUCKET_NAME: 'profile-test', S3_REGION: 'ap-northeast-2' },
+}));
 jest.mock('react-native', () => ({
   View: 'View', Text: 'Text', TouchableOpacity: 'TouchableOpacity',
   ScrollView: 'ScrollView', ActivityIndicator: 'ActivityIndicator', Image: 'Image',
@@ -16,6 +20,7 @@ jest.mock('react-native', () => ({
 jest.mock('../src/components/common/Header', () => ({ Header: 'Header' }));
 jest.mock('../src/components/common/Text', () => ({ Text: 'Text' }));
 jest.mock('../assets/images/logo-gray.svg', () => 'LogoGray');
+jest.mock('../assets/icons/ranking/profile-placeholder.svg', () => 'ProfilePlaceholder');
 jest.mock('../src/utils/scaling', () => ({
   scale: (n: number) => n, verticalScale: (n: number) => n, moderateScale: (n: number) => n,
 }));
@@ -61,6 +66,7 @@ it('requests category FOLLOW and renders a FOLLOW_CREATED notification from the 
   expect(getList).toHaveBeenLastCalledWith({ category: 'FOLLOW', page: 1, size: 10 });
   const item = screen.root.findByType(NotificationItem);
   expect(item.props.title).toBe(followNotification.title);
+  expect(item.props.profileImageUrl).toBe(followNotification.imageUrl);
   expect(item.props.description).toBe(followNotification.message);
   expect(item.props.isRead).toBe(false);
   const rendered = JSON.stringify(screen.toJSON());

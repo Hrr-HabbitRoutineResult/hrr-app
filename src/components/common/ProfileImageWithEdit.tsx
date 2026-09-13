@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import EditProfileIcon from '../../../assets/icons/camera-white.svg';
-import DefaultProfileIcon from '../../../assets/icons/challenge-profile/default-profile.svg';
 import { colors as Color } from '../../design/tokens';
+import { ProfileImage } from './ProfileImage';
 
 interface ProfileImageWithEditProps {
-  profileImageUrl?: string;
+  profileImageUrl?: string | null;
   onPress: () => void;
   size?: number;
   overlayOpacity?: number;
@@ -27,13 +27,7 @@ const ProfileImageWithEdit: React.FC<ProfileImageWithEditProps> = ({
       activeOpacity={0.9}
       style={[styles.container, { width: size, height: size, borderRadius: r }]}
     >
-      {profileImageUrl ? (
-        <Image source={{ uri: profileImageUrl }} style={[styles.profileImage, { borderRadius: r }]} />
-      ) : (
-        <View style={[styles.profileImagePlaceholder, { borderRadius: r }]}>
-          <DefaultProfileIcon width={size} height={size} />
-        </View>
-      )}
+      <ProfileImage uri={profileImageUrl} size={size} />
 
       {/* 사진 전체 덮는 오버레이 */}
       <View
@@ -57,19 +51,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.icon.gray,
     position: 'relative',
     overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  profileImage: {
-    width: '100%',
-    height: '100%',
-  },
-
-  profileImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: Color.icon.gray,
     justifyContent: 'center',
     alignItems: 'center',
   },
