@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import LinearGradient from 'react-native-linear-gradient';
-import Svg, { Line, Path } from 'react-native-svg';
 import MoreIcon from '../../assets/icons/chevron-left-medium-ic-grey.svg';
+import TrendRiseBackground from '../../assets/icons/ranking/trend-rise-background.svg';
+import TrendRise from '../../assets/icons/ranking/trend-rise.svg';
+import TrendFall from '../../assets/icons/ranking/trend-fall.svg';
 import { PointCriteriaSheet } from '../components/ranking/PointCriteriaSheet';
 import { RankList } from '../components/ranking/RankList';
 import { RankingLoadError } from '../components/ranking/RankingLoadError';
@@ -30,69 +31,28 @@ import { scale, verticalScale } from '../utils/scaling';
 type RankScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const TrendGraphic: React.FC<{ rising: boolean }> = ({ rising }) => (
-  <Svg width={scale(82)} height={verticalScale(68)} viewBox="0 0 82 68">
+  <View style={styles.trendGraphic} pointerEvents="none" accessible={false}>
     {rising ? (
       <>
-        <Line
-          x1="54"
-          y1="32"
-          x2="76"
-          y2="6"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.75"
+        <TrendRiseBackground
+          width={scale(155.343)}
+          height={scale(134.155)}
+          style={styles.trendRiseBackground}
         />
-        <Line
-          x1="54"
-          y1="32"
-          x2="82"
-          y2="21"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.72"
+        <TrendRise
+          width={scale(47)}
+          height={scale(45)}
+          style={styles.trendRise}
         />
-        <Line
-          x1="54"
-          y1="32"
-          x2="82"
-          y2="42"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.68"
-        />
-        <Line
-          x1="54"
-          y1="32"
-          x2="73"
-          y2="65"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.6"
-        />
-        <Line
-          x1="54"
-          y1="32"
-          x2="46"
-          y2="67"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.55"
-        />
-        <Line
-          x1="54"
-          y1="32"
-          x2="26"
-          y2="61"
-          stroke="#FFFFFF"
-          strokeWidth="1.4"
-          opacity="0.5"
-        />
-        <Path d="M43 52H64V28H75L58 10L41 28H52V40H43V52Z" fill="#FF5F56" />
       </>
     ) : (
-      <Path d="M41 16H62V40H73L56 58L39 40H50V28H41V16Z" fill="#B8C0CF" />
+      <TrendFall
+        width={scale(48)}
+        height={scale(48)}
+        style={styles.trendFall}
+      />
     )}
-  </Svg>
+  </View>
 );
 
 const RankScreen: React.FC = () => {
@@ -157,14 +117,18 @@ const RankScreen: React.FC = () => {
   const statusContent = (
     <>
       <View style={styles.statusTextWrap}>
-        <Text variant="xsMd" color={colors.text.primary}>
+        <Text
+          variant="smMd"
+          color={colors.text.primary}
+          style={styles.statusTitle}
+        >
           {ranking.topPercent === null
             ? '이번 주 랭킹 집계 전이에요'
             : `현재 상위 ${formatNumber(ranking.topPercent)}%예요`}
         </Text>
         {ranking.rankChangeMessage ? (
           <Text
-            variant="caption"
+            variant="xxs"
             color={colors.text.primary}
             style={styles.statusDescription}
           >
@@ -192,7 +156,11 @@ const RankScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.myRank}>
-          <Text variant="header2" color={colors.text.primary}>
+          <Text
+            variant="header2"
+            color={colors.text.primary}
+            style={styles.myRankTitle}
+          >
             이번 주 내 순위
           </Text>
           <Text
@@ -210,7 +178,11 @@ const RankScreen: React.FC = () => {
             accessibilityLabel="보유포인트 확인"
             hitSlop={spacing.sm}
           >
-            <Text variant="xsReg" color={colors.text.tertiary}>
+            <Text
+              variant="xsReg"
+              color={colors.text.tertiary}
+              style={styles.pointsLabel}
+            >
               보유포인트
             </Text>
             <MoreIcon
@@ -221,20 +193,9 @@ const RankScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {isRising ? (
-          <LinearGradient
-            colors={['#FFF1F0', '#FFE2E0']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.statusCard}
-          >
-            {statusContent}
-          </LinearGradient>
-        ) : (
-          <View style={[styles.statusCard, styles.statusCardDown]}>
-            {statusContent}
-          </View>
-        )}
+        <View style={[styles.statusCard, !isRising && styles.statusCardDown]}>
+          {statusContent}
+        </View>
 
         <View style={styles.rankListWrap}>
           <RankList top5={ranking.top5} me={ranking.me} />
@@ -286,14 +247,20 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingHorizontal: scale(20),
-    paddingTop: verticalScale(8),
+    paddingTop: scale(8),
   },
   myRank: {
     alignItems: 'center',
-    marginBottom: verticalScale(20),
+    marginBottom: scale(20),
+  },
+  myRankTitle: {
+    fontSize: scale(20),
+    lineHeight: scale(24),
   },
   myRankValue: {
-    marginTop: verticalScale(12),
+    fontSize: scale(24),
+    lineHeight: scale(29),
+    marginTop: scale(12),
   },
   pointsRow: {
     minHeight: scale(20),
@@ -301,20 +268,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: spacing.sm,
     gap: scale(2),
-    marginTop: verticalScale(4),
+    marginTop: scale(4),
+  },
+  pointsLabel: {
+    fontSize: scale(13),
+    lineHeight: scale(16),
   },
   pointsChevron: {
     transform: [{ scaleX: -1 }],
   },
   statusCard: {
-    height: verticalScale(80),
+    // Keep the Figma 350 × 80 proportions on every screen aspect ratio.
+    minHeight: scale(80),
     borderRadius: scale(20),
-    paddingLeft: scale(18),
+    backgroundColor: colors.primary.lighter,
+    paddingVertical: scale(22),
+    paddingLeft: scale(21),
+    paddingRight: scale(114),
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: verticalScale(24),
+    marginBottom: scale(24),
   },
   statusCardDown: {
     backgroundColor: colors.line,
@@ -323,8 +297,36 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 1,
   },
+  statusTitle: {
+    fontSize: scale(15),
+    lineHeight: scale(18),
+  },
   statusDescription: {
-    marginTop: verticalScale(1),
+    fontSize: scale(12),
+    lineHeight: scale(14),
+    marginTop: scale(4),
+  },
+  trendGraphic: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: scale(130),
+    height: scale(80),
+  },
+  trendRiseBackground: {
+    position: 'absolute',
+    left: 0,
+    top: -scale(16),
+  },
+  trendRise: {
+    position: 'absolute',
+    left: scale(55),
+    top: scale(17),
+  },
+  trendFall: {
+    position: 'absolute',
+    left: scale(54),
+    top: scale(16),
   },
   rankListWrap: {
     width: '100%',
