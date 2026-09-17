@@ -86,3 +86,22 @@ it('keeps an empty FOLLOW response empty instead of fabricating an alert', async
   expect(JSON.stringify(screen.toJSON())).toContain('받은 알림이 없어요');
   expect(JSON.stringify(screen.toJSON())).not.toContain('새로운 팔로워가 있어요');
 });
+
+it('keeps FOLLOW results when an earlier CHALLENGE request finishes later', async () => {
+  let finishChallenge!: (page: typeof emptyPage) => void;
+  const slowChallenge = new Promise<typeof emptyPage>(resolve => {
+    finishChallenge = resolve;
+  });
+  getList.mockImplementation(async params =>
+    params?.category === 'FOLLOW'
+      ? { ...emptyPage, content: [followNotification] }
+      : slowChallenge,
+  );
+
+  await act(async () => { screen = Renderer.create(<NotificationsScreen />); });
+  await openFollowTab();
+  expect(screen.root.findAllByType(NotificationItem)).toHaveLength(1);
+
+  await act(async () => { finishChallenge(emptyPage); });
+  expect(screen.root.findAllByType(NotificationItem)).toHaveLength(1);
+});

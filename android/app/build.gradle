@@ -89,8 +89,8 @@ android {
         applicationId "com.hrrapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 24
-        versionName "1.12.1"
+        versionCode 25
+        versionName "1.12.3"
 
         // Keep upload signing credentials available to Gradle, but out of the app.
         buildConfigFields.entrySet().removeAll { it.value.name.startsWith("MYAPP_UPLOAD_") }

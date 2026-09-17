@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -44,21 +44,22 @@ const NotificationsScreen = () => {
   );
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [hasNext, setHasNext] = useState(false);
+  const latestFetchId = useRef(0);
 
   // 알림 목록 조회 (모든 페이지)
   const fetchNotifications = async (
     category: 'CHALLENGE' | 'VERIFICATION' | 'FOLLOW' | 'BADGE',
   ) => {
+    const fetchId = ++latestFetchId.current;
     try {
       setLoading(true);
 
       // 페이지네이션: hasNext가 true면 다음 페이지 계속 요청
       let allNotifications: NotificationItemType[] = [];
       let currentPage = 1;
-      let hasNext = true;
+      let hasNextPage = true;
 
-      while (hasNext) {
+      while (hasNextPage) {
         const result = await getNotifications({
           category,
           page: currentPage,
@@ -66,29 +67,29 @@ const NotificationsScreen = () => {
         });
 
         allNotifications = [...allNotifications, ...result.content];
-        hasNext = result.hasNext;
+        hasNextPage = result.hasNext;
         currentPage++;
       }
 
+      if (fetchId !== latestFetchId.current) return;
       setNotifications(allNotifications);
-      setHasNext(false);
       setPage(currentPage - 1);
-    } catch (error) {
+    } catch {
       // 에러 무시
     } finally {
-      setLoading(false);
+      if (fetchId === latestFetchId.current) {
+        setLoading(false);
+      }
     }
   };
 
-  // 카테고리 변경 시 알림 목록 재조회
-  useEffect(() => {
-    fetchNotifications(activeCategory);
-  }, [activeCategory]);
-
-  // 화면 포커스 시 알림 목록 새로고침
+  // 화면 포커스와 카테고리 변경 시 조회하고, 이전 조회 결과는 무시한다.
   useFocusEffect(
     React.useCallback(() => {
       fetchNotifications(activeCategory);
+      return () => {
+        latestFetchId.current += 1;
+      };
     }, [activeCategory]),
   );
 
@@ -152,7 +153,7 @@ const NotificationsScreen = () => {
             ),
           );
         }
-      } catch (error) {
+      } catch {
         // 에러 무시
       }
     }
