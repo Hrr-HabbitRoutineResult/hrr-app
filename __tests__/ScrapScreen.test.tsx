@@ -18,6 +18,7 @@ jest.mock('../src/components/common/TabBar', () => ({ TabBar: 'TabBar' }));
 jest.mock('../src/components/common/Text', () => ({ Text: 'Text' }));
 jest.mock('../src/components/MyPage/CertificationRecordList', () => 'CertificationRecordList');
 jest.mock('../assets/icons/text.svg', () => 'TextPlaceholderIcon');
+jest.mock('../assets/images/logo-gray.svg', () => 'LogoGray');
 jest.mock('../src/utils/scaling', () => ({
   scale: (n: number) => n, verticalScale: (n: number) => n, moderateScale: (n: number) => n,
 }));
@@ -50,11 +51,16 @@ afterEach(() => { if (screen) { act(() => screen.unmount()); } });
 it('shows successful empty states for both tabs, without a retry error', async () => {
   getScraps.mockResolvedValue(page());
   await mount();
-  expect(JSON.stringify(list().props.ListEmptyComponent())).toContain('사진');
+  const photoEmpty = JSON.stringify(list().props.ListEmptyComponent());
+  expect(photoEmpty).toContain('LogoGray');
+  expect(photoEmpty).toContain('스크랩된 기록이 없어요');
+  expect(photoEmpty).not.toContain('스크랩한 사진 인증이 아직 없어요');
   await selectTab('TEXT');
   expect(getScraps).toHaveBeenLastCalledWith('TEXT', 1, 20);
   const empty = JSON.stringify(list().props.ListEmptyComponent());
-  expect(empty).toContain('글');
+  expect(empty).toContain('LogoGray');
+  expect(empty).toContain('스크랩된 기록이 없어요');
+  expect(empty).not.toContain('스크랩한 글 인증이 아직 없어요');
   expect(empty).not.toContain('다시 시도');
 });
 

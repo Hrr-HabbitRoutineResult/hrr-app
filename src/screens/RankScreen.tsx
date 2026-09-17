@@ -6,9 +6,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import MoreIcon from '../../assets/icons/chevron-left-medium-ic-grey.svg';
 import TrendRiseBackground from '../../assets/icons/ranking/trend-rise-background.svg';
 import TrendRise from '../../assets/icons/ranking/trend-rise.svg';
 import TrendFall from '../../assets/icons/ranking/trend-fall.svg';
@@ -17,8 +14,7 @@ import { RankList } from '../components/ranking/RankList';
 import { RankingLoadError } from '../components/ranking/RankingLoadError';
 import { Text } from '../components/common/Text';
 import SectionHeader from '../components/common/SectionHeader';
-import { colors, spacing } from '../design/tokens';
-import { RootStackParamList } from '../navigation/types';
+import { colors } from '../design/tokens';
 import {
   pointService,
   rankingService,
@@ -27,8 +23,6 @@ import {
 import { PointCriteria, WeeklyRanking } from '../types/ranking';
 import { formatNumber } from '../utils/number';
 import { scale, verticalScale } from '../utils/scaling';
-
-type RankScreenNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const TrendGraphic: React.FC<{ rising: boolean }> = ({ rising }) => (
   <View style={styles.trendGraphic} pointerEvents="none" accessible={false}>
@@ -56,7 +50,6 @@ const TrendGraphic: React.FC<{ rising: boolean }> = ({ rising }) => (
 );
 
 const RankScreen: React.FC = () => {
-  const navigation = useNavigation<RankScreenNavigationProp>();
   const [ranking, setRanking] = useState<WeeklyRanking | null>(null);
   const [criteria, setCriteria] = useState<PointCriteria[]>([]);
   const [criteriaVisible, setCriteriaVisible] = useState(false);
@@ -170,27 +163,6 @@ const RankScreen: React.FC = () => {
           >
             {ranking.myRank === null ? '-' : `${ranking.myRank}등`}
           </Text>
-          <TouchableOpacity
-            style={styles.pointsRow}
-            activeOpacity={0.75}
-            onPress={() => navigation.navigate('PointHistory')}
-            accessibilityRole="button"
-            accessibilityLabel="보유포인트 확인"
-            hitSlop={spacing.sm}
-          >
-            <Text
-              variant="xsReg"
-              color={colors.text.tertiary}
-              style={styles.pointsLabel}
-            >
-              보유포인트
-            </Text>
-            <MoreIcon
-              width={scale(20)}
-              height={scale(20)}
-              style={styles.pointsChevron}
-            />
-          </TouchableOpacity>
         </View>
 
         <View style={[styles.statusCard, !isRising && styles.statusCardDown]}>
@@ -251,7 +223,7 @@ const styles = StyleSheet.create({
   },
   myRank: {
     alignItems: 'center',
-    marginBottom: scale(20),
+    marginBottom: scale(24),
   },
   myRankTitle: {
     fontSize: scale(20),
@@ -261,21 +233,6 @@ const styles = StyleSheet.create({
     fontSize: scale(24),
     lineHeight: scale(29),
     marginTop: scale(12),
-  },
-  pointsRow: {
-    minHeight: scale(20),
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: spacing.sm,
-    gap: scale(2),
-    marginTop: scale(4),
-  },
-  pointsLabel: {
-    fontSize: scale(13),
-    lineHeight: scale(16),
-  },
-  pointsChevron: {
-    transform: [{ scaleX: -1 }],
   },
   statusCard: {
     // Keep the Figma 350 × 80 proportions on every screen aspect ratio.

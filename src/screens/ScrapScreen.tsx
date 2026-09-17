@@ -25,6 +25,7 @@ import {
 } from '../libs/api/user';
 import { scale, verticalScale } from '../utils/scaling';
 import TextPlaceholderIcon from '../../assets/icons/text.svg';
+import LogoGray from '../../assets/images/logo-gray.svg';
 
 type ScrapTab = ScrappedVerificationItem['type'];
 
@@ -189,12 +190,15 @@ const ScrapScreen = () => {
 
     return (
       <View style={styles.stateContainer}>
-        <Text variant="xsReg" color={colors.text.tertiary}>
-          스크랩한 {activeTab === 'CAMERA' ? '사진' : '글'} 인증이 아직 없어요
-        </Text>
+        <View style={styles.emptyStateContent}>
+          <LogoGray width={scale(136)} height={scale(136)} />
+          <Text variant="smReg" color={colors.icon.gray} style={styles.emptyStateText}>
+            스크랩된 기록이 없어요
+          </Text>
+        </View>
       </View>
     );
-  }, [activeTab, error, fetchPage, isLoading]);
+  }, [error, fetchPage, isLoading]);
 
   return (
     <View style={styles.container}>
@@ -271,11 +275,20 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flexGrow: 1,
+    paddingTop: 0,
   },
   stateContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+    marginBottom: verticalScale(136),
+  },
+  emptyStateText: {
+    marginTop: verticalScale(32),
+    textAlign: 'center',
   },
   retryText: {
     marginTop: verticalScale(8),

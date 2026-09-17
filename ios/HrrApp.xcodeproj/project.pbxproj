@@ -340,8 +340,8 @@
 				CODE_SIGN_ENTITLEMENTS = HrrApp/HrrAppDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
-				DEVELOPMENT_TEAM = XCJB22BKV4;
+				CURRENT_PROJECT_VERSION = 22;
+				DEVELOPMENT_TEAM = F6L3MH7RA3;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = HrrApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -349,7 +349,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.1;
+				MARKETING_VERSION = 1.12.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -375,15 +375,15 @@
 				CODE_SIGN_ENTITLEMENTS = HrrApp/HrrApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
-				DEVELOPMENT_TEAM = XCJB22BKV4;
+				CURRENT_PROJECT_VERSION = 22;
+				DEVELOPMENT_TEAM = F6L3MH7RA3;
 				INFOPLIST_FILE = HrrApp/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.12.1;
+				MARKETING_VERSION = 1.12.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

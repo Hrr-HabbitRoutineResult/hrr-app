@@ -91,6 +91,10 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 24
         versionName "1.12.1"
+
+        // Keep upload signing credentials available to Gradle, but out of the app.
+        buildConfigFields.entrySet().removeAll { it.value.name.startsWith("MYAPP_UPLOAD_") }
+        resValues.entrySet().removeAll { it.value.name.startsWith("MYAPP_UPLOAD_") }
         
         // react-native-config 환경 변수 추가
         resValue "string", "API_BASE_URL", project.env.get("API_BASE_URL")
